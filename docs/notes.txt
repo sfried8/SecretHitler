@@ -1,0 +1,60 @@
+Client
+	>> playerJoinedRoom
+		if im first
+			im the host
+		else
+			update
+	>> beginNewGame
+		initialize
+	>> gameOver
+		game end duh
+	>> onPresidentElected
+		if im the president
+		<< presidentNominate
+	>> onChancellorNominated
+		<< voteForChancellor
+	>> onChancellorElected
+		if im the president
+		<< choosePresidentPolicies
+	>> onPresidentPolicyChosen
+		if im the chancellor
+		<< chooseChancellorPolicy
+	>> onExecutiveActionTriggered
+		<< chooseEATarget
+	>> onPlayerVoted
+		update vote
+	>> onVoteFinished
+		display votes and pass/fail
+	>> onPolicyPlayed
+		update
+
+
+Server
+	>> onPlayerJoin
+		add player
+		<< playerJoined
+	>> onVIPStart
+		init
+		<< gameStart
+		<< presidentElected
+	>> onPresidentNominate
+		<< chancellorNominated
+	>> onVoteForChancellor
+		<< playerVoted
+		count votes
+		if all voted:
+			<< voteFinished
+			pass:
+				<< chancellorElected
+			fail:
+				<< presidentElected
+	>> onChoosePresidentPolicies
+		<< presidentPolicyChosen
+	>> onChooseChancellorPolicy
+		<< policyPlayed
+		maybe:
+			<< executiveActionTriggered
+	>> onChooseEATarget
+		<< exe
+
+

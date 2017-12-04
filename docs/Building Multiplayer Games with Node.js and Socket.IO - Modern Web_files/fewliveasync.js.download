@@ -1,0 +1,152 @@
+﻿//set some base variables
+var vv_doc = document; 
+
+var vv_curUrl = vv_doc.location.href;
+
+var vv_curProto = vv_curUrl.substr(0, vv_curUrl.indexOf("//") - 1);
+vv_curUrl = vv_curUrl.substr(vv_curUrl.indexOf("//") + 2);
+
+var vv_slashPos = vv_curUrl.indexOf("/");
+
+if (vv_slashPos == -1) {
+    var vv_curHostName = vv_curUrl;
+    var vv_curPage = '/';
+}
+else {
+    var vv_curHostName = vv_curUrl.substr(0, vv_slashPos);
+    var vv_curPage = vv_curUrl.substr(vv_slashPos);
+}
+
+vv_curHost = vv_curProto + '://' + vv_curHostName;
+
+var vv_colonPos = vv_curHostName.indexOf(":");
+
+if (vv_colonPos != -1) {
+    vv_curHostName = vv_curHostName.substr(0, vv_colonPos);
+}
+
+var vv_override_uri;
+
+if (vv_override_uri != undefined) {
+    vv_curPage = vv_override_uri;
+}
+
+var vv_poundPos = vv_curPage.indexOf("#");
+
+if (vv_poundPos == -1) {
+    var vv_curAnchor = '';
+}
+else {
+    var vv_curAnchor = vv_curPage.substr(vv_poundPos + 1);
+    var vv_curPage = vv_curPage.substr(0, vv_poundPos);
+}
+
+var vv_questionPos = vv_curPage.indexOf("?");
+
+if (vv_questionPos == -1) {
+    var vv_curQueryString = '';
+}
+else {
+    var vv_curQueryString = vv_curPage.substr(vv_questionPos + 1);
+    var vv_curPage = vv_curPage.substr(0, vv_questionPos);
+}
+
+var vv_ref = '';
+try { vv_ref = top.vv_doc.referrer; } catch (e) {
+    if (parent) {
+        if (parent.vv_getReferer) {
+            try { vv_ref = parent.vv_getReferer; } catch (E3) { vv_ref = ''; }
+        }
+        else {
+            try { vv_ref = parent.document.referrer; } catch (E) {
+                try { vv_ref = document.referrer; } catch (E2) { vv_ref = ''; }
+            }
+        }
+    }
+    else {
+        try { vv_ref = document.referrer; } catch (E3) { vv_ref = ''; }
+    }
+}
+
+
+
+try{
+	vv_ref = vv_ref.replace("\'","");
+	vv_ref = vv_ref.replace("\<","");
+	vv_ref = vv_ref.replace("\>","");
+} catch (rerv) { vv_ref = ''; }
+
+
+
+var vv_titleArr = document.getElementsByTagName('title');
+
+if (vv_titleArr[0]) {
+    var vv_title = encodeURIComponent(vv_titleArr[0].innerHTML);
+    try {
+        vv_title = vv_title.replace("\'", "");
+        vv_title = vv_title.replace("\<", "");
+        vv_title = vv_title.replace("\>", "");
+        vv_title = vv_title.replace("\&", "");
+        vv_title = vv_title.replace("\#", "");
+	vv_title = vv_title.replace("\|", "");
+    } catch (terv) { }
+}
+else {
+    var vv_title = '';
+}
+
+var vv_session_id = document.cookie.match('(^|;) ?vv_session_id=([^;]*)(;|$)');
+
+if (vv_session_id) {
+    vv_session_id = unescape(vv_session_id[2]);
+}
+else {
+    vv_session_id = '';
+}
+
+var vv_visitor_id = document.cookie.match('(^|;) ?vv_visitor_id=([^;]*)(;|$)');
+
+if (vv_visitor_id) {
+    vv_visitor_id = unescape(vv_visitor_id[2]);
+}
+else {
+    vv_visitor_id = '';
+}
+
+//first check to see if there is an existing cookie
+
+//cur_visitor_id
+
+//now store other attributes in variables
+var vv_da = new Date();
+var string_gmt_date = '';
+try {
+    string_gmt_date = vv_da.toGMTString();
+}
+catch (egmt) { }
+
+//get screen resolution
+var vv_s_res = 'unknown';
+try {
+    vv_s_res = "" + screen.width + "x" + screen.height;
+}
+catch (evv_s_res) { }
+
+
+
+//now make request to get additional script
+var new_url = fesdp_BaseURL + 'ProcessStats.aspx';
+new_url += '?host=' + escape(vv_curHost) + '&host_name=' + escape(vv_curHostName) + '&page=' + escape(vv_curPage) + '&query_string=' + escape(vv_curQueryString) + '&anchor=' + escape(vv_curAnchor) + '&title=' + escape(vv_title);
+new_url += '&cur_sess_id=' + vv_session_id + '&cur_visitor_id=' + vv_visitor_id ;
+new_url += '&h=' + vv_da.getHours() + '&m=' + vv_da.getMinutes() + '&s=' + vv_da.getSeconds();
+new_url += '&account_id=' + escape(fesdpid);
+new_url += '&dgmt=' + string_gmt_date;
+new_url += '&vresol=' + vv_s_res;
+new_url += '&ref=' + escape(vv_ref);
+
+try
+{
+var vr = document.createElement('script'); vr.type = 'text/javascript'; vr.async = true;
+vr.src = new_url;
+var sr = document.getElementsByTagName('script')[0]; sr.parentNode.insertBefore(vr, sr);
+}catch(err){  }

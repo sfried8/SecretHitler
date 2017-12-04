@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<!-- saved from url=(0076)https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/ -->
+<html lang="en-US" prefix="og: http://ogp.me/ns#" class=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title> Building Multiplayer Games with Node.js and Socket.IO - Modern Web</title>
+<link rel="apple-touch-icon-precomposed" href="https://modernweb.com/wp-content/themes/modern-web/favicon-152.png">
+<link rel="icon" href="https://modernweb.com/wp-content/themes/modern-web/favicon-32.png" sizes="32x32">
+<link rel="shortcut icon" sizes="196x196" href="https://modernweb.com/wp-content/themes/modern-web/favicon-196.png">
+<meta name="msapplication-TileColor" content="#FFFFFF">
+<meta name="msapplication-TileImage" content="https://modernweb.com/wp-content/themes/modern-web/favicon-144.png">
+<link rel="stylesheet" href="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/style.css">
+<meta property="og:title" content="Building Multiplayer Games with Node.js and Socket.IO">
+<meta name="twitter:title" content="Building Multiplayer Games with Node.js and Socket.IO">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/">
+<meta property="og:site_name" content="Building Multiplayer Games with Node.js and Socket.IO - Modern Web">
+<meta property="og:description" content="Top software development companies vetted by Modern Web">
+<meta property="og:image" content="https://modernweb.com/wp-content/uploads/2013/09/socketio_header-770x300.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@modernwebhq">
+<meta name="twitter:description" content="Top software development companies vetted by Modern Web">
+
+<meta name="description" content="By Eric Terpstra With the release of the Ouya, Xbox One and PS4 this year, couch-based console gaming appears to be as popular as ever. Despite the prolife">
+<link rel="canonical" href="https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/">
+<link rel="publisher" href="https://plus.google.com/+ModernWebHQ">
+<meta property="og:locale" content="en_US">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Building Multiplayer Games with Node.js and Socket.IO - Modern Web">
+<meta property="og:description" content="By Eric Terpstra With the release of the Ouya, Xbox One and PS4 this year, couch-based console gaming appears to be as popular as ever. Despite the prolife">
+<meta property="og:url" content="https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/">
+<meta property="og:site_name" content="Modern Web">
+<meta property="article:publisher" content="https://www.facebook.com/modernwebhq">
+<meta property="article:tag" content="Gaming">
+<meta property="article:tag" content="How-to">
+<meta property="article:tag" content="Node.js">
+<meta property="article:section" content="Frontend Development">
+<meta property="article:published_time" content="2013-09-30T11:02:02-06:00">
+<meta property="article:modified_time" content="2016-11-21T12:16:28-06:00">
+<meta property="og:updated_time" content="2016-11-21T12:16:28-06:00">
+<meta property="og:image" content="https://modernweb.com/wp-content/uploads/2013/09/socketio_header.jpg">
+<meta property="og:image:secure_url" content="https://modernweb.com/wp-content/uploads/2013/09/socketio_header.jpg">
+<meta property="og:image:width" content="770">
+<meta property="og:image:height" content="592">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:description" content="By Eric Terpstra With the release of the Ouya, Xbox One and PS4 this year, couch-based console gaming appears to be as popular as ever. Despite the prolife">
+<meta name="twitter:title" content="Building Multiplayer Games with Node.js and Socket.IO - Modern Web">
+<meta name="twitter:site" content="@modernwebhq">
+<meta name="twitter:image" content="https://modernweb.com/wp-content/uploads/2013/09/socketio_header.jpg">
+<meta name="twitter:creator" content="@eterps">
+
+<link rel="dns-prefetch" href="https://a.optnmstr.com/">
+<link rel="dns-prefetch" href="https://s.w.org/">
+<style></style><link rel="alternate" type="application/rss+xml" title="Modern Web » Building Multiplayer Games with Node.js and Socket.IO Comments Feed" href="https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/feed/">
+<link rel="stylesheet" id="gglcptch-css" href="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/gglcptch.css" type="text/css" media="all">
+<script type="text/javascript" async="" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/ProcessStats.aspx"></script><script type="text/javascript" async="" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/fewliveasync.js.download"></script><script id="hs-analytics" src="https://js.hs-analytics.net/analytics/1511909100000/2591117.js"></script><script async="" src="https://www.googletagmanager.com/gtm.js?id=GTM-T3ZPRS"></script><script async="" src="https://www.google-analytics.com/analytics.js"></script><script type="text/javascript" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/jquery.js.download"></script>
+<script type="text/javascript" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/jquery-migrate.min.js.download"></script>
+<script type="text/javascript" data-cfasync="false" id="omapi-script" async="async" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/api.min.js.download"></script>
+<link rel="https://api.w.org/" href="https://modernweb.com/wp-json/">
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://modernweb.com/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://modernweb.com/wp-includes/wlwmanifest.xml">
+<meta name="generator" content="WordPress 4.8.3">
+<link rel="shortlink" href="https://modernweb.com/?p=1023">
+<link rel="alternate" type="application/json+oembed" href="https://modernweb.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmodernweb.com%2Fbuilding-multiplayer-games-with-node-js-and-socket-io%2F">
+<link rel="alternate" type="text/xml+oembed" href="https://modernweb.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmodernweb.com%2Fbuilding-multiplayer-games-with-node-js-and-socket-io%2F&amp;format=xml">
+</head>
+<body class="post-template-default single single-post postid-1023 single-format-standard post-building-multiplayer-games-with-node-js-and-socket-io" style="">
+<div class="wrap">
+<header class="header">
+<div class="container">
+<a class="header__logo" href="https://modernweb.com/">
+<img src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/modernweb-logo-light.svg" alt="Modern Web logo" width="190" height="32">
+</a>
+<button class="header__nav-trigger" id="js-nav-trigger">
+<svg class="show-nav" height="6" viewBox="0 0 30.38 6.38">
+<circle fill="#92b1b5" cx="3.19" cy="3.19" r="3.19"></circle>
+<circle fill="#92b1b5" cx="15.19" cy="3.19" r="3.19"></circle>
+<circle fill="#92b1b5" cx="27.19" cy="3.19" r="3.19"></circle>
+</svg>
+<svg class="close-nav" fill="#000000" height="24" viewBox="0 0 24 24" width="24">
+<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+<path d="M0 0h24v24H0z" fill="none"></path>
+</svg>
+</button>
+<nav class="nav">
+<ul class="nav__list">
+<li class="nav__item">
+<a href="https://modernweb.com/articles" class="nav__link">
+Articles
+<svg x="0px" y="0px" viewBox="0 0 20 20" enable-background="new 0 0 20 20" xml:space="preserve">
+<path d="M13.418,7.859c0.271-0.268,0.709-0.268,0.978,0c0.27,0.268,0.272,0.701,0,0.969l-3.908,3.83 c-0.27,0.268-0.707,0.268-0.979,0l-3.908-3.83c-0.27-0.267-0.27-0.701,0-0.969c0.271-0.268,0.709-0.268,0.978,0L10,11L13.418,7.859z"></path>
+</svg>
+</a>
+<div class="menu-categories-container"><ul id="menu-categories" class="subnav"><li id="menu-item-4274" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4274"><a href="https://modernweb.com/category/design/">Design</a></li>
+<li id="menu-item-4272" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-4272"><a href="https://modernweb.com/category/frontend-development/">Frontend Development</a></li>
+<li id="menu-item-4273" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4273"><a href="https://modernweb.com/category/backend-development/">Backend Development</a></li>
+<li id="menu-item-4276" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4276"><a href="https://modernweb.com/category/devops/">DevOps</a></li>
+<li id="menu-item-4275" class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4275"><a href="https://modernweb.com/category/work/">Work</a></li>
+</ul></div> </li>
+<li class="nav__button">
+<a href="https://modernweb.com/find-a-team" class="button --secondary">Hire A Team</a>
+</li>
+</ul>
+</nav>
+</div>
+</header>
+<section class="main">
+<div class="container">
+<article class="article">
+<h1>Building Multiplayer Games with Node.js and Socket.IO</h1>
+<p class="author-line">
+<img alt="" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/cae586b84cce556eec407d355edb2c0b" srcset="https://secure.gravatar.com/avatar/cae586b84cce556eec407d355edb2c0b?s=56&amp;d=mm&amp;r=g 2x" class="avatar avatar-28 photo" height="28" width="28"> by <a href="https://modernweb.com/author/ericterpstra"><strong>Eric Terpstra</strong></a>
+on September 30, 2013 </p>
+<div class="article__meta">
+<svg class="article__icon" x="0px" y="0px" viewBox="0 0 20 20">
+<path fill="#d0d3d4" d="M18.662,5.521L5.237,19l0.707-4.967l-4.945,0.709L14.424,1.263c0.391-0.392,1.133-0.308,1.412,0l2.826,2.839 C19.162,4.575,19.053,5.128,18.662,5.521z"></path>
+</svg>
+<div class="article__categories">
+<a href="https://modernweb.com/category/frontend-development/" rel="category tag">Frontend Development</a> </div>
+<svg class="article__icon" x="0px" y="0px" viewBox="0 0 20 20">
+<path fill="#d0d3d4" d="M16,4H4C2.899,4,2,4.9,2,6v7c0,1.1,0.899,2,2,2h4l4,3v-3h4c1.1,0,2-0.9,2-2V6C18,4.9,17.1,4,16,4z M6,10.6 c-0.607,0-1.1-0.492-1.1-1.1c0-0.608,0.492-1.1,1.1-1.1s1.1,0.492,1.1,1.1C7.1,10.107,6.607,10.6,6,10.6z M10,10.6 c-0.607,0-1.1-0.492-1.1-1.1c0-0.608,0.492-1.1,1.1-1.1s1.1,0.492,1.1,1.1C11.1,10.107,10.607,10.6,10,10.6z M14,10.6 c-0.607,0-1.1-0.492-1.1-1.1c0-0.608,0.492-1.1,1.1-1.1s1.1,0.492,1.1,1.1C15.1,10.107,14.607,10.6,14,10.6z"></path>
+</svg>
+<a href="https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/#comments"><span class="dsq-postid" data-dsqidentifier="1023 http://flippinawesome.org/?p=1023">27 Comments</span></a>
+</div>
+<div class="accuracy --archaic">
+<p>The modern web is always changing, and this article is more than two years old.</p>
+</div>
+<div class="article__main-image">
+<img width="770" height="300" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/socketio_header-770x300.jpg" class="attachment-large size-large wp-post-image" alt=""> </div>
+<p><em>By <a href="https://modernweb.com/authors/eric-terpstra">Eric Terpstra</a></em></p>
+<p>With the release of the Ouya, Xbox One and PS4 this year, couch-based console gaming appears to be as popular as ever. Despite the proliferation of multi-player games available on mobile devices, and even the advent of multi-player experiences available on the web, sitting next to the person you’re playing a game with is still an irreplaceable experience. While experimenting with Node.js and the Socket.IO library, I found a perfect opportunity to not only learn some interesting new technologies, but also experiment with using the web and common devices (computers and mobile phones) to replicate a console-like gaming experience.</p>
+<p>This article will give a brief overview of the fundamental concepts of the Socket.IO library in the context of building a multi-player, multi-screen word game. A web browser on a large screen device, such as a TV or computer will be the ‘console’ and mobile browsers will act as the ‘controllers’. Socket.IO and Node.js will provide the necessary wiring for all the browsers to share data and provide a cohesive, real-time game experience.</p>
+<h2>The Game – Anagrammatix</h2>
+<p>The game itself is a made up challenge involving anagrams – words that can have their letters re-arranged to form new words. The gameplay is quite simple – on a large ‘Host’ screen, a word is displayed. On each player’s controller (phone) is a list of similar words. One of the words is an anagram of the word on the Host screen. The player to tap the anagram first gets points for the round. However, tapping an incorrect word will lose points for the player. After 10 rounds, the player with the most points wins!</p>
+<p>To download the code and play locally, first ensure that Node.js is installed. Visit the <a href="https://github.com/ericterpstra/anagrammatix" rel="nofollow">Anagrammatix GitHub repo</a>, clone the repository with <code>git clone https://github.com/ericterpstra/anagrammatix.git</code> and then run <code>npm install</code> to download and install all the dependencies (Socket.IO and Express). Once that is complete, run <code>node index.js</code> to start the game server. Visit http://localhost:8080 in your browser to start a game. In order to test out the host as well as multiple “player” clients you’ll need to open multiple windows.</p>
+<p>If you want to play with mobile devices, you will need to know the I.P. address of your computer on your local network. Your mobile devices will also need to be on the same network as the computer running the application. To begin, simply replace ‘localhost’ in the URL with the I.P. address (e.g. http://192.168.0.5:8080). If you are on Windows, you may need to disable Windows firewall, or ensure port 8080 is open.</p>
+<h2>The Underlying Technology</h2>
+<p>Anagrammatix is implemented using only HTML, CSS and JavaScript. To keep things as simple as possible, the use of libraries and frameworks was kept to a minimum. The major technologies used in the game are listed below:</p>
+<ul>
+<li><strong>Node.js</strong>&nbsp;– Node provides the foundation for the back-end portion of the game, and allows the use of the Express framework, and the Socket.IO library. Also, some of the game logic for Anagrammatix takes place on the server. This logic is contained in a custom&nbsp;<em>Node Module</em>&nbsp;which will be discussed later.</li>
+<li><strong>Express</strong>&nbsp;– On its own, Node.js does not provide many of the necessary requirements for creating a web application. Adding Express makes it much simpler to serve static files such as HTML, CSS and JavaScript. Express is also used to adjust logging output, and create an easy-to-use environment for Socket.IO</li>
+<li><strong>Socket.IO</strong>&nbsp;– Socket.IO makes it dead simple to open a real-time communication channel between a web browser and a server (in this case, a server running Node.js and Express). By default, Socket.IO will use the&nbsp;<em>websockets</em>&nbsp;protocol if it is supported by the browser. Older browsers such as IE9 do not support websockets. In that case, Socket.IO will fall back to other technologies, such as using Flash sockets or an Ajax technique called&nbsp;<em>long-polling</em>.</li>
+<li>Client side JavaScript – On the client side, a few libraries are used to make things a little easier:
+<ul>
+<li>jQuery – Mainly used in this case for DOM manipulation and event handling.</li>
+<li><a href="https://github.com/STRML/textFit">TextFit </a>– A small library that will expand text to fit the size of its container. This is what allows the ‘Anagrammatix’ title screen to fill the entire width of the browser no matter the screen size.</li>
+<li><a href="https://github.com/ftlabs/fastclick">FastClick.js</a> – A small library that helps remove the 300ms delay on mobile devices when ‘tapping’ the screen. This makes the game controller slightly more responsive when playing.</li>
+</ul>
+</li>
+<li>CSS – Some standard CSS is used to add a little color and style to the game.</li>
+</ul>
+<h2>The Architecture</h2>
+<p><a href="http://flippinawesome.org/wp-content/uploads/2013/09/architecture.png"><img class="alignnone size-full wp-image-1024" src="http://flippinawesome.org/wp-content/uploads/2013/09/architecture.png" alt="architecture" width="480" height="420" srcset="https://modernweb.com/wp-content/uploads/2013/09/architecture.png 480w, https://modernweb.com/wp-content/uploads/2013/09/architecture-300x263.png 300w" sizes="(max-width: 480px) 100vw, 480px"></a></p>
+<p>The basic setup for the game follows the recommended configuration for using Socket.IO with Express on the <a href="http://socket.io/#how-to-use" rel="nofollow">Socket.IO website</a>. In this configuration, Express is used to handle HTTP requests coming into the Node application. The Socket.IO module attaches itself to Express and listens on the same port for incoming websocket connections.</p>
+<p>When a browser connects to the application, it is served index.html and all the required JavaScript and CSS to begin. The JavaScript in the browser will initiate a connection to Socket.IO and create a websocket connection. Each websocket connection has a unique identifier (uid) so Node and Socket.IO can keep track of which communications to send to which browser.</p>
+<h2>The Code – Server Side Setup</h2>
+<p>The Express and Socket.IO modules do not come packaged with Node.js. they are external dependencies that must be downloaded and installed separately. Node Package Manager (npm) will do that for us with the <code>npm install</code> command as long as all the dependencies are listed in the package.json file. You can find package.json in the root of the project folder, and it contains the following JSON snippet to define the project dependencies:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token string">"dependencies"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+    <span class="token string">"express"</span><span class="token punctuation">:</span> <span class="token string">"3.x"</span><span class="token punctuation">,</span>
+    <span class="token string">"socket.io"</span><span class="token punctuation">:</span><span class="token string">"0.9"</span>
+<span class="token punctuation">}</span></code></pre>
+<p>The <a href="https://github.com/ericterpstra/anagrammatix/blob/master/index.js">index.js</a> file in the root of the project is the main entry point for the entire application. The first few lines instantiate all the required modules. Express is configured to serve static files, and Socket.IO is set up to listen on the same port as Express. The following lines show the bare minimum to get the server going.</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token comment" spellcheck="true">// Create a new Express application</span>
+<span class="token keyword">var</span> app <span class="token operator">=</span> <span class="token function">express</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Create an http server with Node's HTTP module. </span>
+<span class="token comment" spellcheck="true">// Pass it the Express application, and listen on port 8080. </span>
+<span class="token keyword">var</span> server <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'http'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">createServer</span><span class="token punctuation">(</span>app<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">listen</span><span class="token punctuation">(</span><span class="token number">8080</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Instantiate Socket.IO hand have it listen on the Express/HTTP server</span>
+<span class="token keyword">var</span> io <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'socket.io'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">listen</span><span class="token punctuation">(</span>server<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>All of ther server-side code specific to the game is in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/agxgame.js">agxgame.js</a>. This file is pulled into the application as a Node module with <code>var agx = require('./agxgame')</code>. When a client connects to the application via Socket.IO, the <code>initGame</code> function of the agxgame module should run. The following code will make that happen.</p>
+<pre class=" language-javascript"><code class=" language-javascript">io<span class="token punctuation">.</span>sockets<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'connection'</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span>socket<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">//console.log('client connected');</span>
+    agx<span class="token punctuation">.</span><span class="token function">initGame</span><span class="token punctuation">(</span>io<span class="token punctuation">,</span> socket<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>The <code>initGame</code> function in the agxgame module will set up the <em>event listeners</em> for Socket.IO. These event listeners are what allow the browser and server to communicate in real time via Socket.IO. An example of an event listner is:</p>
+<pre class=" language-javascript"><code class=" language-javascript">gameSocket<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'hostCreateNewGame'</span><span class="token punctuation">,</span> hostCreateNewGame<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>In the code above, the <code>gameSocket</code> is a reference to an object created by Socket.IO to encapsulate functionality regarding the unique socket connection between the server and the connected browser. The <code>on</code> function creates a listener for a specific event and binds it to a function. So when the browser <em>emits</em> an event named <code>hostCreateNewGame</code> through the websocket, Socket.IO will then execute the <code>hostCreateNewGame</code> function. Names of events and functions don’t have to be the same, it is just a nice convenience.</p>
+<h2>The Code – Client Side Setup</h2>
+<p>When a web browser connects to the game, it is served index.html from contents of the “public” folder, which consists of an empty div with an id of <em>gameArea</em>. Also within index.html are several HTML snippets contained within <code>&lt;script type=text/template"&gt;</code> tags. These bits of HTML are substituted into the <em>gameArea</em> depending on what needs to be displayed on screen.</p>
+<div style="clear:both; margin-top:0em; margin-bottom:1em;"><a href="https://modernweb.com/limit-javascript/" target="_blank" rel="nofollow" class="u2ebd204bf8c808f3e28ccefcfcb2d092"><style> .u2ebd204bf8c808f3e28ccefcfcb2d092 { padding:0px; margin: 0; padding-top:1em!important; padding-bottom:1em!important; width:100%; display: block; font-weight:bold; background-color:#34495E; border:0!important; border-left:4px solid #27AE60!important; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -o-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); text-decoration:none; } .u2ebd204bf8c808f3e28ccefcfcb2d092:active, .u2ebd204bf8c808f3e28ccefcfcb2d092:hover { opacity: 1; transition: opacity 250ms; webkit-transition: opacity 250ms; text-decoration:none; } .u2ebd204bf8c808f3e28ccefcfcb2d092 { transition: background-color 250ms; webkit-transition: background-color 250ms; opacity: 1; transition: opacity 250ms; webkit-transition: opacity 250ms; } .u2ebd204bf8c808f3e28ccefcfcb2d092 .ctaText { font-weight:bold; color:#FFFFFF; text-decoration:none; font-size: 16px; } .u2ebd204bf8c808f3e28ccefcfcb2d092 .postTitle { color:#FFFFFF; text-decoration: underline!important; font-size: 16px; } .u2ebd204bf8c808f3e28ccefcfcb2d092:hover .postTitle { text-decoration: underline!important; } </style><div style="padding-left:1em; padding-right:1em;"><span class="ctaText">See Also:</span>&nbsp; <span class="postTitle">Why you should limit JavaScript — and how to do it</span></div></a></div><p>The Socket.io client library is required for the browser to connect to the Socket.IO server. Because we are serving Socket.IO using Express, we can use an <em>Express route</em> to request the library files from the server using the following script tag:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token operator">&lt;</span>script src<span class="token operator">=</span><span class="token string">"/socket.io/socket.io.js"</span><span class="token operator">&gt;</span><span class="token operator">&lt;</span><span class="token operator">/</span>script<span class="token operator">&gt;</span></code></pre>
+<p>The majority of the game logic, and all the client-side code is stored within <a href="https://github.com/ericterpstra/anagrammatix/blob/master/public/app.js">app.js</a>. The code is enclosed within a self executing function, and is organized using an <em>object literal namespacing</em> pattern. This means that all the variables and functions used in the application are properties of the <code>IO</code> and <code>App</code> objects. The basic outline for the client-side code is as follows:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token comment" spellcheck="true">// Enclosing function</span>
+<span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+
+    IO <span class="token punctuation">{</span>
+        All code related to Socket<span class="token punctuation">.</span>IO connections goes here<span class="token punctuation">.</span>
+    <span class="token punctuation">}</span>
+
+    App <span class="token punctuation">{</span>
+        Generic game logic code<span class="token punctuation">.</span>
+
+        Host <span class="token punctuation">{</span>
+            Game logic <span class="token keyword">for</span> the <span class="token string">'Host'</span> <span class="token punctuation">(</span>big<span class="token punctuation">)</span> screen<span class="token punctuation">.</span>
+        <span class="token punctuation">}</span>
+
+        Player <span class="token punctuation">{</span>
+            Game logic specific to <span class="token string">'Player'</span> screens<span class="token punctuation">.</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>       
+<span class="token punctuation">}</span></code></pre>
+<p>When the application first loads, there are two functions that execute when the document is ready – <code>IO.init()</code> and <code>App.init()</code>. The first will set up the Socket.IO connection, and the latter will display the title screen in the browser.</p>
+<p>The following line of code in <code>IO.init()</code> will initiate a Socket.IO connection between the browser and the server:</p>
+<pre class=" language-javascript"><code class=" language-javascript">IO<span class="token punctuation">.</span>socket <span class="token operator">=</span> io<span class="token punctuation">.</span><span class="token function">connect</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>Following that, a call is made to <code>IO.bind()</code>, which sets up all the event listeners for Socket.IO on the client. These event listeners work just like those that we set up on the server, but work in the opposite direction. Take the following example:</p>
+<pre class=" language-javascript"><code class=" language-javascript">IO<span class="token punctuation">.</span>socket<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'playerJoinedRoom'</span><span class="token punctuation">,</span> IO<span class="token punctuation">.</span>playerJoinedRoom <span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>In the above line of code, <code>IO</code> is a container object used for organizing code, the <code>socket</code> object is created by Socket.IO and has properties and methods related to the websocket connection, and the <code>on</code> function creates an event listener. In this case, when the server emits an event labeled <code>playerJoinedRoom</code>, then the <code>IO.playerJoinedRoom</code> function is executed on the client.</p>
+<h2>Client-Server Communication</h2>
+<p>The gameplay of Anagrammatix is quite simple. There are not many rules, no graphics or animation, and there are never more than a few words on any screen at a time. What makes this application a cohesive game and (arguably) fun is the communication between the three browser windows. It’s important to re-iterate that browsers do not communicate directly with each other, but rather emit data to the server, which is then processed and re-emitted back to the appropriate browsers. Each of these events carries data with it, so information from the client browser such as the player name or selected answer can travel to the server and make its way into other clients.</p>
+<p>All of this data flowing from client to server and back again can be a bit difficult to follow, especially with three clients connected at once. Luckily there is a great tool available in Google’s Chrome browser to help out. If you open the Chrome developer tools window and go to the <em>Network</em> tab, you will be able to monitor all websocket traffic for that particular window by clicking the <em>WebSockets</em> button along the bottom toolbar. Within the WebSockets panel, a list of connections appear in the left-hand column. Clicking on the connection, and then clicking the <em>Frames</em> tab will display a list of communications that have occurred through that particular websocket connection. See the screenshot below for an example</p>
+<p><a href="http://flippinawesome.org/wp-content/uploads/2013/09/chrome_network.jpg"><img class="alignnone size-large wp-image-1025" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/chrome_network-640x360.jpg" alt="chrome_network" width="640" height="360"></a></p>
+<p>The first column of the <em>Frames</em> tab is the most interesting. It shows the data that is passed through the websocket connection. In the screenshot above, each object in the data column represents and event that was emitted. Each object has a “name” and an “args” property. The value for the <em>name</em> is the name of the event being emitted, such as <code>playerJoinedRoom</code> or <code>hostCheckAnswer</code>. The <em>args</em> contains an array of data elements passed between the client and server.</p>
+<p>The Frames tab in Chrome developer tools, along with liberal use of <code>console.log()</code> makes it a bit easier to debug the application and keep track of events and data passing between clients and the server.</p>
+<h2>The Gameplay</h2>
+<p>Now that we have a brief overview of how the game is set up and how the underlying architecture works, let’s step through the actual gameplay and trace the flow of a single playthrough of a game of Anagrammatix.</p>
+<h3>Open a Browser and Visit the Application URL</h3>
+<p><strong>Node.js and Express serve the files from the public folder.</strong> The index.html file is loaded, along with <a href="https://github.com/ericterpstra/anagrammatix/blob/master/public/app.js">app.js</a> and the required client-side JavaScript libraries.</p>
+<p><strong><code>IO.init()</code> and <code>App.init()</code> are called in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/public/app.js#L16">public/app.js</a>.</strong> The client side game code is initialized. Event handlers are set up for Socket.IO, and code is initiated to load the title screen. The FastClick lib is loaded to speed up touch events. The following code in the <code>App.showInitScreen</code> function will load the <code>intro-screen-template</code> from index.html into the <em>gameArea</em> div so it is visible to the user.</p>
+<pre class=" language-javascript"><code class=" language-javascript">App<span class="token punctuation">.</span>$gameArea<span class="token punctuation">.</span><span class="token function">html</span><span class="token punctuation">(</span>App<span class="token punctuation">.</span>$templateIntroScreen<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>Also, the <code>App.bindEvents</code> function will create a number of click handlers for buttons that appear on-screen. The following lines of code create click handlers for the CREATE and JOIN buttons that appear on the title screen.</p>
+<pre class=" language-javascript"><code class=" language-javascript">App<span class="token punctuation">.</span>$doc<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'click'</span><span class="token punctuation">,</span> <span class="token string">'#btnCreateGame'</span><span class="token punctuation">,</span> App<span class="token punctuation">.</span>Host<span class="token punctuation">.</span>onCreateClick<span class="token punctuation">)</span><span class="token punctuation">;</span>
+App<span class="token punctuation">.</span>$doc<span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'click'</span><span class="token punctuation">,</span> <span class="token string">'#btnJoinGame'</span><span class="token punctuation">,</span> App<span class="token punctuation">.</span>Player<span class="token punctuation">.</span>onJoinClick<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<h3>The Create Button is Clicked</h3>
+<p><strong>The <code>hostCreateNewGame</code> event is emitted by the client.</strong> The function <code>App.Host.onCreateClick</code> does one thing – emit an event to the server to indicate that a new game must be created: <code>IO.socket.emit('hostCreateNewGame')</code>.</p>
+<p><strong>The server creates a new <em>room</em> for the game, and emits the room ID back to the client.</strong> The concept of a <em>room</em> is built into Socket.IO. A room will collect specific client connections and allow events to be emitted only to the clients within the room. Rooms are perfect for creating individual games using one server. Without rooms, it would be much more difficult to figure out which players and hosts should be connected with each other if multiple people are trying to initiate lots of games on the same server.</p>
+<p>The following function in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/agxgame.js">agxgame.js</a> will create a new game room.</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token keyword">function</span> <span class="token function">hostCreateNewGame</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// Create a unique Socket.IO Room</span>
+    <span class="token keyword">var</span> thisGameId <span class="token operator">=</span> <span class="token punctuation">(</span> Math<span class="token punctuation">.</span><span class="token function">random</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">*</span> <span class="token number">100000</span> <span class="token punctuation">)</span> <span class="token operator">|</span> <span class="token number">0</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// Return the Room ID (gameId) and the socket ID (mySocketId) to the browser client</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">emit</span><span class="token punctuation">(</span><span class="token string">'newGameCreated'</span><span class="token punctuation">,</span> <span class="token punctuation">{</span>gameId<span class="token punctuation">:</span> thisGameId<span class="token punctuation">,</span> mySocketId<span class="token punctuation">:</span> <span class="token keyword">this</span><span class="token punctuation">.</span>id<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// Join the Room and wait for the players</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">join</span><span class="token punctuation">(</span>thisGameId<span class="token punctuation">.</span><span class="token function">toString</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
+<p>In the code above, <code>this</code> refers to a unique Socket.IO object storing connection information for the client. The <code>join</code> function will place the client connection into the specified room. In this case the room ID is a randomly generated number between 1 and 100000. The room ID is sent back to the client and re-used as the unique game ID.</p>
+<p><strong>The client (the Host) detects the <code>newGameCreated</code> event from server, displays the room id as the Game ID on screen.</strong> On the client (in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/public/app.js#L16">public/app.js</a>), the <code>App.Host.gameInit</code> and <code>App.Host.displayNewGameScreen</code> functions are called in order to display the randomly generated game ID on screen. The game ID and the Socket.IO room ID are the same.</p>
+<p><a href="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/start_game.jpg" title="" style=""><img class="alignnone size-full wp-image-1031" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/start_game.jpg" alt="start_game" width="480" height="662" srcset="https://modernweb.com/wp-content/uploads/2013/09/start_game.jpg 480w, https://modernweb.com/wp-content/uploads/2013/09/start_game-218x300.jpg 218w" sizes="(max-width: 480px) 100vw, 480px"></a></p>
+<h3>A Player Connects and Clicks Join</h3>
+<p><strong>Display the <code>join-game-template</code> HTML template.</strong> When a new window is opened, the client connects via Socket.IO just as before. If the JOIN button is clicked, a screen is displayed to collect the player’s name and the desired game ID.</p>
+<h3>The First Player Clicks the Start Button</h3>
+<p><strong>The player’s name and game ID get sent to the server.</strong> When a player clicks ‘Start’ after entering his or her name and the appropriate game ID, that information is collected into a single <em>data</em> object and emitted to the server. The following code in the <code>App.Player.onPlayerStartClick</code> function does this.</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token keyword">var</span> data <span class="token operator">=</span> <span class="token punctuation">{</span>
+    gameId <span class="token punctuation">:</span> <span class="token operator">+</span><span class="token punctuation">(</span><span class="token function">$</span><span class="token punctuation">(</span><span class="token string">'#inputGameId'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">val</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    playerName <span class="token punctuation">:</span> <span class="token function">$</span><span class="token punctuation">(</span><span class="token string">'#inputPlayerName'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">val</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">||</span> <span class="token string">'anon'</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+IO<span class="token punctuation">.</span>socket<span class="token punctuation">.</span><span class="token function">emit</span><span class="token punctuation">(</span><span class="token string">'playerJoinGame'</span><span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p><strong>On the server, the player is placed into the game room.</strong> When server hears the <code>playerJoinGame</code> event, it calls the <code>playerJoinGame</code> function (in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/agxgame.js#L95" rel="nofollow">agxgame.js</a>). This function places the player’s socket connection into the room specified by the player. It then re-emits the data (the player’s name and socket ID) to the clients in the room so the Host client knows about the connected player.</p>
+<div style="clear:both; margin-top:0em; margin-bottom:1em;"><a href="https://modernweb.com/limit-javascript/" target="_blank" rel="nofollow" class="u050707445c1de0faf37dd0a70e89d30a"><style> .u050707445c1de0faf37dd0a70e89d30a { padding:0px; margin: 0; padding-top:1em!important; padding-bottom:1em!important; width:100%; display: block; font-weight:bold; background-color:#34495E; border:0!important; border-left:4px solid #27AE60!important; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -o-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.17); text-decoration:none; } .u050707445c1de0faf37dd0a70e89d30a:active, .u050707445c1de0faf37dd0a70e89d30a:hover { opacity: 1; transition: opacity 250ms; webkit-transition: opacity 250ms; text-decoration:none; } .u050707445c1de0faf37dd0a70e89d30a { transition: background-color 250ms; webkit-transition: background-color 250ms; opacity: 1; transition: opacity 250ms; webkit-transition: opacity 250ms; } .u050707445c1de0faf37dd0a70e89d30a .ctaText { font-weight:bold; color:#FFFFFF; text-decoration:none; font-size: 16px; } .u050707445c1de0faf37dd0a70e89d30a .postTitle { color:#FFFFFF; text-decoration: underline!important; font-size: 16px; } .u050707445c1de0faf37dd0a70e89d30a:hover .postTitle { text-decoration: underline!important; } </style><div style="padding-left:1em; padding-right:1em;"><span class="ctaText">See Also:</span>&nbsp; <span class="postTitle">Why you should limit JavaScript — and how to do it</span></div></a></div><p>In the code below (from the <code>playerJoinGame</code> function), the <code>gameSocket</code> refers to the global Socket.IO object. It allows us to look up all of the created rooms on the server. If the room is found, the game continues, otherwise an error is displayed for the connected player.</p>
+<pre>var sock = this;
+
+// Look up the room ID in the Socket.IO manager object.
+var room = gameSocket.manager.rooms["/" + data.gameId];
+
+// If the room exists...
+if( room != undefined ){
+    // attach the socket id to the data object.
+    data.mySocketId = sock.id;
+
+    // Join the room
+    sock.join(data.gameId);
+
+    // Emit an event notifying the clients that the player has joined the room.
+    io.sockets.in(data.gameId).emit('playerJoinedRoom', data);
+
+} else {
+    // Otherwise, send an error message back to the player.
+    this.emit('error',{message: "This room does not exist."} );
+}</pre>
+<p><strong>The player is shown the waiting screen.</strong> When the <code>playerJoinedRoom</code> event is detected by the clients, a message is displayed on screen indicating that the player joined the game (See screenshot above).</p>
+<h3>Another Player Connects and Clicks Join</h3>
+<p><strong>The same sequence occurs until the <code>playerJoinedRoom</code> event is emitted from the server.</strong> When the <code>playerJoinedRoom</code> event is detected by the client, and the client happens to be a Host screen, then <code>App.Host.updateWaitingScreen</code> is called. This function keeps track of the number of players in the room. If there are two players, then the Host will emit the <code>hostRoomFull</code> event.</p>
+<h3>The Countdown Begins</h3>
+<p><strong>The server detects the <code>hostRoomFull</code> event and emits <code>beginNewGame</code>.</strong> The <code>beginNewGame</code> event is emitted from the server to the Host and two connected players in a specified room with the following code:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token keyword">function</span> <span class="token function">hostPrepareGame</span><span class="token punctuation">(</span>gameId<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">var</span> sock <span class="token operator">=</span> <span class="token keyword">this</span><span class="token punctuation">;</span>
+    <span class="token keyword">var</span> data <span class="token operator">=</span> <span class="token punctuation">{</span>
+        mySocketId <span class="token punctuation">:</span> sock<span class="token punctuation">.</span>id<span class="token punctuation">,</span>
+        gameId <span class="token punctuation">:</span> gameId
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// Emit the event ONLY to participants in the room   </span>
+    io<span class="token punctuation">.</span>sockets<span class="token punctuation">.</span><span class="token keyword">in</span><span class="token punctuation">(</span>data<span class="token punctuation">.</span>gameId<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">emit</span><span class="token punctuation">(</span><span class="token string">'beginNewGame'</span><span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Remember, the game ID shown to the players and the Socket.IO room ID where the client connections are stored <em>are the same thing</em>. The <code>in</code> function will target a specified room, and <code>in(...).emit()</code> will emit an event only to participants in that room.</p>
+<p><strong>The Host begins the countdown, and players are informed to “Get Ready”.</strong> On the client, the <code>beginNewGame</code> event is the signal to start the game. The Host will execute <code>App.Host.gameCountdown</code> which loads the <code>host-game-template</code> HTML and displays a five second countdown. On the players’ screen, <code>App.Player.gameCountdown</code> simply displays ‘Get Ready!’.</p>
+<p><a href="http://flippinawesome.org/wp-content/uploads/2013/09/gameplay.jpg"><img class="alignnone size-full wp-image-1032" src="http://flippinawesome.org/wp-content/uploads/2013/09/gameplay.jpg" alt="gameplay" width="480" height="661" srcset="https://modernweb.com/wp-content/uploads/2013/09/gameplay.jpg 480w, https://modernweb.com/wp-content/uploads/2013/09/gameplay-218x300.jpg 218w" sizes="(max-width: 480px) 100vw, 480px"></a></p>
+<h3>The Game Begins!</h3>
+<p><strong>The countdown ends, and the Host notifies the server to start the game.</strong> Because the Host client cannot directly communicate with the players it must signal to the server that the countdown has ended. When the countdown reaches 0, the Host emits a <code>hostCountdownFinished</code> event. The server detects it, and starts the game by calling the <code>sendWord</code> function.</p>
+<p><strong>The <code>sendWord</code> function prepares the data for the next round in the game.</strong> In this case, it is the first round. The <code>sendWord</code> function has two parts, gathering the data for the round, and emitting that data to the Host and players in the room.</p>
+<p>The <em>getWordData</em> function actually does the heavy lifting of selecting words for the round and preparing them to be sent to the clients. Word data for each round is stored in the following format:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token punctuation">{</span>
+    <span class="token string">"words"</span>  <span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token string">"sale"</span><span class="token punctuation">,</span><span class="token string">"seal"</span><span class="token punctuation">,</span><span class="token string">"ales"</span><span class="token punctuation">,</span><span class="token string">"leas"</span> <span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token string">"decoys"</span> <span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token string">"lead"</span><span class="token punctuation">,</span><span class="token string">"lamp"</span><span class="token punctuation">,</span><span class="token string">"seed"</span><span class="token punctuation">,</span><span class="token string">"eels"</span><span class="token punctuation">,</span><span class="token string">"lean"</span><span class="token punctuation">,</span><span class="token string">"cels"</span><span class="token punctuation">,</span><span class="token string">"lyse"</span><span class="token punctuation">,</span><span class="token string">"sloe"</span><span class="token punctuation">,</span><span class="token string">"tels"</span><span class="token punctuation">,</span><span class="token string">"self"</span> <span class="token punctuation">]</span>
+<span class="token punctuation">}</span></code></pre>
+<p>Before each round, the <code>words</code> array is randomly shuffled. The first element is selected as the word displayed on the Host screen. The second element is selected as the correct answer. The <code>decoys</code> array is also randomly shuffled, and the first five elements selected as incorrect answers.</p>
+<p>The correct answer is then inserted into a random spot in the list of incorrect answers. This data is emitted back to the client in the following format (see the <code>getWordData</code> function in <a href="https://github.com/ericterpstra/anagrammatix/blob/master/agxgame.js#L171" rel="nofollow">agxgame.js</a>):</p>
+<pre class=" language-javascript"><code class=" language-javascript">wordData <span class="token operator">=</span> <span class="token punctuation">{</span>
+    round<span class="token punctuation">:</span> i<span class="token punctuation">,</span>          <span class="token comment" spellcheck="true">// The current round in the game.</span>
+    word <span class="token punctuation">:</span> words<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>   <span class="token comment" spellcheck="true">// Displayed Word</span>
+    answer <span class="token punctuation">:</span> words<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token comment" spellcheck="true">// Correct Answer</span>
+    list <span class="token punctuation">:</span> decoys      <span class="token comment" spellcheck="true">// Word list for player (decoys and answer)</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre>
+<p><strong>The Host displays the word on screen.</strong> The <code>App.Host.newWord</code> function will display the word in big letters on the screen, and store a reference to the correct answer and the number indicating the current round.</p>
+<p><strong>The player is shown a list of words.</strong> The <code>App.Player.newWord</code> function will parse the list of decoys (which contains the correct answer, as well) and construct an unordered list of button elements to display on the players’ screens.</p>
+<h3>A Player Taps a Word</h3>
+<p><strong>The tapped word is sent to the server, and re-emitted to the Host.</strong> Each of the word buttons displayed to the players has a click handler that will call the <code>onPlayerAnswerClick</code> function when clicked or tapped. The following code will collect the necessary data, and emit it to the server:</p>
+<pre class=" language-javascript"><code class=" language-javascript"><span class="token keyword">var</span> $btn <span class="token operator">=</span> <span class="token function">$</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">)</span><span class="token punctuation">;</span>      <span class="token comment" spellcheck="true">// the tapped button</span>
+<span class="token keyword">var</span> answer <span class="token operator">=</span> $btn<span class="token punctuation">.</span><span class="token function">val</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment" spellcheck="true">// The tapped word</span>
+
+<span class="token comment" spellcheck="true">// Send the player info and tapped word to the server so</span>
+<span class="token comment" spellcheck="true">// the Host can check the answer.</span>
+<span class="token keyword">var</span> data <span class="token operator">=</span> <span class="token punctuation">{</span>
+    gameId<span class="token punctuation">:</span> App<span class="token punctuation">.</span>gameId<span class="token punctuation">,</span>       <span class="token comment" spellcheck="true">// Also the room ID</span>
+    playerId<span class="token punctuation">:</span> App<span class="token punctuation">.</span>mySocketId<span class="token punctuation">,</span>
+    answer<span class="token punctuation">:</span> answer<span class="token punctuation">,</span>
+    round<span class="token punctuation">:</span> App<span class="token punctuation">.</span>currentRound
+<span class="token punctuation">}</span>
+IO<span class="token punctuation">.</span>socket<span class="token punctuation">.</span><span class="token function">emit</span><span class="token punctuation">(</span><span class="token string">'playerAnswer'</span><span class="token punctuation">,</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p><strong>The <code>playerAnswer</code> event is detected by the server, and the answer is emitted to the Host.</strong> The server emits the <code>hostCheckAnswer</code> event and attaches the player’s answer.</p>
+<h3>The Host Verifies the Answer</h3>
+<p><strong>The Host checks the player’s answer for the current round.</strong> The <code>App.Host.checkAnswer</code> function first checks to see if the answer came from the current round. This helps avoid timing problems where one player taps a correct answer, and the second player taps the same answer immediately afterwards. Because the first player tapped the correct answer, the round should advance, and the second player should not get credit (or a penalty) for the tapped answer.</p>
+<p>If the correct answer is tapped, the player’s score is incremented and the <code>hostNextRound</code> event is emitted. If the incorrect answer is tapped, the player’s score is decremented, and play continues for the current round.</p>
+<h3>The Game Ends When the Wordpool is Exhausted</h3>
+<p><strong>The <code>hostNextRound</code> function on the server will determine if the game is over.</strong> If the number of the current round is less than the number of elements in the <code>wordPool</code> array, then the game continues with the next round. If the current round exceeds the number of words available, then the server will emit the <code>gameOver</code> event to the clients connected in the room.</p>
+<p><strong>The Host displays the winner.</strong> The <code>App.Host.endGame</code> function is called on the client when the server emits the <code>gameOver</code> event. In that function, the Host checks to see which player has the highest score. The winning player’s name is then displayed on the screen.</p>
+<p>Also, the <code>App.Host.numPlayersInRoom</code> variable is reset to 0 (even though technically the players’ socket connections are still in the actual Socket.IO room). This is done to allow players a chance to begin a new game. The <code>App.Host.isNewGame</code> flag is set to true as well to indicate that a new game is about to begin.</p>
+<p><a href="http://flippinawesome.org/wp-content/uploads/2013/09/game_over.jpg"><img class="alignnone size-full wp-image-1033" src="http://flippinawesome.org/wp-content/uploads/2013/09/game_over.jpg" alt="game_over" width="480" height="661" srcset="https://modernweb.com/wp-content/uploads/2013/09/game_over.jpg 480w, https://modernweb.com/wp-content/uploads/2013/09/game_over-218x300.jpg 218w" sizes="(max-width: 480px) 100vw, 480px"></a></p>
+<h3>The Players Start Again</h3>
+<p><strong>The player taps the <em>Start Again</em> button and the client emits the <code>playerRestart</code> event.</strong> The server will notify the Host that a player wishes to play again by re-emitting the <code>playerJoinedRoom</code> event. The function <code>App.Host.updateWaitingScreen</code> will check the <code>App.Host.isNewGame</code> flag, see that is is true, and display the <code>create-game-template</code> on screen until the next player joins the game.</p>
+<p>When the second player clicks the <em>Start Again</em> button, the same sequence occurs and the game begins anew.</p>
+<h2>In Conclusion</h2>
+<p>This application only touches on a couple of the important concepts within the Socket.IO library and in building real-time web applications with Node.js. If you have never worked with real time web applications, hopefully this has been a good introduction to get you excited about learning more. The <a href="http://socket.io/">Socket.IO website</a> provides a decent amount of documentation, as does the <a href="https://github.com/learnboost/socket.io/wiki">Socket.IO wiki</a> on GitHub.</p>
+<div id="om-g9walg85bbdgxnst-holder"></div><script>var g9walg85bbdgxnst,g9walg85bbdgxnst_poll=function(){var r=0;return function(n,l){clearInterval(r),r=setInterval(n,l)}}();!function(e,t,n){if(e.getElementById(n)){g9walg85bbdgxnst_poll(function(){if(window['om_loaded']){if(!g9walg85bbdgxnst){g9walg85bbdgxnst=new OptinMonsterApp();return g9walg85bbdgxnst.init({"u":"2583.557438","staging":0,"dev":0,"beta":0});}}},25);return;}var d=false,o=e.createElement(t);o.id=n,o.src="//a.optnmstr.com/app/js/api.min.js",o.async=true,o.onload=o.onreadystatechange=function(){if(!d){if(!this.readyState||this.readyState==="loaded"||this.readyState==="complete"){try{d=om_loaded=true;g9walg85bbdgxnst=new OptinMonsterApp();g9walg85bbdgxnst.init({"u":"2583.557438","staging":0,"dev":0,"beta":0});o.onload=o.onreadystatechange=null;}catch(t){}}}};(document.getElementsByTagName("head")[0]||document.documentElement).appendChild(o)}(document,"script","omapi-script");</script>
+<div class="article__author">
+<div class="article__author-thumb"><a href="https://modernweb.com/author/ericterpstra"><img alt="" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/cae586b84cce556eec407d355edb2c0b(1)" srcset="https://secure.gravatar.com/avatar/cae586b84cce556eec407d355edb2c0b?s=166&amp;d=mm&amp;r=g 2x" class="avatar avatar-83 photo" height="83" width="83"></a></div>
+<div class="article__author-content">
+<h3><em><a href="https://modernweb.com/author/ericterpstra">Eric Terpstra</a></em></h3>
+<p><em>Eric is a web developer living in Memphis, TN and works with <a href="http://sandstormit.com/">SandStorm Innovations</a> on a variety of projects using a variety of technologies. &nbsp;He is also recently the co-founder of <a href="http://themespectre.com/">Theme Spectre</a> - a source for themes, plugins, and other resources for the Ghost blogging platform. Eric tries desperately to keep up with evolving web standards and modern JavaScript techniques. &nbsp;When he's not in front of a computer, Eric can be found playing with gadgets in the kitchen (current favorite: food dehydrator), or bouncing around various meetup groups in Memphis.<br>
+<br>
+<a href="https://twitter.com/eterps">Follow Eric on Twitter</a><br>
+<br>
+<a href="http://www.ericterpstra.com/">Visit Eric's site</a></em></p>
+</div>
+</div>
+
+<div class="dcl-disqus-thread" id="comments">
+<div id="disqus_thread">
+</div>
+</div>
+<script type="text/javascript">
+	/* <![CDATA[ */
+		var disqus_url = 'https://modernweb.com/building-multiplayer-games-with-node-js-and-socket-io/';
+		var disqus_identifier = '1023 http://flippinawesome.org/?p=1023';
+		var disqus_container_id = 'disqus_thread';
+		var disqus_domain = 'disqus.com';
+		var disqus_shortname = 'flippinawesome';
+		var disqus_title = "Building Multiplayer Games with Node.js and Socket.IO";
+		var disqus_config = function () {
+			var config = this; // Access to the config object
+			config.language = '';
+
+			/* Add the ability to add javascript callbacks */
+			
+			/*
+			   All currently supported events:
+				* preData — fires just before we request for initial data
+				* preInit - fires after we get initial data but before we load any dependencies
+				* onInit  - fires when all dependencies are resolved but before dtpl template is rendered
+				* afterRender - fires when template is rendered but before we show it
+				* onReady - everything is done
+			 */
+
+			config.callbacks.preData.push(function() {
+				// clear out the container (its filled for SEO/legacy purposes)
+				document.getElementById(disqus_container_id).innerHTML = '';
+			});
+						config.callbacks.onReady.push(function() {
+				// sync comments in the background so we don't block the page
+				var script = document.createElement('script');
+				script.async = true;
+				script.src = '?cf_action=sync_comments&post_id=1023';
+
+				var firstScript = document.getElementsByTagName( "script" )[0];
+				firstScript.parentNode.insertBefore(script, firstScript);
+			});
+								};
+	/* ]]> */
+	</script>
+<script type="text/javascript">
+	/* <![CDATA[ */
+		var DsqLocal = {
+			'trackbacks': [
+				],
+			'trackback_url': "https:\/\/modernweb.com\/building-multiplayer-games-with-node-js-and-socket-io\/trackback\/"		};
+	/* ]]> */
+	</script>
+</article>
+</div>
+</section>
+<footer class="footer">
+<div class="container --small">
+<a class="footer__left" href="https://modernweb.com/">
+<img src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/modernweb-logo.svg" alt="Modern Web logo" width="190" height="32">
+<p>© 2017 Modern Web &amp; our authors.<br>All rights reserved.</p>
+</a>
+<div class="footer__right">
+<div class="footer__column">
+<h5 class="footer__title">Articles</h5>
+<ul id="menu-categories-1" class="footer__links"><li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4274"><a href="https://modernweb.com/category/design/">Design</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-4272"><a href="https://modernweb.com/category/frontend-development/">Frontend Development</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4273"><a href="https://modernweb.com/category/backend-development/">Backend Development</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4276"><a href="https://modernweb.com/category/devops/">DevOps</a></li>
+<li class="menu-item menu-item-type-taxonomy menu-item-object-category menu-item-4275"><a href="https://modernweb.com/category/work/">Work</a></li>
+</ul> </div>
+<div class="footer__column">
+<h5 class="footer__title">Company</h5>
+<ul class="footer__links">
+<li><a href="https://modernweb.com/authors">Authors</a></li>
+<li><a href="https://modernweb.com/about">About</a></li>
+<li><a href="https://modernweb.com/terms-conditions">Terms and conditions</a></li>
+<li><a href="https://modernweb.com/privacy-policy">Privacy policy</a></li>
+</ul>
+</div>
+</div>
+</div></footer>
+</div>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-44065579-2', 'auto');
+    ga('require', 'GTM-N97L9PT');
+    ga('send', 'pageview');
+  </script>
+<style>.async-hide { opacity: 0 !important} </style>
+<script>(function(a,s,y,n,c,h,i,d,e){s.className+=' '+y;h.start=1*new Date;
+  h.end=i=function(){s.className=s.className.replace(RegExp(' ?'+y),'')};
+  (a[n]=a[n]||[]).hide=h;setTimeout(function(){i();h.end=null},c);h.timeout=c;
+  })(window,document.documentElement,'async-hide','dataLayer',4000,
+  {'GTM-N97L9PT':true});</script>
+
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-T3ZPRS');</script>
+
+
+<noscript>&lt;iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T3ZPRS"
+  height="0" width="0" style="display:none;visibility:hidden"&gt;&lt;/iframe&gt;</noscript>
+
+
+<script type="text/javascript">
+    (function(d,s,i,r) {
+      if (d.getElementById(i)){return;}
+      var n=d.createElement(s),e=d.getElementsByTagName(s)[0];
+      n.id=i;n.src='//js.hs-analytics.net/analytics/'+(Math.ceil(new Date()/r)*r)+'/2591117.js';
+      e.parentNode.insertBefore(n, e);
+    })(document,"script","hs-analytics",300000);
+  </script>
+
+<script type="text/javascript">
+var fesdpid = 'ZpZGgHqkOY';
+var fesdp_BaseURL = (("https:" == document.location.protocol) ? "https://fe.sitedataprocessing.com/fewv1/" : "http://fe.sitedataprocessing.com/fewv1/");
+(function () {
+var va = document.createElement('script'); va.type = 'text/javascript'; va.async = true;
+va.src = fesdp_BaseURL + 'Scripts/fewliveasync.js';
+var sv = document.getElementsByTagName('script')[0]; sv.parentNode.insertBefore(va, sv);
+})();
+</script>
+<script src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/bundle.js.download"></script>
+<div id="om-nqmrgq4jwbxr5bb85gcx-holder"></div><script>var nqmrgq4jwbxr5bb85gcx,nqmrgq4jwbxr5bb85gcx_poll=function(){var r=0;return function(n,l){clearInterval(r),r=setInterval(n,l)}}();!function(e,t,n){if(e.getElementById(n)){nqmrgq4jwbxr5bb85gcx_poll(function(){if(window['om_loaded']){if(!nqmrgq4jwbxr5bb85gcx){nqmrgq4jwbxr5bb85gcx=new OptinMonsterApp();return nqmrgq4jwbxr5bb85gcx.init({"u":"2583.581978","staging":0,"dev":0,"beta":0});}}},25);return;}var d=false,o=e.createElement(t);o.id=n,o.src="//a.optnmstr.com/app/js/api.min.js",o.async=true,o.onload=o.onreadystatechange=function(){if(!d){if(!this.readyState||this.readyState==="loaded"||this.readyState==="complete"){try{d=om_loaded=true;nqmrgq4jwbxr5bb85gcx=new OptinMonsterApp();nqmrgq4jwbxr5bb85gcx.init({"u":"2583.581978","staging":0,"dev":0,"beta":0});o.onload=o.onreadystatechange=null;}catch(t){}}}};(document.getElementsByTagName("head")[0]||document.documentElement).appendChild(o)}(document,"script","omapi-script");</script><div id="om-moqdya5gu8yschbv-holder"></div><script>var moqdya5gu8yschbv,moqdya5gu8yschbv_poll=function(){var r=0;return function(n,l){clearInterval(r),r=setInterval(n,l)}}();!function(e,t,n){if(e.getElementById(n)){moqdya5gu8yschbv_poll(function(){if(window['om_loaded']){if(!moqdya5gu8yschbv){moqdya5gu8yschbv=new OptinMonsterApp();return moqdya5gu8yschbv.init({"u":"2583.557523","staging":0,"dev":0,"beta":0});}}},25);return;}var d=false,o=e.createElement(t);o.id=n,o.src="//a.optnmstr.com/app/js/api.min.js",o.async=true,o.onload=o.onreadystatechange=function(){if(!d){if(!this.readyState||this.readyState==="loaded"||this.readyState==="complete"){try{d=om_loaded=true;moqdya5gu8yschbv=new OptinMonsterApp();moqdya5gu8yschbv.init({"u":"2583.557523","staging":0,"dev":0,"beta":0});o.onload=o.onreadystatechange=null;}catch(t){}}}};(document.getElementsByTagName("head")[0]||document.documentElement).appendChild(o)}(document,"script","omapi-script");</script> <script type="text/javascript">var g9walg85bbdgxnst_shortcode = true;var nqmrgq4jwbxr5bb85gcx_shortcode = true;var moqdya5gu8yschbv_shortcode = true;</script>
+<script type="text/javascript" src="./Building Multiplayer Games with Node.js and Socket.IO - Modern Web_files/wp-embed.min.js.download"></script>
+<script data-cfasync="false" type="text/javascript">
+
+    var disqus_shortname = "flippinawesome";
+    if (typeof ds_loaded == "undefined") {
+        var ds_loaded = false;
+    }
+    function loadDisqus() {
+        var disqus_div = document.getElementById("disqus_thread");
+        var top = disqus_div.offsetTop;
+        var disqus_data = disqus_div.dataset;
+        if ( !ds_loaded && ( window.scrollY || window.pageYOffset ) + window.innerHeight > top ) {
+            ds_loaded = true;
+            for (var key in disqus_data) {
+                if (key.substr(0,6) == "disqus") {
+                    window["disqus_" + key.replace("disqus","").toLowerCase()] = disqus_data[key];
+								}
+                }
+                var dsq = document.createElement("script");
+                dsq.type = "text/javascript";
+                dsq.async = true;
+                dsq.src = "https://" + window.disqus_shortname + ".disqus.com/embed.js";
+                if(document.getElementById("dcl-hidden-div")) {
+                    document.getElementById("dcl-hidden-div").innerHTML = "Loading...";
+                }
+                (document.getElementsByTagName("head")[0] || document.getElementsByTagName("body")[0]).appendChild(dsq);
+            }
+        }
+					var disqus_div_new = document.getElementById("disqus_thread");
+		var divExists = disqus_div_new != null;
+                if(document.body.scrollHeight < window.innerHeight){
+                    loadDisqus();
+                } else if(divExists) {
+                    window.onscroll = function() { loadDisqus(); }
+                }
+	</script><script data-cfasync="false" type="text/javascript">
+                /* <![CDATA[ */
+                var hash = window.location.hash;
+                var disqus_shortname = 'flippinawesome';
+                if(hash!==''){
+                    var ds_loaded = true;
+                    var dcl_loaded = 1;
+                    (function() {
+                        var dsq = document.createElement('script'); dsq.type = 'text/javascript';
+                        dsq.async = true;
+                        dsq.src = '//' + disqus_shortname + '.' + 'disqus.com' + '/' + 'embed' + '.js' + '?pname=wordpress&pver=2.84';
+                        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                    })();}
+                /* ]]> */
+            </script> <script type="text/javascript">var omapi_localized = { ajax: 'https://modernweb.com/wp-admin/admin-ajax.php?optin-monster-ajax-route=1', nonce: 'a5ea76c49b', slugs: {"g9walg85bbdgxnst":{"slug":"g9walg85bbdgxnst","mailpoet":false},"nqmrgq4jwbxr5bb85gcx":{"slug":"nqmrgq4jwbxr5bb85gcx","mailpoet":false},"moqdya5gu8yschbv":{"slug":"moqdya5gu8yschbv","mailpoet":false}} };</script>
+
+
+</body></html>
