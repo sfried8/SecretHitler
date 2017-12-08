@@ -1,4 +1,6 @@
 ;
+const DEBUG = true;
+const CPU = true;
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {
@@ -6,7 +8,7 @@ jQuery.fn.extend({
         });
     }
 });
-jQuery(function($){    
+jQuery(function($){
     'use strict';
 
 
@@ -81,27 +83,73 @@ jQuery(function($){
         },
         onChancellorNominated: function(data) {
             log("time to vote on "+data.chancellorNominee.name);
-            $("#ja-btn").disable(false).click(function () {
-                $("#ja-btn").disable(true);
-                $("#nein-btn").disable(true);
+            if (CPU) {
+                setRandomTimeout(function () {
+                    if (randomBoolean()) {
+                        App.$jaBtn.disable(false);
+                        App.$jaBtn.click();
+                    } else {
+                        App.$neinBtn.disable(false);
+                        App.$neinBtn.click();
+                    }
+                }, 500, 5000)
+            } else {
+
+            }
+            App.$jaBtn.disable(false).click(function () {
+                App.$jaBtn.disable(true);
+                App.$neinBtn.disable(true);
                 IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:true});
             });
-            $("#nein-btn").disable(false).click(function () {
-                $("#ja-btn").disable(true);
-                $("#nein-btn").disable(true);
+            App.$neinBtn.disable(false).click(function () {
+                App.$jaBtn.disable(true);
+                App.$neinBtn.disable(true);
                 IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:false});
             });
+
         },
         onChancellorElected: function(data) {
             App.gameData = data;
             if (App.gameData.president.id === App.myPlayerId) {
                 log(data.presidentPolicies);
+                if (CPU) {
+                    setRandomTimeout(function () {
+                        let choices = [];
+                        let notChosen = randomNumber(0,3);
+                        switch (notChosen) {
+                            case 0:
+                                choices = data.presidentPolicies.slice(1);
+                                break;
+                            case 1:
+                                choices = [data.presidentPolicies[0],data.presidentPolicies[2]];
+                                break;
+                            case 2:
+                                choices = data.presidentPolicies.slice(0,2);
+                                break;
+                        }
+                        IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: [choices]});
+
+                    },500,5000)
+                }
             } else {
+                //TODO
                 log(`Waiting for President ${App.gameData.president.name} to pick policies`);
             }
         },
         onPresidentPolicyChosen: function(data) {
+            App.gameData = data;
+            if (App.gameData.chancellor.id === App.myPlayerId) {
+                log(data.chancellorPolicies);
+                if (CPU) {
+                    setRandomTimeout(function () {
 
+                        IO.socket.emit('chooseChancellorPolicies', {id: App.myPlayerId, policies: [data.chancellorPolicies[randomBoolean() ? 0 : 1]]});
+
+                    },500,5000)
+                }
+            } else {
+                log(`President ${App.gameData.president.name} has chosen 2 policies. Waiting for Chancellor ${App.gameData.chancellor.name} to enact one of them.`)
+            }
         },
         onExecutiveActionTriggered: function(data) {
 
@@ -110,10 +158,15 @@ jQuery(function($){
             log(`${App.getPlayerById(data.id).name} voted ${data.vote ? "ja" : "nein"}`);
         },
         onVoteFinished: function(data) {
-
+            App.gameData = data;
+            if (data.currentElection.didPass()) {
+                log(`Vote passed! ${data.chancellor.name} is now Chancellor.`)
+            } else {
+                log(`Vote failed!`);
+            }
         },
         onPolicyPlayed: function(data) {
-
+            log()
         },
         /**
          * The client is successfully connected!
@@ -258,6 +311,8 @@ jQuery(function($){
             App.$templateNewGame = $('#create-game-template').html();
             App.$templateJoinGame = $('#join-game-template').html();
             App.$hostGame = $('#host-game-template').html();
+            App.$neinBtn = $("#nein-btn");
+            App.$jaBtn = $("#ja-btn");
         },
 
         /**
@@ -738,7 +793,23 @@ jQuery(function($){
     App.init();
 
 }($));
-
+function setRandomTimeout(func, min, max) {
+    setTimeout(func,randomNumber(min,max));
+}
 function log(message) {
-    $("#messageBox").html($("#messageBox").html() + "<br>" + message);
+    if (DEBUG) {
+        $("#messageBox").html($("#messageBox").html() + "<br>" + message);
+    }
+}
+function randomBoolean(chanceForTrue) {
+    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
+        chanceForTrue = 50;
+    }
+    chanceForTrue = Math.min(chanceForTrue, 100);
+    chanceForTrue = Math.max(chanceForTrue, 0);
+    let rand = (Math.random() * 100)|0;
+    return (rand < chanceForTrue);
+}
+function randomNumber(min, max) {
+    return ((Math.random() * (max - min))+min)|0;
 }

@@ -12,6 +12,36 @@ const Setups = {
     10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false}
 };
 
+class Election {
+    constructor(president, chancellor) {
+        this.president = president;
+        this.chancellor = chancellor;
+        this.jas = [];
+        this.neins = [];
+    }
+    vote(data) {
+        if (data.vote === true) {
+            this.jas.push(data.id);
+        } else if (data.vote === false) {
+            this.neins.push(data.id);
+        }
+    }
+    didPass() {
+        return (this.jas.length > this.neins.length)
+    }
+    isFinished() {
+        return (this.jas.length + this.neins.length === gameData.players.length)
+    }
+
+}
+const Executive_Action =
+    {
+        NoAction: 0,
+        InvestigateLoyalty: 1,
+        SpecialElection: 2,
+        PolicyPeek: 3,
+        Execution: 4
+    }
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -60,51 +90,71 @@ function onVIPStart() {
 
     gameData.players = shuffle(gameData.players);
 
-    io.sockets.in(thisGameId).emit('beginNewGame',gameData);
+    emit('beginNewGame',gameData);
 
+
+    gameData.presidentIndex = 0;
+}
+
+function sendPoliciesToPresident() {
+    gameData.president = gameData.players[gameData.presidentIndex];
     let policies = [];
     for (i = 0; i < 3; i++) {
         policies.push((Math.random()*2)|0)
     }
-    gameData.president = gameData.players[0];
     gameData.presidentPolicies = policies;
-    io.sockets.in(thisGameId).emit('presidentElected',gameData);
+    emit('chancellorElected',gameData);
 }
-
-
 function onPresidentNominate(data) {
     gameData.chancellorNominee = data.nominee;
-    gameData.votes = {jas: [], neins: []};
-    io.sockets.in(thisGameId).emit('chancellorNominated',gameData);
+    if (gameData.currentElection) {
+        gameData.electionArchive = gameData.electionArchive || [];
+        gameData.electionArchive.push(gameData.currentElection)
+    }
+    gameData.currentElection = new Election(gameData.president,gameData.chancellor)
+    emit('chancellorNominated',gameData);
 }
 function onVoteForChancellor(data) {
-    gameData.votes[data.vote ? "jas" : "neins"].push(data.id);
-    io.sockets.in(thisGameId).emit('playerVoted',data);
-    if (gameData.votes.jas.length + gameData.votes.neins.length === gameData.players.length) {
-        io.sockets.in(thisGameId).emit('voteFinished',gameData);
-        if (gameData.votes.jas.length >= gameData.votes.neins.length) {
+
+    gameData.currentElection.vote(data);
+    emit('playerVoted',data);
+    if (gameData.currentElection.isFinished()) {
+        emit('voteFinished',gameData);
+        if (gameData.currentElection.didPass()) {
             gameData.lastChancellor = gameData.chancellor;
             gameData.chancellor = gameData.chancellorNominee;
             if (gameData.enactedPolicies.fascists >= 3 && gameData.chancellor.role === Role.Hitler) {
-                io.sockets.in(thisGameId).emit('gameOver',gameData);
+                emit('gameOver',gameData);
             } else {
-                let policies = [];
-                for (i = 0; i < 3; i++) {
-                    policies.push((Math.random()*2)|0)
-                }
-                gameData.presidentPolicies = policies;
-                io.sockets.in(thisGameId).emit('chancellorElected',gameData);
+                sendPoliciesToPresident();
             }
-
-
+        } else {
+            gameData.chaosLevel += 1;
+            //TODO if chaosLevel == 3
+            gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
+            sendPoliciesToPresident();
         }
     }
 }
 function onChoosePresidentPolicies(data) {
+    gameData.chancellorPolicies = data.policies;
+    emit('presidentPolicyChosen',gameData);
+}
 
+function executiveActionTriggered() {
+    return Executive_Action.NoAction;
 }
 function onChooseChancellorPolicy(data) {
-
+    gameData.lastPolicy = data.policies[0];
+    emit('policyPlayed',gameData);
+    if (gameData.enactedPolicies.fascists > 5 || gameData.enactedPolicies.liberals > 5) {
+        emit('gameOver',gameData);
+    } else if (executiveActionTriggered() !== Executive_Action.NoAction){
+        //TODO
+    } else {
+        gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
+        sendPoliciesToPresident();
+    }
 }
 function onChooseEATarget(data) {
 
@@ -203,7 +253,7 @@ function playerJoinGame(data) {
             gameData.hostId = data.playerId;
         }
         // Emit an event notifying the clients that the player has joined the room.
-        io.sockets.in(thisGameId).emit('playerJoinedRoom', gameData);
+        emit('playerJoinedRoom', gameData);
 
     } else {
         // Otherwise, send an error message back to the player.
@@ -233,4 +283,19 @@ function shuffle(array) {
     }
 
     return array;
+}
+function randomBoolean(chanceForTrue) {
+    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
+        chanceForTrue = 50;
+    }
+    chanceForTrue = Math.min(chanceForTrue, 100);
+    chanceForTrue = Math.max(chanceForTrue, 0);
+    let rand = (Math.random() * 100)|0;
+    return (rand < chanceForTrue);
+}
+function randomNumber(min, max) {
+    return ((Math.random() * (max - min))+min)|0;
+}
+function emit(message, data) {
+    io.sockets.in(thisGameId).emit(message, data);
 }
