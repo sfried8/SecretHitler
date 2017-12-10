@@ -8,14 +8,39 @@ Dark Purple : #A22FB0
 */
 
 html, body {
+    font-family: Germania, serif;
     background-color: #78BD4C;
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
 }
+#playerButtons {
+    height:20%;
+}
+.playerButton {
+    margin: 10px;
+    display: inline-block;
+    width: 10%;
+    height:100%;
+    background-color: #a4d800;
+    border-radius: 20px;
+}
+.isPresident::before {
+    content: 'President ';
+}
+.isChancellor::before {
+    content: 'Chancellor ';
 
-
+}
+.topright {
+    position: absolute;
+    width:30%;
+    height:30%;
+    right:5%;
+    background-color: #00a4d8;
+    font-family: 'Quicksand', sans-serif;
+}
 
 /* ******************************
               BUTTONS!

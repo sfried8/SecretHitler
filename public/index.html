@@ -7,19 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
     <!-- Let's borrow a cool looking Font from Google -->
-    <link href='https://fonts.googleapis.com/css?family=Quicksand:300,400,700' rel='stylesheet' type='text/css'>
+    <!--<link href='https://fonts.googleapis.com/css?family=Quicksand:300,400,700' rel='stylesheet' type='text/css'>-->
 
     <link href="css/styles.css" rel="stylesheet">
 </head>
 
 <body>
 
-    <input type="text" id="inputMessage" placeholder="Message"/>
-    <input type="text" id="inputData" placeholder="Data">
-    <button id="inputSubmit">Submit</button><br>
     <div id="messageBox"></div>
     <div id="playerButtons"></div><br>
+    <button id="startGameBtn">Start Game</button>
+    <div id="enactedPolicies" class="topright">Liberal: [ ] [ ] [ ] [ ] [ ]<br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
     <button id="ja-btn" disabled="true">Ja!</button> <button id="nein-btn" disabled="true">Nein</button>
+    <div id="DEBUG">
+        <textarea id="gameData" style="font-family: 'Lucida Console',serif;"></textarea>
+    </div>
     <div id="gameArea">
         <!-- This is where the templates defined below will be used -->
     </div>
@@ -30,7 +32,7 @@
         <div class="titleWrapper">
 
             <div class="title">
-                ANAGRAMMATIX
+                SECRET HITLER
             </div>
 
             <div class="buttons">
@@ -69,7 +71,6 @@
             <div class="info buttons">
                 <button id="btnStart" class="btn">Start</button>
                 <div id="playerWaitingMessage"></div>
-                <button id="startGameBtn">Start Game</button>
             </div>
         </div>
     </script>
@@ -109,6 +110,5 @@
 
     <!-- app.js is where all the client-side Anagrammatix game logic -->
     <script src="app.js"></script>
-
 </body>
 </html>

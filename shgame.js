@@ -12,6 +12,47 @@ const Setups = {
     10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false}
 };
 
+class Policy {
+    constructor(isLiberal) {
+        this.isLiberal = isLiberal;
+    }
+    toString() {
+        if (this.isLiberal) {
+            return "Liberal";
+        } else {
+            return "Fascist";
+        }
+    }
+}
+class PolicyDeck {
+    constructor() {
+        this.deckSource = [];
+        this.deck = [];
+        for (let i = 0; i < 6; i++) {
+            this.deckSource.push(new Policy(true));
+        }
+        for (let i = 0; i < 11; i++) {
+            this.deckSource.push(new Policy(false));
+        }
+        this.shuffleDeck();
+    }
+    shuffleDeck() {
+        this.deck = shuffle(this.deckSource.slice());
+    }
+    draw(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.splice(0,numberOfCards);
+    }
+    peek(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.slice(0,numberOfCards+1)
+
+    }
+}
 class Election {
     constructor(president, chancellor) {
         this.president = president;
@@ -41,7 +82,7 @@ const Executive_Action =
         SpecialElection: 2,
         PolicyPeek: 3,
         Execution: 4
-    }
+    };
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -71,38 +112,43 @@ exports.initGame = function(sio, socket){
 
 
 function onVIPStart() {
-    gameData.players = shuffle(gameData.players);
+    let tempPlayerArray = shuffle(gameData.players.slice());
     gameData.gameRules = Setups[gameData.players.length];
     let j = 0;
     let i;
     for (i = 0; i < gameData.gameRules.Fascists; i++) {
-        gameData.players[j].role = Role.Fascist;
-        gameData.fascists.push(gameData.players[j]);
+        tempPlayerArray[j].role = Role.Fascist;
+        gameData.fascists.push(tempPlayerArray[j]);
         j++;
     }
     for (i = 0; i < gameData.gameRules.Liberals; i++) {
-        gameData.players[j].role = Role.Liberal;
-        gameData.liberals.push(gameData.players[j]);
+        tempPlayerArray[j].role = Role.Liberal;
+        gameData.liberals.push(tempPlayerArray[j]);
         j++;
     }
-    gameData.players[j].role = Role.Hitler;
-    gameData.hitler = gameData.players[j];
-
-    gameData.players = shuffle(gameData.players);
+    tempPlayerArray[j].role = Role.Hitler;
+    gameData.hitler = tempPlayerArray[j];
+    gameData.policyDeck = new PolicyDeck();
 
     emit('beginNewGame',gameData);
 
 
-    gameData.presidentIndex = 0;
+    gameData.presidentIndex = -1;
+    electNextPresident();
 }
 
+function electNextPresident() {
+    gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
+    gameData.president = gameData.players[gameData.presidentIndex];
+    gameData.lastChancellor = gameData.chancellor;
+    emit('presidentElected',gameData);
+}
+function specialElection(newPresident) {
+
+}
 function sendPoliciesToPresident() {
     gameData.president = gameData.players[gameData.presidentIndex];
-    let policies = [];
-    for (i = 0; i < 3; i++) {
-        policies.push((Math.random()*2)|0)
-    }
-    gameData.presidentPolicies = policies;
+    gameData.presidentPolicies = gameData.policyDeck.draw(3);
     emit('chancellorElected',gameData);
 }
 function onPresidentNominate(data) {
@@ -111,7 +157,7 @@ function onPresidentNominate(data) {
         gameData.electionArchive = gameData.electionArchive || [];
         gameData.electionArchive.push(gameData.currentElection)
     }
-    gameData.currentElection = new Election(gameData.president,gameData.chancellor)
+    gameData.currentElection = new Election(gameData.president,gameData.chancellor);
     emit('chancellorNominated',gameData);
 }
 function onVoteForChancellor(data) {
@@ -119,10 +165,9 @@ function onVoteForChancellor(data) {
     gameData.currentElection.vote(data);
     emit('playerVoted',data);
     if (gameData.currentElection.isFinished()) {
-        emit('voteFinished',gameData);
         if (gameData.currentElection.didPass()) {
-            gameData.lastChancellor = gameData.chancellor;
             gameData.chancellor = gameData.chancellorNominee;
+            emit('voteFinished',gameData);
             if (gameData.enactedPolicies.fascists >= 3 && gameData.chancellor.role === Role.Hitler) {
                 emit('gameOver',gameData);
             } else {
@@ -131,8 +176,9 @@ function onVoteForChancellor(data) {
         } else {
             gameData.chaosLevel += 1;
             //TODO if chaosLevel == 3
-            gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
-            sendPoliciesToPresident();
+            emit('voteFinished',gameData);
+
+            electNextPresident();
         }
     }
 }
@@ -146,14 +192,24 @@ function executiveActionTriggered() {
 }
 function onChooseChancellorPolicy(data) {
     gameData.lastPolicy = data.policies[0];
+    if (gameData.lastPolicy.isLiberal) {
+        if (!gameData.enactedPolicies.liberals) {
+            gameData.enactedPolicies.liberals = 0;
+        }
+        gameData.enactedPolicies.liberals += 1;
+    } else {
+        if (!gameData.enactedPolicies.fascists) {
+            gameData.enactedPolicies.fascists = 0;
+        }
+        gameData.enactedPolicies.fascists += 1;
+    }
     emit('policyPlayed',gameData);
     if (gameData.enactedPolicies.fascists > 5 || gameData.enactedPolicies.liberals > 5) {
         emit('gameOver',gameData);
     } else if (executiveActionTriggered() !== Executive_Action.NoAction){
         //TODO
     } else {
-        gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
-        sendPoliciesToPresident();
+        electNextPresident();
     }
 }
 function onChooseEATarget(data) {
