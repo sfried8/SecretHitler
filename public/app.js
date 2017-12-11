@@ -40,11 +40,7 @@ class PolicyDeck {
         return this.deck.splice(0,numberOfCards);
     }
     peek(numberOfCards) {
-        if (this.deck.length < numberOfCards) {
-            this.shuffleDeck();
-        }
-        return this.deck.slice(0,numberOfCards+1)
-
+        return this.deck.slice(0,numberOfCards)
     }
 }
 class Election {
@@ -247,7 +243,7 @@ jQuery(function($){
                         }
                         IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
 
-                    },500,5000)
+                    },500,2000)
                 }
             } else {
                 //TODO
@@ -263,7 +259,7 @@ jQuery(function($){
 
                         IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[randomBoolean() ? 0 : 1]]});
 
-                    },500,5000)
+                    },500,2000)
                 }
             } else {
                 log(`President ${App.gameData.president.name} has chosen 2 policies. Waiting for Chancellor ${App.gameData.chancellor.name} to enact one of them.`)
@@ -271,14 +267,17 @@ jQuery(function($){
         },
         onExecutiveActionTriggered: function(data) {
             convertGameDataToClass(data);
-            if (App.gameData.lastExecutiveAction === Executive_Action.PolicyPeek) {
-                log("Next 3 Policies are " + App.gameData.policyDeck.peek(3).map(x=>x.toString()).join(", "));
-                IO.socket.emit('chooseEATarget');
-            } else {
-                App.playerBtns.forEach(function (b) {
-                    b.disable(false);
-                });
-                App.gameData.state = "executiveAction";
+            if (App.gameData.president.id === App.myPlayerId) {
+                if (App.gameData.lastExecutiveAction === Executive_Action.PolicyPeek) {
+                    console.trace();
+                    log("Next 3 Policies are " + App.gameData.policyDeck.peek(3).map(x => x.toString()).join(", "));
+                    IO.socket.emit('chooseEATarget');
+                } else {
+                    App.playerBtns.forEach(function (b) {
+                        b.disable(false);
+                    });
+                    App.gameData.state = "executiveAction";
+                }
             }
         },
         onPlayerVoted: function(data) {
@@ -343,6 +342,7 @@ jQuery(function($){
                                 }
                                 log(`${selectedPlayer.name} is ${loyalty}!`);
                             }
+                            console.trace();
                             IO.socket.emit("chooseEATarget",{target:selectedPlayer});
                         }
 

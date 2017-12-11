@@ -39,7 +39,7 @@ class PolicyDeck {
         for (let i = 0; i < 6; i++) {
             this.deckSource.push(new Policy(true));
         }
-        for (let i = 0; i < 11; i++) {
+        for (let i = 0; i < 111; i++) {
             this.deckSource.push(new Policy(false));
         }
         this.shuffleDeck();
@@ -139,6 +139,7 @@ function onVIPStart() {
 }
 
 function electNextPresident() {
+    console.trace();
     gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
     gameData.president = gameData.players[gameData.presidentIndex];
     gameData.lastChancellor = gameData.chancellor;
@@ -150,7 +151,6 @@ function specialElection(newPresident) {
     emit('presidentElected',gameData);
 }
 function sendPoliciesToPresident() {
-    gameData.president = gameData.players[gameData.presidentIndex];
     gameData.presidentPolicies = gameData.policyDeck.draw(3);
     emit('chancellorElected',gameData);
 }
