@@ -2,14 +2,22 @@ let io;
 let gameSocket;
 
 
+const Executive_Action =
+    {
+        NoAction: 0,
+        InvestigateLoyalty: 1,
+        SpecialElection: 2,
+        PolicyPeek: 3,
+        Execution: 4
+    };
 const Setups = {
-    3: {Liberals: 1, Fascists: 1, hitlerKnowsFascists: true},
-    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true},
-    6: {Liberals: 4, Fascists: 1, hitlerKnowsFascists: true},
-    7: {Liberals: 4, Fascists: 2, hitlerKnowsFascists: false},
-    8: {Liberals: 5, Fascists: 2, hitlerKnowsFascists: false},
-    9: {Liberals: 5, Fascists: 3, hitlerKnowsFascists: false},
-    10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false}
+    3: {Liberals: 1, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution] },
+    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
+    6: {Liberals: 4, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
+    7: {Liberals: 4, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    8: {Liberals: 5, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    9: {Liberals: 5, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]}
 };
 
 class Policy {
@@ -75,14 +83,7 @@ class Election {
     }
 
 }
-const Executive_Action =
-    {
-        NoAction: 0,
-        InvestigateLoyalty: 1,
-        SpecialElection: 2,
-        PolicyPeek: 3,
-        Execution: 4
-    };
+
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -144,7 +145,9 @@ function electNextPresident() {
     emit('presidentElected',gameData);
 }
 function specialElection(newPresident) {
-
+    gameData.president = newPresident;
+    gameData.lastChancellor = gameData.chancellor;
+    emit('presidentElected',gameData);
 }
 function sendPoliciesToPresident() {
     gameData.president = gameData.players[gameData.presidentIndex];
@@ -188,7 +191,14 @@ function onChoosePresidentPolicies(data) {
 }
 
 function executiveActionTriggered() {
-    return Executive_Action.NoAction;
+    if (gameData.lastPolicy.isLiberal) {
+        return Executive_Action.NoAction;
+    }
+    let action = gameData.gameRules.board[gameData.enactedPolicies.fascists - 1];
+    if (action === Executive_Action.PolicyPeek && gameData.policyDeck.deck.length < 3) {
+        gameData.policyDeck.shuffleDeck();
+    }
+    return action;
 }
 function onChooseChancellorPolicy(data) {
     gameData.lastPolicy = data.policies[0];
@@ -206,14 +216,41 @@ function onChooseChancellorPolicy(data) {
     emit('policyPlayed',gameData);
     if (gameData.enactedPolicies.fascists > 5 || gameData.enactedPolicies.liberals > 5) {
         emit('gameOver',gameData);
-    } else if (executiveActionTriggered() !== Executive_Action.NoAction){
-        //TODO
     } else {
-        electNextPresident();
+        performEA();
     }
 }
-function onChooseEATarget(data) {
 
+function performEA() {
+    gameData.lastExecutiveAction = executiveActionTriggered();
+
+        if (gameData.lastExecutiveAction === Executive_Action.NoAction) {
+            electNextPresident();
+        } else {
+            emit('executiveActionTriggered',gameData);
+        }
+
+
+}
+function onChooseEATarget(data) {
+    switch (gameData.lastExecutiveAction) {
+        case Executive_Action.InvestigateLoyalty:
+        case Executive_Action.PolicyPeek:
+            electNextPresident();
+            break;
+        case Executive_Action.Execution:
+            let target = getPlayerById(data.target.id);
+            target.dead = true;
+            if (target.role === Role.Hitler) {
+                emit('gameOver',gameData)
+            } else {
+                electNextPresident();
+            }
+            break;
+        case Executive_Action.SpecialElection:
+            specialElection(getPlayerById(data.target.id));
+            break;
+    }
 }
 
 /**
@@ -278,6 +315,14 @@ let gameData = {
     enactedPolicies: {},
     chaosLevel: 0
 };
+function getPlayerById(id) {
+    for (let i = 0; i < gameData.players.length; i++) {
+        if (gameData.players[i].id === id) {
+            return gameData.players[i];
+        }
+    }
+    return null;
+}
 /* *****************************
    *                           *
    *     PLAYER FUNCTIONS      *

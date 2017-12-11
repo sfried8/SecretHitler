@@ -33,6 +33,9 @@ html, body {
     content: 'Chancellor ';
 
 }
+.isDead::after {
+    content: ' (DEAD)';
+}
 .topright {
     position: absolute;
     width:30%;

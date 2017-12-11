@@ -8,7 +8,14 @@ jQuery.fn.extend({
         });
     }
 });
-
+const Executive_Action =
+    {
+        NoAction: 0,
+        InvestigateLoyalty: 1,
+        SpecialElection: 2,
+        PolicyPeek: 3,
+        Execution: 4
+    };
 class Policy {
     constructor(obj) {
         this.isLiberal = obj.isLiberal;
@@ -175,6 +182,9 @@ jQuery(function($){
                 if (+b.val() === App.gameData.president.id) {
                     b.addClass("isPresident");
                 }
+                if (App.getPlayerById(+b.val()).dead) {
+                    b.addClass("isDead");
+                }
                 if (App.gameData.president.id === App.myPlayerId) {
                     if (+b.val() !== +App.myPlayerId && (!App.gameData.lastChancellor || App.gameData.lastChancellor.id !== App.getPlayerById(+b.val()).id)) {
                         b.disable(false);
@@ -260,7 +270,16 @@ jQuery(function($){
             }
         },
         onExecutiveActionTriggered: function(data) {
-
+            convertGameDataToClass(data);
+            if (App.gameData.lastExecutiveAction === Executive_Action.PolicyPeek) {
+                log("Next 3 Policies are " + App.gameData.policyDeck.peek(3).map(x=>x.toString()).join(", "));
+                IO.socket.emit('chooseEATarget');
+            } else {
+                App.playerBtns.forEach(function (b) {
+                    b.disable(false);
+                });
+                App.gameData.state = "executiveAction";
+            }
         },
         onPlayerVoted: function(data) {
             log(`${App.getPlayerById(data.id).name} voted ${data.vote ? "ja" : "nein"}`);
@@ -308,14 +327,23 @@ jQuery(function($){
                     buttons.append(`<button class="playerButton" value="${p.id}" id="${p.id}-btn">${p.name}</button>`);
                     App.playerBtns[p.id] = $(`#${p.id}-btn`);
                     App.playerBtns[p.id].off().click(function(m) {
+                        let $btn = $(this);
+                        let selectedPlayer = App.getPlayerById(+$btn.val());
                         if (App.state === "nominateChancellor") {
-                            let $btn = $(this);
-                            let selectedPlayer = App.getPlayerById(+$btn.val());
                             if (App.gameData.lastChancellor && selectedPlayer.id === App.gameData.lastChancellor.id) {
                                 alert("can't be chancellor twice in a row")
                             } else {
                                 IO.socket.emit("presidentNominate", {nominee: selectedPlayer});
                             }
+                        } else if (App.state === "executiveAction") {
+                            if (App.gameData.lastExecutiveAction === Executive_Action.InvestigateLoyalty) {
+                                let loyalty = selectedPlayer.role;
+                                if (loyalty === Role.Hitler) {
+                                    loyalty = Role.Fascist;
+                                }
+                                log(`${selectedPlayer.name} is ${loyalty}!`);
+                            }
+                            IO.socket.emit("chooseEATarget",{target:selectedPlayer});
                         }
 
                     })
