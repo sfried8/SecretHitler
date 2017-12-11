@@ -16,6 +16,12 @@ const Executive_Action =
         PolicyPeek: 3,
         Execution: 4
     };
+const WinCondition = {
+    HitlerIsChancellor: 0,
+    HitlerWasAssassinated: 1,
+    SixFascistPolicies: 2,
+    SixLiberalPolicies: 3
+};
 class Policy {
     constructor(obj) {
         this.isLiberal = obj.isLiberal;
@@ -276,7 +282,7 @@ jQuery(function($){
                     App.playerBtns.forEach(function (b) {
                         b.disable(false);
                     });
-                    App.gameData.state = "executiveAction";
+                    App.state = "executiveAction";
                 }
             }
         },
@@ -373,7 +379,21 @@ jQuery(function($){
          */
         gameOver : function(data) {
             App[App.myRole].endGame(data);
-            App.$gameArea.show()
+            App.$gameArea.show();
+            switch (data.gameOverReason) {
+                case WinCondition.SixLiberalPolicies:
+                    alert("Liberals Win! Six Liberal Policies have been played.");
+                    break;
+                case WinCondition.SixFascistPolicies:
+                    alert("Fascists Win! Six Fascist Policies have been played.");
+                    break;
+                case WinCondition.HitlerIsChancellor:
+                    alert(`Fascists Win! Hitler (${App.gameData.hitler.name}) has been elected Chancellor!`);
+                    break;
+                case WinCondition.HitlerWasAssassinated:
+                    alert(`Liberals Win! Hitler (${App.gameData.hitler.name}) has been assassinated!`);
+                    break;
+            }
         },
 
         /**

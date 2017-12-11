@@ -172,6 +172,7 @@ function onVoteForChancellor(data) {
             gameData.chancellor = gameData.chancellorNominee;
             emit('voteFinished',gameData);
             if (gameData.enactedPolicies.fascists >= 3 && gameData.chancellor.role === Role.Hitler) {
+                gameData.gameOverReason = WinCondition.HitlerIsChancellor;
                 emit('gameOver',gameData);
             } else {
                 sendPoliciesToPresident();
@@ -214,7 +215,11 @@ function onChooseChancellorPolicy(data) {
         gameData.enactedPolicies.fascists += 1;
     }
     emit('policyPlayed',gameData);
-    if (gameData.enactedPolicies.fascists > 5 || gameData.enactedPolicies.liberals > 5) {
+    if (gameData.enactedPolicies.fascists > 5) {
+        gameData.gameOverReason = WinCondition.SixFascistPolicies;
+        emit('gameOver',gameData);
+    } else if (gameData.enactedPolicies.liberals > 5) {
+        gameData.gameOverReason = WinCondition.SixLiberalPolicies;
         emit('gameOver',gameData);
     } else {
         performEA();
@@ -232,6 +237,12 @@ function performEA() {
 
 
 }
+const WinCondition = {
+    HitlerIsChancellor: 0,
+    HitlerWasAssassinated: 1,
+    SixFascistPolicies: 2,
+    SixLiberalPolicies: 3
+};
 function onChooseEATarget(data) {
     switch (gameData.lastExecutiveAction) {
         case Executive_Action.InvestigateLoyalty:
@@ -242,6 +253,7 @@ function onChooseEATarget(data) {
             let target = getPlayerById(data.target.id);
             target.dead = true;
             if (target.role === Role.Hitler) {
+                gameData.gameOverReason = WinCondition.HitlerWasAssassinated;
                 emit('gameOver',gameData)
             } else {
                 electNextPresident();
