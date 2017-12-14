@@ -2,88 +2,13 @@ let io;
 let gameSocket;
 
 
-const Executive_Action =
-    {
-        NoAction: 0,
-        InvestigateLoyalty: 1,
-        SpecialElection: 2,
-        PolicyPeek: 3,
-        Execution: 4
-    };
-const Setups = {
-    3: {Liberals: 1, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution] },
-    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
-    6: {Liberals: 4, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
-    7: {Liberals: 4, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
-    8: {Liberals: 5, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
-    9: {Liberals: 5, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
-    10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]}
-};
 
-class Policy {
-    constructor(isLiberal) {
-        this.isLiberal = isLiberal;
-    }
-    toString() {
-        if (this.isLiberal) {
-            return "Liberal";
-        } else {
-            return "Fascist";
-        }
-    }
-}
-class PolicyDeck {
-    constructor() {
-        this.deckSource = [];
-        this.deck = [];
-        for (let i = 0; i < 6; i++) {
-            this.deckSource.push(new Policy(true));
-        }
-        for (let i = 0; i < 111; i++) {
-            this.deckSource.push(new Policy(false));
-        }
-        this.shuffleDeck();
-    }
-    shuffleDeck() {
-        this.deck = shuffle(this.deckSource.slice());
-    }
-    draw(numberOfCards) {
-        if (this.deck.length < numberOfCards) {
-            this.shuffleDeck();
-        }
-        return this.deck.splice(0,numberOfCards);
-    }
-    peek(numberOfCards) {
-        if (this.deck.length < numberOfCards) {
-            this.shuffleDeck();
-        }
-        return this.deck.slice(0,numberOfCards+1)
-
-    }
-}
-class Election {
-    constructor(president, chancellor) {
-        this.president = president;
-        this.chancellor = chancellor;
-        this.jas = [];
-        this.neins = [];
-    }
-    vote(data) {
-        if (data.vote === true) {
-            this.jas.push(data.id);
-        } else if (data.vote === false) {
-            this.neins.push(data.id);
-        }
-    }
-    didPass() {
-        return (this.jas.length > this.neins.length)
-    }
-    isFinished() {
-        return (this.jas.length + this.neins.length === gameData.players.length)
-    }
-
-}
-
+const models = require('./models.js');
+const Executive_Action = models.Executive_Action;
+const Setups = models.Setups;
+const Policy = models.Policy;
+const PolicyDeck = models.PolicyDeck;
+const Election = models.Election;
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -139,7 +64,6 @@ function onVIPStart() {
 }
 
 function electNextPresident() {
-    console.trace();
     gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
     gameData.president = gameData.players[gameData.presidentIndex];
     gameData.lastChancellor = gameData.chancellor;
@@ -237,13 +161,14 @@ function performEA() {
 
 
 }
-const WinCondition = {
-    HitlerIsChancellor: 0,
-    HitlerWasAssassinated: 1,
-    SixFascistPolicies: 2,
-    SixLiberalPolicies: 3
-};
+
 function onChooseEATarget(data) {
+    if(data) {
+        gameData.lastExecutiveActionTarget = data.target;
+    } else {
+        gameData.lastExecutiveActionTarget = null;
+    }
+    emit('EATargetChosen',gameData);
     switch (gameData.lastExecutiveAction) {
         case Executive_Action.InvestigateLoyalty:
         case Executive_Action.PolicyPeek:
@@ -396,18 +321,6 @@ function shuffle(array) {
     }
 
     return array;
-}
-function randomBoolean(chanceForTrue) {
-    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
-        chanceForTrue = 50;
-    }
-    chanceForTrue = Math.min(chanceForTrue, 100);
-    chanceForTrue = Math.max(chanceForTrue, 0);
-    let rand = (Math.random() * 100)|0;
-    return (rand < chanceForTrue);
-}
-function randomNumber(min, max) {
-    return ((Math.random() * (max - min))+min)|0;
 }
 function emit(message, data) {
     io.sockets.in(thisGameId).emit(message, data);

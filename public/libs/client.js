@@ -1,3 +1,4 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 ;
 const DEBUG = true;
 const CPU = true;
@@ -8,11 +9,19 @@ jQuery.fn.extend({
         });
     }
 });
-const models = require('../models.js')
-const Enums = require('../Enums.js')
-const Executive_Action = models.Executive_Action;
-
-
+const Executive_Action = {
+    NoAction: 0,
+    InvestigateLoyalty: 1,
+    SpecialElection: 2,
+    PolicyPeek: 3,
+    Execution: 4
+};
+const WinCondition = {
+    HitlerIsChancellor: 0,
+    HitlerWasAssassinated: 1,
+    SixFascistPolicies: 2,
+    SixLiberalPolicies: 3
+};
 class Policy {
     constructor(obj) {
         this.isLiberal = obj.isLiberal;
@@ -55,10 +64,12 @@ class Election {
 
 
 
+const rand = require("../rand.js");
 jQuery(function($){
     'use strict';
 
 
+    console.log("random rand range 10-52: "+rand.range(10,52));
 
     class Player {
         constructor(index, name, id) {
@@ -114,7 +125,11 @@ jQuery(function($){
         App.gameData = gameData;
         updateEnactedPolicies();
     }
-
+    const Role = {
+        Liberal: "Liberal",
+        Fascist: "Fascist",
+        Hitler: "Hitler"
+    };
     /**
      * All the code relevant to Socket.IO is collected in the IO namespace.
      *
@@ -338,8 +353,8 @@ jQuery(function($){
                         } else if (App.state === "executiveAction") {
                             if (App.gameData.lastExecutiveAction === Executive_Action.InvestigateLoyalty) {
                                 let loyalty = selectedPlayer.role;
-                                if (loyalty === Enums.Role.Hitler) {
-                                    loyalty = Enums.Role.Fascist;
+                                if (loyalty === Role.Hitler) {
+                                    loyalty = Role.Fascist;
                                 }
                                 log(`${selectedPlayer.name} is ${loyalty}!`);
                             }
@@ -712,3 +727,14 @@ function clamp(num,min,max) {
     }
     return num;
 }
+},{"../rand.js":3}],2:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({},{},[]);
+
+},{}],3:[function(require,module,exports){
+module.exports = {
+    float: function(){return Math.random();},
+    range: function(min, max) {
+        return Math.floor(Math.random() * (max-min))+min;
+    }
+};
+},{}]},{},[1,2]);

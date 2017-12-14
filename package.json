@@ -4,9 +4,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "browserify": "^14.5.0",
     "express": "3.x",
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.2.0",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "^1.0.1",
     "socket.io": "0.9",
-    "uglify-js": "2.6.0"
+    "uglify-js": "2.6.0",
+    "watchify": "^3.9.0"
   },
   "main": "index.js",
   "devDependencies": {},
