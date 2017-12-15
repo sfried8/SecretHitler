@@ -1,4 +1,178 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
+
+module.exports = {
+    Boolean : function (chanceForTrue) {
+    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
+        chanceForTrue = 50;
+    }
+
+      if (chanceForTrue < 0) {
+                chanceForTrue = 0;
+      }
+            if (chanceForTrue > 100) {
+                chanceForTrue = 100;
+            }
+    let rand = (Math.random() * 100)|0;
+    return (rand < chanceForTrue);
+},
+Range: function (min, max) {
+    return ((Math.random() * (max - min))+min)|0;
+},
+    Shuffle: function (array) {
+        let currentIndex = array.length;
+        let temporaryValue;
+        let randomIndex;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+}
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Rand = __webpack_require__(0);
+class PolicyDeck {
+    constructor(obj) {
+        if (obj) {
+            this.deckSource = obj.deckSource.map(x => new Policy(x));
+            this.deck = obj.deck.map(x => new Policy(x));
+        } else {
+
+            this.deckSource = [];
+            this.deck = [];
+            for (let i = 0; i < 6; i++) {
+                this.deckSource.push(new Policy(true));
+            }
+            for (let i = 0; i < 111; i++) {
+                this.deckSource.push(new Policy(false));
+            }
+            this.shuffleDeck();
+        }
+    }
+    shuffleDeck() {
+        this.deck = Rand.Shuffle(this.deckSource.slice());
+    }
+    draw(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.splice(0,numberOfCards);
+    }
+    peek(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.slice(0,numberOfCards+1)
+
+    }
+}
+class Policy {
+
+    constructor(obj) {
+        if (typeof obj.isLiberal !== "undefined") {
+            this.isLiberal = obj.isLiberal;
+        } else {
+            this.isLiberal = !!obj;
+        }
+    }
+    toString() {
+        if (this.isLiberal) {
+            return "Liberal";
+        } else {
+            return "Fascist";
+        }
+    }
+}
+module.exports = {
+    Policy: Policy,
+    PolicyDeck: PolicyDeck
+}
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
 ;
 const DEBUG = true;
 const CPU = true;
@@ -9,67 +183,22 @@ jQuery.fn.extend({
         });
     }
 });
-const Executive_Action = {
-    NoAction: 0,
-    InvestigateLoyalty: 1,
-    SpecialElection: 2,
-    PolicyPeek: 3,
-    Execution: 4
-};
-const WinCondition = {
-    HitlerIsChancellor: 0,
-    HitlerWasAssassinated: 1,
-    SixFascistPolicies: 2,
-    SixLiberalPolicies: 3
-};
-class Policy {
-    constructor(obj) {
-        this.isLiberal = obj.isLiberal;
-    }
-    toString() {
-        if (this.isLiberal) {
-            return "Liberal";
-        } else {
-            return "Fascist";
-        }
-    }
-}
-class PolicyDeck {
-    constructor(obj) {
-        this.deckSource = obj.deckSource.map(x => new Policy(x));
-        this.deck = obj.deck.map(x => new Policy(x));
-    }
-    peek(numberOfCards) {
-        return this.deck.slice(0,numberOfCards)
-    }
-}
-class Election {
-    constructor(obj) {
-        this.president = obj.president;
-        this.chancellor = obj.chancellor;
-        this.jas = obj.jas;
-        this.neins = obj.neins;
-    }
-    vote(data) {
-        if (data.vote === true) {
-            this.jas.push(data.id);
-        } else if (data.vote === false) {
-            this.neins.push(data.id);
-        }
-    }
-    didPass() {
-        return (this.jas.length > this.neins.length)
-    }
-}
+const Enums = __webpack_require__(3)
+const Executive_Action = Enums.Executive_Action;
+const Rand = __webpack_require__(0)
+
+const Policy = __webpack_require__(1).Policy;
+const PolicyDeck = __webpack_require__(1).PolicyDeck;
+
+
+const Election = __webpack_require__(4).Election;
 
 
 
-const rand = require("../rand.js");
 jQuery(function($){
     'use strict';
 
 
-    console.log("random rand range 10-52: "+rand.range(10,52));
 
     class Player {
         constructor(index, name, id) {
@@ -125,11 +254,7 @@ jQuery(function($){
         App.gameData = gameData;
         updateEnactedPolicies();
     }
-    const Role = {
-        Liberal: "Liberal",
-        Fascist: "Fascist",
-        Hitler: "Hitler"
-    };
+
     /**
      * All the code relevant to Socket.IO is collected in the IO namespace.
      *
@@ -198,7 +323,7 @@ jQuery(function($){
             log("time to vote on "+data.chancellorNominee.name);
             if (CPU) {
                 setRandomTimeout(function () {
-                    if (randomBoolean(80)) {
+                    if (Rand.Boolean(80)) {
                         App.$jaBtn.disable(false);
                         App.$jaBtn.click();
                     } else {
@@ -229,7 +354,7 @@ jQuery(function($){
                 if (CPU) {
                     setRandomTimeout(function () {
                         let choices = [];
-                        let notChosen = randomNumber(0,3);
+                        let notChosen = Rand.Range(0,3);
                         switch (notChosen) {
                             case 0:
                                 choices = [data.presidentPolicies[1],data.presidentPolicies[2]];
@@ -257,7 +382,7 @@ jQuery(function($){
                 if (CPU) {
                     setRandomTimeout(function () {
 
-                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[randomBoolean() ? 0 : 1]]});
+                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[Rand.Boolean() ? 0 : 1]]});
 
                     },500,2000)
                 }
@@ -353,8 +478,8 @@ jQuery(function($){
                         } else if (App.state === "executiveAction") {
                             if (App.gameData.lastExecutiveAction === Executive_Action.InvestigateLoyalty) {
                                 let loyalty = selectedPlayer.role;
-                                if (loyalty === Role.Hitler) {
-                                    loyalty = Role.Fascist;
+                                if (loyalty === Enums.Role.Hitler) {
+                                    loyalty = Enums.Role.Fascist;
                                 }
                                 log(`${selectedPlayer.name} is ${loyalty}!`);
                             }
@@ -689,7 +814,7 @@ jQuery(function($){
 
 }($));
 function setRandomTimeout(func, min, max) {
-    setTimeout(func,randomNumber(min,max));
+    setTimeout(func,Rand.Range(min,max));
 }
 let $messageBox = undefined;
 function log(message) {
@@ -707,34 +832,91 @@ function log(message) {
         $messageBox.html(existingHtml.join("<br>"));
     }
 }
-function randomBoolean(chanceForTrue) {
-    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
-        chanceForTrue = 50;
-    }
-    chanceForTrue = clamp(chanceForTrue,0,100);
-    let rand = (Math.random() * 100)|0;
-    return (rand < chanceForTrue);
-}
-function randomNumber(min, max) {
-    return ((Math.random() * (max - min))+min)|0;
-}
-function clamp(num,min,max) {
-    if (num < min) {
-        num = min;
-    }
-    if (num > max) {
-        num = max;
-    }
-    return num;
-}
-},{"../rand.js":3}],2:[function(require,module,exports){
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({},{},[]);
 
-},{}],3:[function(require,module,exports){
-module.exports = {
-    float: function(){return Math.random();},
-    range: function(min, max) {
-        return Math.floor(Math.random() * (max-min))+min;
-    }
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+const Executive_Action =
+    {
+        NoAction: 0,
+        InvestigateLoyalty: 1,
+        SpecialElection: 2,
+        PolicyPeek: 3,
+        Execution: 4
+    };
+const Setups = {
+    3: {Liberals: 1, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution] },
+    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
+    6: {Liberals: 4, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
+    7: {Liberals: 4, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    8: {Liberals: 5, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    9: {Liberals: 5, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
+    10: {Liberals: 6, Fascists: 3, hitlerKnowsFascists: false, board:[Executive_Action.InvestigateLoyalty, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]}
 };
-},{}]},{},[1,2]);
+const WinCondition = {
+    HitlerIsChancellor: 0,
+    HitlerWasAssassinated: 1,
+    SixFascistPolicies: 2,
+    SixLiberalPolicies: 3
+};
+const Role = {
+    Liberal: "Liberal",
+    Fascist: "Fascist",
+    Hitler: "Hitler"
+};
+module.exports = {
+    Executive_Action: Executive_Action,
+    Setups: Setups,
+    WinCondition: WinCondition,
+    Role: Role
+}
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+
+
+
+class Election {
+    constructor(president, chancellor, numVotes) {
+        if (typeof chancellor === "undefined" && typeof numVotes === "undefined") {
+            this.president = president.president;
+            this.chancellor = president.chancellor;
+            this.jas = president.jas;
+            this.neins = president.neins;
+            this.numVotes = president.numVotes;
+        } else {
+
+            this.president = president;
+            this.chancellor = chancellor;
+            this.numVotes = numVotes;
+            this.jas = [];
+            this.neins = [];
+        }
+    }
+    vote(data) {
+        if (data.vote === true) {
+            this.jas.push(data.id);
+        } else if (data.vote === false) {
+            this.neins.push(data.id);
+        }
+    }
+    didPass() {
+        return (this.jas.length > this.neins.length)
+    }
+    isFinished() {
+        return (this.jas.length + this.neins.length === this.numVotes)
+    }
+
+
+}
+
+module.exports = {
+    Election: Election
+}
+
+/***/ })
+/******/ ]);

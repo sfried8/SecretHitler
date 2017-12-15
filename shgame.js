@@ -3,11 +3,13 @@ let gameSocket;
 
 
 
-const models = require('./models.js');
-const Executive_Action = models.Executive_Action;
-const Setups = models.Setups;
-const Policy = models.Policy;
-const PolicyDeck = models.PolicyDeck;
+const models = require('./src/models.js');
+const Enums = require('./src/Enums.js');
+const Rand = require('./src/Rand.js')
+const PolicyDeck = require('./src/Policy.js').PolicyDeck;
+const Executive_Action = Enums.Executive_Action;
+const WinCondition = Enums.WinCondition;
+const Setups = Enums.Setups;
 const Election = models.Election;
 /**
  * This function is called by index.js to initialize a new game instance.
@@ -38,7 +40,7 @@ exports.initGame = function(sio, socket){
 
 
 function onVIPStart() {
-    let tempPlayerArray = shuffle(gameData.players.slice());
+    let tempPlayerArray = Rand.Shuffle(gameData.players.slice());
     gameData.gameRules = Setups[gameData.players.length];
     let j = 0;
     let i;
@@ -84,7 +86,7 @@ function onPresidentNominate(data) {
         gameData.electionArchive = gameData.electionArchive || [];
         gameData.electionArchive.push(gameData.currentElection)
     }
-    gameData.currentElection = new Election(gameData.president,gameData.chancellor);
+    gameData.currentElection = new Election(gameData.president,gameData.chancellor, gameData.players.length);
     emit('chancellorNominated',gameData);
 }
 function onVoteForChancellor(data) {
@@ -302,26 +304,7 @@ function playerJoinGame(data) {
  * Javascript implementation of Fisher-Yates shuffle algorithm
  * http://stackoverflow.com/questions/2450954/how-to-randomize-a-javascript-array
  */
-function shuffle(array) {
-    let currentIndex = array.length;
-    let temporaryValue;
-    let randomIndex;
 
-    // While there remain elements to shuffle...
-    while (0 !== currentIndex) {
-
-        // Pick a remaining element...
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-
-        // And swap it with the current element.
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-}
 function emit(message, data) {
     io.sockets.in(thisGameId).emit(message, data);
 }

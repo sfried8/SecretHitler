@@ -8,58 +8,22 @@ jQuery.fn.extend({
         });
     }
 });
-const models = require('../models.js')
-const Enums = require('../Enums.js')
-const Executive_Action = models.Executive_Action;
+const Enums = require('./Enums.js');
+const WinCondition = Enums.WinCondition;
+const Executive_Action = Enums.Executive_Action;
+const Rand = require('./Rand.js')
+
+const Policy = require('./Policy.js').Policy;
+const PolicyDeck = require('./Policy.js').PolicyDeck;
 
 
-class Policy {
-    constructor(obj) {
-        this.isLiberal = obj.isLiberal;
-    }
-    toString() {
-        if (this.isLiberal) {
-            return "Liberal";
-        } else {
-            return "Fascist";
-        }
-    }
-}
-class PolicyDeck {
-    constructor(obj) {
-        this.deckSource = obj.deckSource.map(x => new Policy(x));
-        this.deck = obj.deck.map(x => new Policy(x));
-    }
-    peek(numberOfCards) {
-        return this.deck.slice(0,numberOfCards)
-    }
-}
-class Election {
-    constructor(obj) {
-        this.president = obj.president;
-        this.chancellor = obj.chancellor;
-        this.jas = obj.jas;
-        this.neins = obj.neins;
-    }
-    vote(data) {
-        if (data.vote === true) {
-            this.jas.push(data.id);
-        } else if (data.vote === false) {
-            this.neins.push(data.id);
-        }
-    }
-    didPass() {
-        return (this.jas.length > this.neins.length)
-    }
-}
+const Election = require('./models.js').Election;
 
 
 
 jQuery(function($){
     'use strict';
-
-
-
+    
     class Player {
         constructor(index, name, id) {
             this.index = index;
@@ -183,7 +147,7 @@ jQuery(function($){
             log("time to vote on "+data.chancellorNominee.name);
             if (CPU) {
                 setRandomTimeout(function () {
-                    if (randomBoolean(80)) {
+                    if (Rand.Boolean(80)) {
                         App.$jaBtn.disable(false);
                         App.$jaBtn.click();
                     } else {
@@ -214,7 +178,7 @@ jQuery(function($){
                 if (CPU) {
                     setRandomTimeout(function () {
                         let choices = [];
-                        let notChosen = randomNumber(0,3);
+                        let notChosen = Rand.Range(0,3);
                         switch (notChosen) {
                             case 0:
                                 choices = [data.presidentPolicies[1],data.presidentPolicies[2]];
@@ -242,7 +206,7 @@ jQuery(function($){
                 if (CPU) {
                     setRandomTimeout(function () {
 
-                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[randomBoolean() ? 0 : 1]]});
+                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[Rand.Boolean() ? 0 : 1]]});
 
                     },500,2000)
                 }
@@ -674,7 +638,7 @@ jQuery(function($){
 
 }($));
 function setRandomTimeout(func, min, max) {
-    setTimeout(func,randomNumber(min,max));
+    setTimeout(func,Rand.Range(min,max));
 }
 let $messageBox = undefined;
 function log(message) {
@@ -691,24 +655,4 @@ function log(message) {
         existingHtml.push(message);
         $messageBox.html(existingHtml.join("<br>"));
     }
-}
-function randomBoolean(chanceForTrue) {
-    if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
-        chanceForTrue = 50;
-    }
-    chanceForTrue = clamp(chanceForTrue,0,100);
-    let rand = (Math.random() * 100)|0;
-    return (rand < chanceForTrue);
-}
-function randomNumber(min, max) {
-    return ((Math.random() * (max - min))+min)|0;
-}
-function clamp(num,min,max) {
-    if (num < min) {
-        num = min;
-    }
-    if (num > max) {
-        num = max;
-    }
-    return num;
 }
