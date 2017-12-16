@@ -35,5 +35,9 @@ Range: function (min, max) {
         }
 
         return array;
+    },
+    Choice: function (array) {
+        let index = Math.random() * array.length;
+        return array[Math.floor(index)];
     }
 }

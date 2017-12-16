@@ -5,12 +5,13 @@ let gameSocket;
 
 const models = require('./src/models.js');
 const Enums = require('./src/Enums.js');
-const Rand = require('./src/Rand.js')
+const Rand = require('./src/Rand.js');
 const PolicyDeck = require('./src/Policy.js').PolicyDeck;
 const Executive_Action = Enums.Executive_Action;
 const WinCondition = Enums.WinCondition;
 const Setups = Enums.Setups;
 const Election = models.Election;
+const Player = require('./src/Player.js');
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -36,6 +37,8 @@ exports.initGame = function(sio, socket){
     gameSocket.on('chooseChancellorPolicy', onChooseChancellorPolicy);
     gameSocket.on('chooseEATarget', onChooseEATarget);
 
+    gameSocket.on('chancellorRequestedVeto', onChancellorRequestedVeto);
+    gameSocket.on('vetoApproved', onVetoApproved);
 };
 
 
@@ -66,8 +69,11 @@ function onVIPStart() {
 }
 
 function electNextPresident() {
+    do {
+
     gameData.presidentIndex = (gameData.presidentIndex + 1) % gameData.players.length;
     gameData.president = gameData.players[gameData.presidentIndex];
+    } while (gameData.president.dead);
     gameData.lastChancellor = gameData.chancellor;
     emit('presidentElected',gameData);
 }
@@ -86,7 +92,13 @@ function onPresidentNominate(data) {
         gameData.electionArchive = gameData.electionArchive || [];
         gameData.electionArchive.push(gameData.currentElection)
     }
-    gameData.currentElection = new Election(gameData.president,gameData.chancellor, gameData.players.length);
+    let numPlayersLiving = 0;
+    for (let i = 0; i < gameData.players.length; i++) {
+        if (!gameData.players[i].dead) {
+            numPlayersLiving++;
+        }
+    }
+    gameData.currentElection = new Election(gameData.president,gameData.chancellor, numPlayersLiving);
     emit('chancellorNominated',gameData);
 }
 function onVoteForChancellor(data) {
@@ -105,9 +117,31 @@ function onVoteForChancellor(data) {
             }
         } else {
             gameData.chaosLevel += 1;
-            //TODO if chaosLevel == 3
             emit('voteFinished',gameData);
+            if (gameData.chaosLevel === 3) {
+                gameData.chaosLevel = 0;
+                gameData.lastPolicy = gameData.policyDeck.draw(1)[0];
+                if (gameData.lastPolicy.isLiberal) {
+                    if (!gameData.enactedPolicies.liberals) {
+                        gameData.enactedPolicies.liberals = 0;
+                    }
+                    gameData.enactedPolicies.liberals += 1;
+                } else {
+                    if (!gameData.enactedPolicies.fascists) {
+                        gameData.enactedPolicies.fascists = 0;
+                    }
+                    gameData.enactedPolicies.fascists += 1;
+                }
+                emit('policyPlayedByCountry',gameData);
+                if (gameData.enactedPolicies.fascists > 5) {
+                    gameData.gameOverReason = WinCondition.SixFascistPolicies;
+                    emit('gameOver',gameData);
+                } else if (gameData.enactedPolicies.liberals > 5) {
+                    gameData.gameOverReason = WinCondition.SixLiberalPolicies;
+                    emit('gameOver',gameData);
+                }
 
+            }
             electNextPresident();
         }
     }
@@ -127,6 +161,42 @@ function executiveActionTriggered() {
     }
     return action;
 }
+function onChancellorRequestedVeto(data) {
+    emit('vetoRequested',gameData);
+}
+function onVetoApproved(data) {
+    if (data.approved) {
+        gameData.chaosLevel += 1;
+        emit('vetoWasApproved',gameData);
+        if (gameData.chaosLevel === 3) {
+            gameData.chaosLevel = 0;
+            gameData.lastPolicy = gameData.policyDeck.draw(1)[0];
+            if (gameData.lastPolicy.isLiberal) {
+                if (!gameData.enactedPolicies.liberals) {
+                    gameData.enactedPolicies.liberals = 0;
+                }
+                gameData.enactedPolicies.liberals += 1;
+            } else {
+                if (!gameData.enactedPolicies.fascists) {
+                    gameData.enactedPolicies.fascists = 0;
+                }
+                gameData.enactedPolicies.fascists += 1;
+            }
+            emit('policyPlayedByCountry',gameData);
+            if (gameData.enactedPolicies.fascists > 5) {
+                gameData.gameOverReason = WinCondition.SixFascistPolicies;
+                emit('gameOver',gameData);
+            } else if (gameData.enactedPolicies.liberals > 5) {
+                gameData.gameOverReason = WinCondition.SixLiberalPolicies;
+                emit('gameOver',gameData);
+            }
+
+        }
+        electNextPresident();
+    } else {
+        emit('vetoWasRejected',gameData);
+    }
+}
 function onChooseChancellorPolicy(data) {
     gameData.lastPolicy = data.policies[0];
     if (gameData.lastPolicy.isLiberal) {
@@ -140,6 +210,7 @@ function onChooseChancellorPolicy(data) {
         }
         gameData.enactedPolicies.fascists += 1;
     }
+    gameData.chaosLevel = 0;
     emit('policyPlayed',gameData);
     if (gameData.enactedPolicies.fascists > 5) {
         gameData.gameOverReason = WinCondition.SixFascistPolicies;
@@ -228,13 +299,7 @@ function hostStartGame() {
     log('Game Started.');
 }
 
-class Player {
-    constructor(index, name, id) {
-        this.index = index;
-        this.name = name;
-        this.id = id;
-    }
-}
+
 
 const Role = {
     Liberal: "Liberal",

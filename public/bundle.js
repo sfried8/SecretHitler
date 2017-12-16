@@ -104,6 +104,10 @@ Range: function (min, max) {
         }
 
         return array;
+    },
+    Choice: function (array) {
+        let index = Math.random() * array.length;
+        return array[Math.floor(index)];
     }
 }
 
@@ -124,7 +128,7 @@ class PolicyDeck {
             for (let i = 0; i < 6; i++) {
                 this.deckSource.push(new Policy(true));
             }
-            for (let i = 0; i < 111; i++) {
+            for (let i = 0; i < 11; i++) {
                 this.deckSource.push(new Policy(false));
             }
             this.shuffleDeck();
@@ -143,7 +147,7 @@ class PolicyDeck {
         if (this.deck.length < numberOfCards) {
             this.shuffleDeck();
         }
-        return this.deck.slice(0,numberOfCards+1)
+        return this.deck.slice(0,numberOfCards)
 
     }
 }
@@ -175,7 +179,7 @@ module.exports = {
 
 ;
 const DEBUG = true;
-const CPU = true;
+let CPU = true;
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {
@@ -183,9 +187,10 @@ jQuery.fn.extend({
         });
     }
 });
-const Enums = __webpack_require__(3)
+const Enums = __webpack_require__(3);
+const WinCondition = Enums.WinCondition;
 const Executive_Action = Enums.Executive_Action;
-const Rand = __webpack_require__(0)
+const Rand = __webpack_require__(0);
 
 const Policy = __webpack_require__(1).Policy;
 const PolicyDeck = __webpack_require__(1).PolicyDeck;
@@ -197,16 +202,8 @@ const Election = __webpack_require__(4).Election;
 
 jQuery(function($){
     'use strict';
-
-
-
-    class Player {
-        constructor(index, name, id) {
-            this.index = index;
-            this.name = name;
-            this.id = id;
-        }
-    }
+    
+    const Player = __webpack_require__(5);
     function updateEnactedPolicies() {
         let ls = App.gameData.enactedPolicies.liberals;
         let fs = App.gameData.enactedPolicies.fascists;
@@ -292,6 +289,7 @@ jQuery(function($){
             IO.socket.on('playerVoted', IO.onPlayerVoted);
             IO.socket.on('voteFinished', IO.onVoteFinished);
             IO.socket.on('policyPlayed', IO.onPolicyPlayed);
+            IO.socket.on('policyPlayedByCountry', IO.onPolicyPlayedByCountry);
 
         },
 
@@ -305,8 +303,7 @@ jQuery(function($){
                 }
                 if (App.getPlayerById(+b.val()).dead) {
                     b.addClass("isDead");
-                }
-                if (App.gameData.president.id === App.myPlayerId) {
+                } else if (App.gameData.president.id === App.myPlayerId) {
                     if (+b.val() !== +App.myPlayerId && (!App.gameData.lastChancellor || App.gameData.lastChancellor.id !== App.getPlayerById(+b.val()).id)) {
                         b.disable(false);
                     }
@@ -315,15 +312,27 @@ jQuery(function($){
             if (App.gameData.president.id === App.myPlayerId) {
                 log("Nominate chancellor");
                 App.state = "nominateChancellor"
+                if (CPU) {
+                    setRandomTimeout(()=> {
+                        let selectedPlayer;
+                        do {
+                            selectedPlayer = Rand.Choice(App.gameData.players);
+                        } while (selectedPlayer.id === App.myPlayerId || selectedPlayer.dead || (App.gameData.lastChancellor && App.gameData.lastChancellor.id === selectedPlayer.id));
+                        App.playerBtns[selectedPlayer.id].click();
+                    },500,3000);
+                }
             } else {
                 log(`Waiting for President ${data.president.name} to nominate Chancellor`)
             }
         },
         onChancellorNominated: function(data) {
             log("time to vote on "+data.chancellorNominee.name);
+            if (App.dead) {
+                return;
+            }
             if (CPU) {
                 setRandomTimeout(function () {
-                    if (Rand.Boolean(80)) {
+                    if (Rand.Boolean()) {
                         App.$jaBtn.disable(false);
                         App.$jaBtn.click();
                     } else {
@@ -350,11 +359,11 @@ jQuery(function($){
             convertGameDataToClass(data);
             App.playerBtns[App.gameData.chancellor.id].addClass("isChancellor");
             if (App.gameData.president.id === App.myPlayerId) {
-                log(data.presidentPolicies.map(x => x.toString()));
-                if (CPU) {
-                    setRandomTimeout(function () {
+                for (let i = 0; i < 3; i++) {
+                    App.$policyChoiceBtns[i].disable(false).off().click(function () {
                         let choices = [];
-                        let notChosen = Rand.Range(0,3);
+                        let notChosen = +$(this).val();
+
                         switch (notChosen) {
                             case 0:
                                 choices = [data.presidentPolicies[1],data.presidentPolicies[2]];
@@ -366,8 +375,25 @@ jQuery(function($){
                                 choices = [data.presidentPolicies[0],data.presidentPolicies[1]];
                                 break;
                         }
-                        IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
+                        for (let j = 0; j < 3; j++) {
+                            App.$policyChoiceBtns[j].disable(true);
+                            App.$policyChoiceBtns[j].removeClass("fascistPolicy liberalPolicy");
 
+                        }
+                        IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
+                    })
+                    App.$policyChoiceBtns[i].removeClass("fascistPolicy liberalPolicy");
+                    if (data.presidentPolicies[i].isLiberal) {
+                        App.$policyChoiceBtns[i].addClass("liberalPolicy")
+                    } else {
+                        App.$policyChoiceBtns[i].addClass("fascistPolicy")
+
+                    }
+                }
+                if (CPU) {
+                    setRandomTimeout(function () {
+                        let choice = Rand.Range(0,3);
+                        App.$policyChoiceBtns[choice].click();
                     },500,2000)
                 }
             } else {
@@ -378,14 +404,33 @@ jQuery(function($){
         onPresidentPolicyChosen: function(data) {
             convertGameDataToClass(data);
             if (App.gameData.chancellor.id === App.myPlayerId) {
-                log(data.chancellorPolicies.map(x => x.toString()));
+                for (let i = 0; i < 2; i++) {
+                    App.$policyChoiceBtns[i].disable(false).off().click(function () {
+                        let notChosen = +$(this).val();
+
+
+                        for (let j = 0; j < 3; j++) {
+                            App.$policyChoiceBtns[j].disable(true);
+                            App.$policyChoiceBtns[j].removeClass("fascistPolicy liberalPolicy");
+                        }
+                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[notChosen === 1 ? 0 : 1]]});
+                    });
+                    App.$policyChoiceBtns[i].removeClass("fascistPolicy liberalPolicy");
+                    if (data.chancellorPolicies[i].isLiberal) {
+                        App.$policyChoiceBtns[i].addClass("liberalPolicy")
+                    } else {
+                        App.$policyChoiceBtns[i].addClass("fascistPolicy")
+
+                    }
+                }
+
                 if (CPU) {
                     setRandomTimeout(function () {
-
-                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [data.chancellorPolicies[Rand.Boolean() ? 0 : 1]]});
-
+                        let choice = Rand.Range(0,2);
+                        App.$policyChoiceBtns[choice].click();
                     },500,2000)
                 }
+
             } else {
                 log(`President ${App.gameData.president.name} has chosen 2 policies. Waiting for Chancellor ${App.gameData.chancellor.name} to enact one of them.`)
             }
@@ -401,6 +446,26 @@ jQuery(function($){
                         b.disable(false);
                     });
                     App.state = "executiveAction";
+                    switch (App.gameData.lastExecutiveAction) {
+                        case Executive_Action.InvestigateLoyalty:
+                            log("Choose someone to investigate their loyalty.");
+                            break;
+                        case Executive_Action.Execution:
+                            log("Choose someone to execute.");
+                            break;
+                        case Executive_Action.SpecialElection:
+                            log("Choose the president for next turn.");
+                            break;
+                    }
+                    if (CPU) {
+                        setRandomTimeout(()=> {
+                            let selectedPlayer;
+                            do {
+                                selectedPlayer = Rand.Choice(App.gameData.players);
+                            } while (selectedPlayer.id === App.myPlayerId || selectedPlayer.dead || (App.gameData.lastChancellor && App.gameData.lastChancellor.id === selectedPlayer.id));
+                            App.playerBtns[selectedPlayer.id].click();
+                        },500,3000);
+                    }
                 }
             }
         },
@@ -418,6 +483,9 @@ jQuery(function($){
                     break;
                 case Executive_Action.Execution:
                     log(`President ${App.gameData.president.name} has executed ${App.gameData.lastExecutiveActionTarget.name}!`);
+                    if (App.gameData.lastExecutiveAction.id === App.myPlayerId) {
+                        App.dead = true;
+                    }
                     break;
                 case Executive_Action.InvestigateLoyalty:
                     log(`President ${App.gameData.president.name} has investigated ${App.gameData.lastExecutiveActionTarget.name}'s loyalty.`);
@@ -435,6 +503,10 @@ jQuery(function($){
         onPolicyPlayed: function(data) {
             convertGameDataToClass(data);
             log(`President ${App.gameData.president.name} and Chancellor ${App.gameData.chancellor.name} have enacted a ${App.gameData.lastPolicy.toString()} policy!`);
+        },
+        onPolicyPlayedByCountry: function(data) {
+            convertGameDataToClass(data);
+            log(`The country is in chaos! The people have enacted a ${App.gameData.lastPolicy.toString()} policy!`);
         },
         /**
          * The client is successfully connected!
@@ -469,6 +541,9 @@ jQuery(function($){
                     App.playerBtns[p.id].off().click(function() {
                         let $btn = $(this);
                         let selectedPlayer = App.getPlayerById(+$btn.val());
+                        if (selectedPlayer.dead) {
+                            alert(`${selectedPlayer.name} is dead!`);
+                        }
                         if (App.state === "nominateChancellor") {
                             if (App.gameData.lastChancellor && selectedPlayer.id === App.gameData.lastChancellor.id) {
                                 alert("can't be chancellor twice in a row")
@@ -500,8 +575,10 @@ jQuery(function($){
          * @param data
          */
         beginNewGame : function(data) {
+            $("#startGameBtn").hide();
+            let x = $("#roles");
             $.each(data.players,function(i,p) {
-                log(p.name + " is "+p.role);
+                x.html(`${x.html()}<br>${p.name} is ${p.role}`);
             });
         },
 
@@ -556,11 +633,6 @@ jQuery(function($){
          * connects to the server when the page loads for the first time.
          */
         mySocketId: '',
-
-        /**
-         * Identifies the current round. Starts at 0 because it corresponds
-         * to the array of word data stored on the server.
-         */
         currentRound: 0,
 
         _gameData: {
@@ -615,6 +687,8 @@ jQuery(function($){
             App.$hostGame = $('#host-game-template').html();
             App.$neinBtn = $("#nein-btn");
             App.$jaBtn = $("#ja-btn");
+            App.$policyChoiceArea = $("#policyChoices");
+            App.$policyChoiceBtns = [$("#policyChoice1"), $("#policyChoice2"), $("#policyChoice3")];
         },
 
         /**
@@ -651,7 +725,7 @@ jQuery(function($){
          */
         showInitScreen: function() {
             App.$gameArea.html(App.$templateIntroScreen);
-            App.doTextFit('.title');
+
         },
 
 
@@ -722,7 +796,7 @@ jQuery(function($){
                 App.myPlayerId = ( Math.random() * 100000 ) | 0;
                 // collect data to send to the server
                 const data = {
-                    playerName : $('#inputPlayerName').val() || names[App.myPlayerId % 22],
+                    playerName : $('#inputPlayerName').val() || names[App.myPlayerId % 22]  + Rand.Range(1,100),
                     playerId : App.myPlayerId
                 };
 
@@ -738,6 +812,7 @@ jQuery(function($){
 
             onVIPStart: function() {
                 $("#startGameBtn").hide();
+                CPU = false;
                 IO.socket.emit('VIPStart');
             },
 
@@ -848,7 +923,7 @@ const Executive_Action =
     };
 const Setups = {
     3: {Liberals: 1, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution] },
-    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
+    5: {Liberals: 3, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.SpecialElection, Executive_Action.Execution]},
     6: {Liberals: 4, Fascists: 1, hitlerKnowsFascists: true, board:[Executive_Action.NoAction, Executive_Action.NoAction, Executive_Action.PolicyPeek, Executive_Action.Execution, Executive_Action.Execution]},
     7: {Liberals: 4, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
     8: {Liberals: 5, Fascists: 2, hitlerKnowsFascists: false, board:[Executive_Action.NoAction, Executive_Action.InvestigateLoyalty, Executive_Action.SpecialElection, Executive_Action.Execution, Executive_Action.Execution]},
@@ -917,6 +992,20 @@ class Election {
 module.exports = {
     Election: Election
 }
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+class Player {
+    constructor(index, name, id) {
+        this.index = index;
+        this.name = name;
+        this.id = id;
+        this.dead = false;
+    }
+}
+module.exports = Player;
 
 /***/ })
 /******/ ]);
