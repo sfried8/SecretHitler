@@ -1,13 +1,6 @@
 ;
 const DEBUG = true;
 let CPU = false;
-jQuery.fn.extend({
-    disable: function(state) {
-        return this.each(function() {
-            this.disabled = state;
-        });
-    }
-});
 const Enums = require('./Enums.js');
 const WinCondition = Enums.WinCondition;
 const Executive_Action = Enums.Executive_Action;
@@ -21,8 +14,7 @@ const Election = require('./models.js').Election;
 
 
 
-jQuery(function($){
-    'use strict';
+
     
     const Player = require('./Player.js');
     function updateEnactedPolicies() {
@@ -46,7 +38,7 @@ jQuery(function($){
             }
         }
 
-        $("#enactedPolicies").html(h);
+        document.getElementById("enactedPolicies").innerHTML = h;
     }
     function convertGameDataToClass(gameData) {
         if (gameData.electionArchive) {
@@ -260,7 +252,7 @@ jQuery(function($){
         mySocketId: '',
         currentRound: 0,
 
-        _gameData: {
+        gameData: {
 
             players: [],
             liberals: [],
@@ -272,15 +264,6 @@ jQuery(function($){
             gameRules: {},
             enactedPolicies: {},
             chaosLevel: 0
-        },
-        get gameData() {
-            $("#gameData").val(JSON.stringify(this._gameData,null,3));
-            return this._gameData;
-        },
-        set gameData(g) {
-            $("#gameData").val(JSON.stringify(this._gameData,null,3));
-
-            this._gameData = g;
         },
         /* *************************************
          *                Setup                *
@@ -307,18 +290,16 @@ jQuery(function($){
          * Create references to on-screen elements used throughout the game.
          */
         cacheElements: function () {
-            App.$doc = $(document);
-
             // Templates
-            App.$gameArea = $('#gameArea');
-            App.$templateIntroScreen = $('#intro-screen-template').html();
-            App.$templateNewGame = $('#create-game-template').html();
-            App.$templateJoinGame = $('#join-game-template').html();
-            App.$hostGame = $('#host-game-template').html();
-            App.$neinBtn = $("#nein-btn");
-            App.$jaBtn = $("#ja-btn");
-            App.$policyChoiceArea = $("#policyChoices");
-            App.$policyChoiceBtns = [$("#policyChoice1"), $("#policyChoice2"), $("#policyChoice3")];
+            App.$gameArea = document.getElementById("gameArea");
+            App.$templateIntroScreen = document.getElementById('intro-screen-template');
+            App.$templateNewGame = document.getElementById('create-game-template');
+            App.$templateJoinGame = document.getElementById('join-game-template');
+            App.$hostGame = document.getElementById('host-game-template');
+            App.$neinBtn = document.getElementById("nein-btn");
+            App.$jaBtn = document.getElementById("ja-btn");
+            App.$policyChoiceArea = document.getElementById("policyChoices");
+            App.$policyChoiceBtns = [document.getElementById("policyChoice1"), document.getElementById("policyChoice2"), document.getElementById("policyChoice3")];
         },
 
         /**
@@ -326,23 +307,14 @@ jQuery(function($){
          */
         bindEvents: function () {
             // Host
-            App.$doc.on('click', '#btnCreateGame', App.Host.onCreateClick);
-            App.$doc.on('click', '#inputSubmit', function() {
-                const $message = $("#inputMessage");
-                const messageContent = $message.val();
-                $message.val("");
-                const $data = $("#inputData");
-                const dataContent = $data.val();
-                $data.val("");
+            document.getElementById('btnCreateGame').onclick = App.Host.onCreateClick;
+            document.getElementById('startGameBtn').onclick = App.Player.onVIPStart;
 
-                IO.socket.emit(messageContent,JSON.parse(dataContent));
-            });
-            App.$doc.on('click', '#startGameBtn', App.Player.onVIPStart);
 
             // Player
-            App.$doc.on('click', '#btnJoinGame', App.Player.onJoinClick);
-            App.$doc.on('click', '#btnStart',App.Player.onPlayerStartClick);
-            App.$doc.on('click', '#btnPlayerRestart', App.Player.onPlayerRestart);
+            document.getElementById('btnJoinGame').onclick = App.Player.onJoinClick;
+            document.getElementById('btnStart').onclick = App.Player.onPlayerStartClick;
+            document.getElementById('btnPlayerRestart').onclick = App.Player.onPlayerRestart;
         },
 
         /* *************************************
@@ -354,7 +326,8 @@ jQuery(function($){
          * (with Start and Join buttons)
          */
         showInitScreen: function() {
-            App.$gameArea.html(App.$templateIntroScreen);
+            App.$gameArea.style.display = "none";
+            App.$templateIntroScreen.style.display = "";
 
         },
 
@@ -412,8 +385,10 @@ jQuery(function($){
                 // console.log('Clicked "Join A Game"');
 
                 // Display the Join Game HTML on the player's screen.
-                App.$gameArea.html(App.$templateJoinGame);
-                setTimeout(()=>$("#btnStart").click(),100);
+                App.$gameArea.style.display = "none";
+                App.$templateIntroScreen.style.display = "none";
+                App.$templateJoinGame.style.display = "";
+                setTimeout(()=>document.getElementById("btnStart").click(),100);
             },
 
             /**
@@ -426,7 +401,7 @@ jQuery(function($){
                 App.myPlayerId = ( Math.random() * 100000 ) | 0;
                 // collect data to send to the server
                 const data = {
-                    playerName : $('#inputPlayerName').val() || names[App.myPlayerId % 22]  + Rand.Range(1,100),
+                    playerName : names[App.myPlayerId % 22]  + Rand.Range(1,100),
                     playerId : App.myPlayerId
                 };
 
@@ -437,11 +412,12 @@ jQuery(function($){
                 App.myRole = 'Player';
                 App.Player.myName = data.playerName;
                 document.title = data.playerName;
-                App.$gameArea.hide();
+                App.$templateJoinGame.style.display = "none";
+                App.$gameArea.style.display = "none";
             },
 
             onVIPStart: function() {
-                $("#startGameBtn").hide();
+                document.getElementById('startGameBtn').style.display = "none";
                 CPU = false;
                 IO.socket.emit('VIPStart');
             },
@@ -458,7 +434,6 @@ jQuery(function($){
                 };
                 IO.socket.emit('playerRestart',data);
                 App.currentRound = 0;
-                $('#gameArea').html("<h3>Waiting on host to start new game.</h3>");
             },
 
 
@@ -466,13 +441,14 @@ jQuery(function($){
             ///////////////////////////////////////////////////
             onPresidentElected: function() {
                 App.playerBtns.forEach(function (b) {
-                    b.disable(true);
-                    b.removeClass("isPresident isChancellor");
-                    if (+b.val() === App.gameData.president.id) {
-                        b.addClass("isPresident");
+                    b.disabled = true;
+                    b.classList.remove("isPresident");
+                    b.classList.remove("isChancellor");
+                    if (+b.value=== App.gameData.president.id) {
+                        b.classList.add("isPresident");
                     }
-                    if (App.getPlayerById(+b.val()).dead) {
-                        b.addClass("isDead");
+                    if (App.getPlayerById(+b.value).dead) {
+                        b.classList.add("isDead");
                     }
                 });
                 log(`Waiting for President ${App.gameData.president.name} to nominate Chancellor`)
@@ -487,29 +463,31 @@ jQuery(function($){
                 if (CPU) {
                     setRandomTimeout(function () {
                         if (Rand.Boolean(80)) {
-                            App.$jaBtn.disable(false);
+                            App.$jaBtn.disabled = false;
                             App.$jaBtn.click();
                         } else {
-                            App.$neinBtn.disable(false);
+                            App.$neinBtn.disabled = false;
                             App.$neinBtn.click();
                         }
                     }, 500, 5000)
                 } else {
 
                 }
-                App.$jaBtn.disable(false).off().click(function () {
-                    App.$jaBtn.disable(true);
-                    App.$neinBtn.disable(true);
+                App.$jaBtn.disabled = false;
+                App.$jaBtn.onclick = function () {
+                    App.$jaBtn.disabled = true;
+                    App.$neinBtn.disabled = true;
                     IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:true});
-                });
-                App.$neinBtn.disable(false).off().click(function () {
-                    App.$jaBtn.disable(true);
-                    App.$neinBtn.disable(true);
+                };
+                App.$neinBtn.disabled = false;
+                App.$neinBtn.onclick = function () {
+                    App.$jaBtn.disabled = true;
+                    App.$neinBtn.disabled = true;
                     IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:false});
-                });
+                };
             },
             onChancellorElected: function() {
-                App.playerBtns[App.gameData.chancellor.id].addClass("isChancellor");
+                App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
                 log(`Waiting for President ${App.gameData.president.name} to pick policies`);
             },
 
@@ -584,15 +562,27 @@ jQuery(function($){
              */
             playerJoinedRoom : function() {
                 log(`${App.gameData.players[App.gameData.players.length - 1].name} joined the room!`);
-                let buttons = $("#playerButtons");
+                let buttons = document.getElementById("playerButtons");
                 for (let i = 0; i < App.gameData.players.length; i++) {
                     let p = App.gameData.players[i];
                     if (!App.playerBtns[p.id]) {
-                        buttons.append(`<button class="playerButton" value="${p.id}" id="${p.id}-btn">${p.name}</button>`);
-                        App.playerBtns[p.id] = $(`#${p.id}-btn`);
-                        App.playerBtns[p.id].off().click(function() {
-                            let $btn = $(this);
-                            let selectedPlayer = App.getPlayerById(+$btn.val());
+                        buttons.innerHTML = `${buttons.innerHTML}<button class="playerButton" value="${p.id}" id="${p.id}-btn">${p.name}</button>`;
+                        App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+
+
+                    }
+                }
+            },
+
+            beginNewGame : function(data) {
+                document.getElementById("startGameBtn").style.display = "none";
+                let x = document.getElementById("roles");
+                for (let i = 0; i < App.gameData.players.length; i++) {
+                    let p = App.gameData.players[i];
+                    x.innerHTML = `${x.innerHTML}<br>${p.name} is ${p.role}`;
+                        App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+                        App.playerBtns[p.id].onclick = function() {
+                            let selectedPlayer = App.getPlayerById(+this.value);
                             if (selectedPlayer.dead) {
                                 alert(`${selectedPlayer.name} is dead!`);
                             }
@@ -613,22 +603,13 @@ jQuery(function($){
                                 IO.socket.emit("chooseEATarget",{target:selectedPlayer});
                             }
 
-                        })
+                        }
 
-                    }
+
                 }
             },
 
-            beginNewGame : function(data) {
-                $("#startGameBtn").hide();
-                let x = $("#roles");
-                $.each(data.players,function(i,p) {
-                    x.html(`${x.html()}<br>${p.name} is ${p.role}`);
-                });
-            },
-
             gameOver : function(data) {
-                App.$gameArea.show();
                 switch (data.gameOverReason) {
                     case WinCondition.SixLiberalPolicies:
                         alert("Liberals Win! Six Liberal Policies have been played.");
@@ -649,15 +630,18 @@ jQuery(function($){
         President: {
             onPresidentElected: function() {
                 App.playerBtns.forEach(function (b) {
-                    b.disable(true);
-                    b.removeClass("isPresident isChancellor");
-                    if (+b.val() === App.gameData.president.id) {
-                        b.addClass("isPresident");
+                    b.disabled = true;
+                    b.classList.remove("isPresident");
+                    b.classList.remove("isChancellor");
+                    if (+b.value=== App.gameData.president.id) {
+                        b.classList.add("isPresident");
                     }
-                    if (App.getPlayerById(+b.val()).dead) {
-                        b.addClass("isDead");
-                    } else if (+b.val() !== +App.myPlayerId && (!App.gameData.lastChancellor || App.gameData.lastChancellor.id !== App.getPlayerById(+b.val()).id)) {
-                            b.disable(false);
+                    if (App.getPlayerById(+b.value).dead) {
+                        b.classList.add("isDead");
+                    }
+
+                     else if (+b.value !== +App.myPlayerId && (!App.gameData.lastChancellor || App.gameData.lastChancellor.id !== App.getPlayerById(+b.value.id)) ){
+                            b.disabled = false;
 
                     }
                 });
@@ -675,11 +659,12 @@ jQuery(function($){
 
             },
             onChancellorElected: function() {
-                App.playerBtns[App.gameData.chancellor.id].addClass("isChancellor");
+                App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
                     for (let i = 0; i < 3; i++) {
-                        App.$policyChoiceBtns[i].disable(false).off().click(function () {
+                        App.$policyChoiceBtns[i].disabled = false;
+                        App.$policyChoiceBtns[i].onclick = function () {
                             let choices = [];
-                            let notChosen = +$(this).val();
+                            let notChosen = +this.value;
 
                             switch (notChosen) {
                                 case 0:
@@ -693,17 +678,19 @@ jQuery(function($){
                                     break;
                             }
                             for (let j = 0; j < 3; j++) {
-                                App.$policyChoiceBtns[j].disable(true);
-                                App.$policyChoiceBtns[j].removeClass("fascistPolicy liberalPolicy");
+                                App.$policyChoiceBtns[j].disabled = true;
+                                App.$policyChoiceBtns[j].classList.remove("liberalPolicy");
+                                App.$policyChoiceBtns[j].classList.remove("fascistPolicy");
 
                             }
                             IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
-                        });
-                        App.$policyChoiceBtns[i].removeClass("fascistPolicy liberalPolicy");
+                        };
+                        App.$policyChoiceBtns[i].classList.remove("liberalPolicy");
+                        App.$policyChoiceBtns[i].classList.remove("fascistPolicy");
                         if (App.gameData.presidentPolicies[i].isLiberal) {
-                            App.$policyChoiceBtns[i].addClass("liberalPolicy")
+                            App.$policyChoiceBtns[i].classList.add("liberalPolicy")
                         } else {
-                            App.$policyChoiceBtns[i].addClass("fascistPolicy")
+                            App.$policyChoiceBtns[i].classList.add("fascistPolicy")
 
                         }
                     }
@@ -724,7 +711,7 @@ jQuery(function($){
                     IO.socket.emit('chooseEATarget');
                 } else {
                     App.playerBtns.forEach(function (b) {
-                        b.disable(false);
+                        b.disabled = false;
                     });
                     App.state = "executiveAction";
                     switch (App.gameData.lastExecutiveAction) {
@@ -753,29 +740,33 @@ jQuery(function($){
         Chancellor: {
             onPresidentPolicyChosen: function() {
                 for (let i = 0; i < 2; i++) {
-                    App.$policyChoiceBtns[i].disable(false).off().click(function () {
-                        let notChosen = +$(this).val();
+                    App.$policyChoiceBtns[i].disabled = false;
+                    App.$policyChoiceBtns[i].onclick = function () {
+                        let notChosen = +this.value;
 
 
                         for (let j = 0; j < 3; j++) {
-                            App.$policyChoiceBtns[j].disable(true);
-                            App.$policyChoiceBtns[j].removeClass("fascistPolicy liberalPolicy");
+                            App.$policyChoiceBtns[j].disabled = true;
+                            App.$policyChoiceBtns[j].classList.remove("liberalPolicy");
+                            App.$policyChoiceBtns[j].classList.remove("fascistPolicy");
                         }
                         IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [App.gameData.chancellorPolicies[notChosen === 1 ? 0 : 1]]});
-                    });
-                    App.$policyChoiceBtns[i].removeClass("fascistPolicy liberalPolicy");
+                    };
+                    App.$policyChoiceBtns[i].classList.remove("liberalPolicy");
+                    App.$policyChoiceBtns[i].classList.remove("fascistPolicy");
                     if (App.gameData.chancellorPolicies[i].isLiberal) {
-                        App.$policyChoiceBtns[i].addClass("liberalPolicy")
+                        App.$policyChoiceBtns[i].classList.add("liberalPolicy")
                     } else {
-                        App.$policyChoiceBtns[i].addClass("fascistPolicy")
+                        App.$policyChoiceBtns[i].classList.add("fascistPolicy")
 
                     }
                 }
                 if (App.gameData.enactedPolicies.fascists === 5) {
-                    App.$policyChoiceBtns[2].disable(false).off().click(function() {
-                        App.$policyChoiceBtns[2].disable(true);
+                    App.$policyChoiceBtns[2].disabled = false;
+                    App.$policyChoiceBtns[2].onclick = function() {
+                        App.$policyChoiceBtns[2].disabled = true;
                         IO.socket.emit('chancellorRequestedVeto');
-                    })
+                    }
                 }
                 if (CPU) {
                     setRandomTimeout(function () {
@@ -793,36 +784,17 @@ jQuery(function($){
                 }
             });
             return ret;
-        },
+        }
         /* **************************
                   UTILITY CODE
            ************************** */
-
-
-        /**
-         * Make the text inside the given element as big as possible
-         * See: https://github.com/STRML/textFit
-         *
-         * @param el The parent element of some text
-         */
-        doTextFit : function(el) {
-            textFit(
-                $(el)[0],
-                {
-                    alignHoriz:true,
-                    alignVert:false,
-                    widthOnly:true,
-                    reProcess:true,
-                    maxFontSize:300
-                }
-            );
-        },
     };
+window.onload = function() {
 
     IO.init();
     App.init();
+};
 
-}($));
 function setRandomTimeout(func, min, max) {
     setTimeout(func,Rand.Range(min,max));
 }
@@ -830,15 +802,15 @@ let $messageBox = undefined;
 function log(message) {
     if (DEBUG) {
         if (!$messageBox) {
-            $messageBox = $("#messageBox");
+            $messageBox = document.getElementById("messageBox");
         }
-        let existingHtml = $messageBox.html();
+        let existingHtml = $messageBox.innerHTML;
         existingHtml = existingHtml.split("<br>");
         if (existingHtml.length > 8) {
             console.log(existingHtml[0]);
             existingHtml = existingHtml.slice(existingHtml.length-8);
         }
         existingHtml.push(message);
-        $messageBox.html(existingHtml.join("<br>"));
+        $messageBox.innerHTML = existingHtml.join("<br>");
     }
 }

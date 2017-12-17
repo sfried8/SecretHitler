@@ -31,7 +31,7 @@
     </div>
 
     <!-- Main Title Screen that appears when the page loads for the first time -->
-    <script id="intro-screen-template" type="text/template">
+    <div id="intro-screen-template" style="display: none">
 
         <div class="titleWrapper">
 
@@ -48,7 +48,7 @@
 
         </div>
 
-    </script>
+    </div>
 
     <!-- This screen appears when a user clicks "CREATE" on the Title Screen -->
     <script id="create-game-template" type="text/template">
@@ -65,7 +65,7 @@
     </script>
 
     <!-- This scrreen appears when a player clicks "JOIN" on the Title Screen -->
-    <script id="join-game-template" type="text/template">
+    <div id="join-game-template" style="display: none">
         <div class="joinGameWrapper">
             <div class="info">
                 <label for="inputPlayerName">Your Name:</label>
@@ -77,7 +77,7 @@
                 <div id="playerWaitingMessage"></div>
             </div>
         </div>
-    </script>
+    </div>
 
     <!-- This is the 'Host' screen. It displays the word for each player to match -->
     <script id="host-game-template" type="text/template">
@@ -97,7 +97,6 @@
     <!-- JavaScript Libraries -->
 
     <!-- jQuery! -->
-    <script src="libs/jquery-2.0.2.min.js"></script>
 
     <!-- TextFit resizes text to fill a container.
         It's used so the titles and game words fit properly on any size screen.
