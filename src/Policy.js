@@ -11,7 +11,7 @@ class PolicyDeck {
             for (let i = 0; i < 6; i++) {
                 this.deckSource.push(new Policy(true));
             }
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < 111; i++) {
                 this.deckSource.push(new Policy(false));
             }
             this.shuffleDeck();

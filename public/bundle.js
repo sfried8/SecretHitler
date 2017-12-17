@@ -128,7 +128,7 @@ class PolicyDeck {
             for (let i = 0; i < 6; i++) {
                 this.deckSource.push(new Policy(true));
             }
-            for (let i = 0; i < 11; i++) {
+            for (let i = 0; i < 111; i++) {
                 this.deckSource.push(new Policy(false));
             }
             this.shuffleDeck();
@@ -179,7 +179,7 @@ module.exports = {
 
 ;
 const DEBUG = true;
-let CPU = true;
+let CPU = false;
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {
@@ -290,6 +290,10 @@ jQuery(function($){
             IO.socket.on('voteFinished', IO.onVoteFinished);
             IO.socket.on('policyPlayed', IO.onPolicyPlayed);
             IO.socket.on('policyPlayedByCountry', IO.onPolicyPlayedByCountry);
+            IO.socket.on('vetoRequested', IO.onVetoRequested);
+
+            IO.socket.on('vetoWasApproved', IO.onVetoWasApproved);
+            IO.socket.on('vetoWasRejected', IO.onVetoWasRejected);
 
         },
 
@@ -311,7 +315,7 @@ jQuery(function($){
             });
             if (App.gameData.president.id === App.myPlayerId) {
                 log("Nominate chancellor");
-                App.state = "nominateChancellor"
+                App.state = "nominateChancellor";
                 if (CPU) {
                     setRandomTimeout(()=> {
                         let selectedPlayer;
@@ -332,7 +336,7 @@ jQuery(function($){
             }
             if (CPU) {
                 setRandomTimeout(function () {
-                    if (Rand.Boolean()) {
+                    if (Rand.Boolean(80)) {
                         App.$jaBtn.disable(false);
                         App.$jaBtn.click();
                     } else {
@@ -423,7 +427,12 @@ jQuery(function($){
 
                     }
                 }
-
+                if (App.gameData.enactedPolicies.fascists === 5) {
+                    App.$policyChoiceBtns[2].disable(false).off().click(function() {
+                        App.$policyChoiceBtns[2].disable(true);
+                        IO.socket.emit('chancellorRequestedVeto');
+                    })
+                }
                 if (CPU) {
                     setRandomTimeout(function () {
                         let choice = Rand.Range(0,2);
@@ -434,6 +443,22 @@ jQuery(function($){
             } else {
                 log(`President ${App.gameData.president.name} has chosen 2 policies. Waiting for Chancellor ${App.gameData.chancellor.name} to enact one of them.`)
             }
+        },
+        onVetoRequested: function (data) {
+            convertGameDataToClass(data);
+            if (App.gameData.president.id === App.myPlayerId) {
+
+                IO.socket.emit("vetoApproved",{id: App.myPlayerId, approved:confirm("Approve the veto?")});
+            }
+
+        },
+        onVetoWasApproved: function(data) {
+            convertGameDataToClass(data);
+            log(`President ${App.gameData.president.name} approved the veto.`)
+        },
+        onVetoWasRejected: function (data) {
+            convertGameDataToClass(data);
+            log(`President ${App.gameData.president.name} rejected the veto. Chancellor ${App.gameData.chancellor.name} must enact a policy.`);
         },
         onExecutiveActionTriggered: function(data) {
             convertGameDataToClass(data);
@@ -483,7 +508,7 @@ jQuery(function($){
                     break;
                 case Executive_Action.Execution:
                     log(`President ${App.gameData.president.name} has executed ${App.gameData.lastExecutiveActionTarget.name}!`);
-                    if (App.gameData.lastExecutiveAction.id === App.myPlayerId) {
+                    if (App.gameData.lastExecutiveActionTarget.id === App.myPlayerId) {
                         App.dead = true;
                     }
                     break;

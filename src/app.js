@@ -1,6 +1,6 @@
 ;
 const DEBUG = true;
-let CPU = true;
+let CPU = false;
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {
@@ -157,7 +157,7 @@ jQuery(function($){
             }
             if (CPU) {
                 setRandomTimeout(function () {
-                    if (Rand.Boolean()) {
+                    if (Rand.Boolean(80)) {
                         App.$jaBtn.disable(false);
                         App.$jaBtn.click();
                     } else {
@@ -249,8 +249,8 @@ jQuery(function($){
                     }
                 }
                 if (App.gameData.enactedPolicies.fascists === 5) {
-                    App.gameData.$policyChoiceBtns[2].disable(false).off().click(function() {
-                        App.gameData.$policyChoiceBtns[2].disable(true);
+                    App.$policyChoiceBtns[2].disable(false).off().click(function() {
+                        App.$policyChoiceBtns[2].disable(true);
                         IO.socket.emit('chancellorRequestedVeto');
                     })
                 }
@@ -329,7 +329,7 @@ jQuery(function($){
                     break;
                 case Executive_Action.Execution:
                     log(`President ${App.gameData.president.name} has executed ${App.gameData.lastExecutiveActionTarget.name}!`);
-                    if (App.gameData.lastExecutiveAction.id === App.myPlayerId) {
+                    if (App.gameData.lastExecutiveActionTarget.id === App.myPlayerId) {
                         App.dead = true;
                     }
                     break;
