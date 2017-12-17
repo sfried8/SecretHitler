@@ -131,6 +131,29 @@ html, body {
     width: 100%;
 }
 
+#voteButtons {
+    position: absolute;
+    width: 80%;
+    height:20%;
+    top:30%;
+    left:10%;
+    border-radius: 10px;
+    box-shadow: 0 0px 50px rgba(0, 0, 0, 0.125);
+}
+#ja-btn {
+    background-image: url("http://www.freeiconspng.com/uploads/blue-thumbs-up-icon-9.png");
+    height:100px;
+    width:100px;
+    background-size: contain;
+}
+#nein-btn {
+    background-image: url("http://www.freeiconspng.com/uploads/blue-thumbs-up-icon-9.png");
+    height:100px;
+    width:100px;
+    background-size: contain;
+
+    transform: rotate(180deg);
+}
 .titleWrapper {
     font-family: 'Quicksand', sans-serif;
     font-weight: 400;

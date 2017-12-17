@@ -212,7 +212,8 @@ const Election = require('./models.js').Election;
          * @param data
          */
         beginNewGame : function(data) {
-            App.Player.beginNewGame(data);
+            convertGameDataToClass(data);
+            App.Player.beginNewGame(App.gameData);
         },
 
         /**
@@ -460,6 +461,7 @@ const Election = require('./models.js').Election;
                 if (App.dead) {
                     return;
                 }
+                vm.showVoteButtons = true;
                 if (CPU) {
                     setRandomTimeout(function () {
                         if (Rand.Boolean(80)) {
@@ -478,12 +480,14 @@ const Election = require('./models.js').Election;
                     App.$jaBtn.disabled = true;
                     App.$neinBtn.disabled = true;
                     IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:true});
+                    vm.showVoteButtons = false;
                 };
                 App.$neinBtn.disabled = false;
                 App.$neinBtn.onclick = function () {
                     App.$jaBtn.disabled = true;
                     App.$neinBtn.disabled = true;
                     IO.socket.emit('voteForChancellor',{id: App.myPlayerId, vote:false});
+                    vm.showVoteButtons = false;
                 };
             },
             onChancellorElected: function() {
@@ -579,7 +583,7 @@ const Election = require('./models.js').Election;
                 let x = document.getElementById("roles");
                 for (let i = 0; i < App.gameData.players.length; i++) {
                     let p = App.gameData.players[i];
-                    x.innerHTML = `${x.innerHTML}<br>${p.name} is ${p.role}`;
+                    vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
                         App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
                         App.playerBtns[p.id].onclick = function() {
                             let selectedPlayer = App.getPlayerById(+this.value);
@@ -684,6 +688,7 @@ const Election = require('./models.js').Election;
 
                             }
                             IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
+                            vm.showPolicyChoices = false;
                         };
                         App.$policyChoiceBtns[i].classList.remove("liberalPolicy");
                         App.$policyChoiceBtns[i].classList.remove("fascistPolicy");
@@ -700,6 +705,7 @@ const Election = require('./models.js').Election;
                             App.$policyChoiceBtns[choice].click();
                         },500,2000)
                     }
+                    vm.showPolicyChoices = true;
 
             },
             onVetoRequested: function () {
@@ -814,3 +820,11 @@ function log(message) {
         $messageBox.innerHTML = existingHtml.join("<br>");
     }
 }
+const vm = new Vue({
+    el: "#gameBody",
+    data: {
+        showPolicyChoices: false,
+        showVoteButtons: false,
+        roles: ""
+    }
+});
