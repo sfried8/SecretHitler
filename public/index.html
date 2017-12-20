@@ -16,15 +16,19 @@
 <body>
 <div id="gameBody">
     <div id="messageBox"></div>
-    <div id="playerButtons"></div><br>
+    <div id="playerButtons">
+        <button class="playerButton" :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
+    </div><br>
     <button id="startGameBtn">Start Game</button>
     <div id="enactedPolicies" class="topright">Liberal: [ ] [ ] [ ] [ ] [ ]<br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
     <div id="voteButtons" v-show="showVoteButtons">
         <button id="ja-btn" disabled="true">Ja!</button> <button id="nein-btn" disabled="true">Nein</button>
     </div>
-    <div id="policyChoices" v-show="showPolicyChoices">
-        <button id="policyChoice1" value="0">Policy</button><button id="policyChoice2" value="1">Policy</button><button id="policyChoice3" value="2">Policy</button>
+    <div id="policyChoices">
+        <button @click="policyChoiceClick(index)" :class="p.isLiberal ? 'liberalPolicy' : 'fascistPolicy'" v-for="(p,index) in policyChoices"></button>
+        <!--<button id="policyChoice1" value="0" :class="getPolicyClass(0)">Policy</button><button id="policyChoice2" value="1" :class="getPolicyClass(1)">Policy</button><button id="policyChoice3" value="2" :class="getPolicyClass(2)">Policy</button>-->
     </div>
+    <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
     <div id="DEBUG">
         <div id="roles" v-html="roles"></div>
     </div>

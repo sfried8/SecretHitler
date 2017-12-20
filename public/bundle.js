@@ -128,7 +128,7 @@ class PolicyDeck {
             for (let i = 0; i < 6; i++) {
                 this.deckSource.push(new Policy(true));
             }
-            for (let i = 0; i < 111; i++) {
+            for (let i = 0; i < 11; i++) {
                 this.deckSource.push(new Policy(false));
             }
             this.shuffleDeck();
@@ -494,7 +494,6 @@ const Election = __webpack_require__(4).Election;
             // Player
             document.getElementById('btnJoinGame').onclick = App.Player.onJoinClick;
             document.getElementById('btnStart').onclick = App.Player.onPlayerStartClick;
-            document.getElementById('btnPlayerRestart').onclick = App.Player.onPlayerRestart;
         },
 
         /* *************************************
@@ -620,17 +619,18 @@ const Election = __webpack_require__(4).Election;
             /////////////////////////////////////////////////
             ///////////////////////////////////////////////////
             onPresidentElected: function() {
-                App.playerBtns.forEach(function (b) {
-                    b.disabled = true;
-                    b.classList.remove("isPresident");
-                    b.classList.remove("isChancellor");
-                    if (+b.value=== App.gameData.president.id) {
-                        b.classList.add("isPresident");
-                    }
-                    if (App.getPlayerById(+b.value).dead) {
-                        b.classList.add("isDead");
-                    }
-                });
+                // App.playerBtns.forEach(function (b) {
+                //     // b.disabled = true;
+                //     b.classList.remove("isPresident");
+                //     b.classList.remove("isChancellor");
+                //     if (+b.value=== App.gameData.president.id) {
+                //         b.classList.add("isPresident");
+                //     }
+                //     if (App.getPlayerById(+b.value).dead) {
+                //         b.classList.add("isDead");
+                //     }
+                // });
+                vm.disablePlayerButtons = true;
                 log(`Waiting for President ${App.gameData.president.name} to nominate Chancellor`)
 
             },
@@ -745,50 +745,15 @@ const Election = __webpack_require__(4).Election;
              */
             playerJoinedRoom : function() {
                 log(`${App.gameData.players[App.gameData.players.length - 1].name} joined the room!`);
-                let buttons = document.getElementById("playerButtons");
-                for (let i = 0; i < App.gameData.players.length; i++) {
-                    let p = App.gameData.players[i];
-                    if (!App.playerBtns[p.id]) {
-                        buttons.innerHTML = `${buttons.innerHTML}<button class="playerButton" value="${p.id}" id="${p.id}-btn">${p.name}</button>`;
-                        App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
-
-
-                    }
-                }
+                vm.players = App.gameData.players;
             },
 
             beginNewGame : function(data) {
                 document.getElementById("startGameBtn").style.display = "none";
-                let x = document.getElementById("roles");
                 for (let i = 0; i < App.gameData.players.length; i++) {
                     let p = App.gameData.players[i];
                     vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
-                        App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
-                        App.playerBtns[p.id].onclick = function() {
-                            let selectedPlayer = App.getPlayerById(+this.value);
-                            if (selectedPlayer.dead) {
-                                alert(`${selectedPlayer.name} is dead!`);
-                            }
-                            if (App.state === "nominateChancellor") {
-                                if (App.gameData.lastChancellor && selectedPlayer.id === App.gameData.lastChancellor.id) {
-                                    alert("can't be chancellor twice in a row")
-                                } else {
-                                    IO.socket.emit("presidentNominate", {nominee: selectedPlayer});
-                                }
-                            } else if (App.state === "executiveAction") {
-                                if (App.gameData.lastExecutiveAction === Executive_Action.InvestigateLoyalty) {
-                                    let loyalty = selectedPlayer.role;
-                                    if (loyalty === Enums.Role.Hitler) {
-                                        loyalty = Enums.Role.Fascist;
-                                    }
-                                    log(`${selectedPlayer.name} is ${loyalty}!`);
-                                }
-                                IO.socket.emit("chooseEATarget",{target:selectedPlayer});
-                            }
-
-                        }
-
-
+                    App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
                 }
             },
 
@@ -812,72 +777,24 @@ const Election = __webpack_require__(4).Election;
         },
         President: {
             onPresidentElected: function() {
-                App.playerBtns.forEach(function (b) {
-                    b.disabled = true;
-                    b.classList.remove("isPresident");
-                    b.classList.remove("isChancellor");
-                    if (+b.value=== App.gameData.president.id) {
-                        b.classList.add("isPresident");
-                    }
-                    if (App.getPlayerById(+b.value).dead) {
-                        b.classList.add("isDead");
-                    }
-
-                     else if (+b.value !== +App.myPlayerId && (!App.gameData.lastChancellor || App.gameData.lastChancellor.id !== App.getPlayerById(+b.value.id)) ){
-                            b.disabled = false;
-
-                    }
-                });
-                    log("Nominate chancellor");
-                    App.state = "nominateChancellor";
-                    if (CPU) {
-                        setRandomTimeout(()=> {
+                vm.disablePlayerButtons = false;
+                log("Nominate chancellor");
+                App.state = "nominateChancellor";
+                if (CPU) {
+                    setRandomTimeout(()=> {
                             let selectedPlayer;
                             do {
                                 selectedPlayer = Rand.Choice(App.gameData.players);
                             } while (selectedPlayer.id === App.myPlayerId || selectedPlayer.dead || (App.gameData.lastChancellor && App.gameData.lastChancellor.id === selectedPlayer.id));
                             App.playerBtns[selectedPlayer.id].click();
                         },500,3000);
-                    }
+                }
 
             },
             onChancellorElected: function() {
                 App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
-                    for (let i = 0; i < 3; i++) {
-                        App.$policyChoiceBtns[i].disabled = false;
-                        App.$policyChoiceBtns[i].onclick = function () {
-                            let choices = [];
-                            let notChosen = +this.value;
+                vm.policyChoices = App.gameData.presidentPolicies;
 
-                            switch (notChosen) {
-                                case 0:
-                                    choices = [App.gameData.presidentPolicies[1],App.gameData.presidentPolicies[2]];
-                                    break;
-                                case 1:
-                                    choices = [App.gameData.presidentPolicies[0],App.gameData.presidentPolicies[2]];
-                                    break;
-                                case 2:
-                                    choices = [App.gameData.presidentPolicies[0],App.gameData.presidentPolicies[1]];
-                                    break;
-                            }
-                            for (let j = 0; j < 3; j++) {
-                                App.$policyChoiceBtns[j].disabled = true;
-                                App.$policyChoiceBtns[j].classList.remove("liberalPolicy");
-                                App.$policyChoiceBtns[j].classList.remove("fascistPolicy");
-
-                            }
-                            IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
-                            vm.showPolicyChoices = false;
-                        };
-                        App.$policyChoiceBtns[i].classList.remove("liberalPolicy");
-                        App.$policyChoiceBtns[i].classList.remove("fascistPolicy");
-                        if (App.gameData.presidentPolicies[i].isLiberal) {
-                            App.$policyChoiceBtns[i].classList.add("liberalPolicy")
-                        } else {
-                            App.$policyChoiceBtns[i].classList.add("fascistPolicy")
-
-                        }
-                    }
                     if (CPU) {
                         setRandomTimeout(function () {
                             let choice = Rand.Range(0,3);
@@ -895,9 +812,7 @@ const Election = __webpack_require__(4).Election;
                     log("Next 3 Policies are " + App.gameData.policyDeck.peek(3).map(x => x.toString()).join(", "));
                     IO.socket.emit('chooseEATarget');
                 } else {
-                    App.playerBtns.forEach(function (b) {
-                        b.disabled = false;
-                    });
+                    vm.disablePlayerButtons = false;
                     App.state = "executiveAction";
                     switch (App.gameData.lastExecutiveAction) {
                         case Executive_Action.InvestigateLoyalty:
@@ -924,34 +839,16 @@ const Election = __webpack_require__(4).Election;
         },
         Chancellor: {
             onPresidentPolicyChosen: function() {
-                for (let i = 0; i < 2; i++) {
-                    App.$policyChoiceBtns[i].disabled = false;
-                    App.$policyChoiceBtns[i].onclick = function () {
-                        let notChosen = +this.value;
+                vm.policyChoices = App.gameData.chancellorPolicies;
 
-
-                        for (let j = 0; j < 3; j++) {
-                            App.$policyChoiceBtns[j].disabled = true;
-                            App.$policyChoiceBtns[j].classList.remove("liberalPolicy");
-                            App.$policyChoiceBtns[j].classList.remove("fascistPolicy");
-                        }
-                        IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [App.gameData.chancellorPolicies[notChosen === 1 ? 0 : 1]]});
-                    };
-                    App.$policyChoiceBtns[i].classList.remove("liberalPolicy");
-                    App.$policyChoiceBtns[i].classList.remove("fascistPolicy");
-                    if (App.gameData.chancellorPolicies[i].isLiberal) {
-                        App.$policyChoiceBtns[i].classList.add("liberalPolicy")
-                    } else {
-                        App.$policyChoiceBtns[i].classList.add("fascistPolicy")
-
-                    }
-                }
                 if (App.gameData.enactedPolicies.fascists === 5) {
-                    App.$policyChoiceBtns[2].disabled = false;
-                    App.$policyChoiceBtns[2].onclick = function() {
-                        App.$policyChoiceBtns[2].disabled = true;
-                        IO.socket.emit('chancellorRequestedVeto');
-                    }
+                    // App.$policyChoiceBtns[2].disabled = false;
+                    // App.$policyChoiceBtns[2].onclick = function() {
+                    //     App.$policyChoiceBtns[2].disabled = true;
+                    //     vm.showPolicyChoices = false;
+                    //
+                    // }
+                    vm.showVetoButton = true;
                 }
                 if (CPU) {
                     setRandomTimeout(function () {
@@ -999,14 +896,108 @@ function log(message) {
         $messageBox.innerHTML = existingHtml.join("<br>");
     }
 }
+
+
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+///////////////////////Vue.js CODE///////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 const vm = new Vue({
     el: "#gameBody",
     data: {
         showPolicyChoices: false,
+        showVetoButton: false,
         showVoteButtons: false,
-        roles: ""
+        disablePlayerButtons: true,
+        roles: "",
+        players: [],
+        policyChoices: [],
+    },
+    methods: {
+        playerButtonClick: function(id) {
+            let selectedPlayer = App.getPlayerById(+id);
+            if (selectedPlayer.dead) {
+                alert(`${selectedPlayer.name} is dead!`);
+            }
+            if (App.state === "nominateChancellor") {
+                if (App.gameData.lastChancellor && selectedPlayer.id === App.gameData.lastChancellor.id) {
+                    alert("can't be chancellor twice in a row")
+                } else {
+                    IO.socket.emit("presidentNominate", {nominee: selectedPlayer});
+                    this.disablePlayerButtons = true;
+                }
+            } else if (App.state === "executiveAction") {
+                if (App.gameData.lastExecutiveAction === Executive_Action.InvestigateLoyalty) {
+                    let loyalty = selectedPlayer.role;
+                    if (loyalty === Enums.Role.Hitler) {
+                        loyalty = Enums.Role.Fascist;
+                    }
+                    log(`${selectedPlayer.name} is ${loyalty}!`);
+                }
+                IO.socket.emit("chooseEATarget",{target:selectedPlayer});
+                this.disablePlayerButtons = true;
+            }
+        },
+        disablePlayerButton(id) {
+            if (this.disablePlayerButtons) {
+                return true;
+            }
+            if (id == App.myPlayerId) {
+                return true;
+            }
+            let selectedPlayer = App.getPlayerById(+id);
+            if (selectedPlayer.dead) {
+                return true;
+            }
+            if (App.state === "nominateChancellor") {
+                return App.gameData.lastChancellor && App.gameData.lastChancellor.id == id;
+            }
+            return false;
+        },
+        getPolicyClass: function(index) {
+            if (App.gameData && App.gameData.presidentPolicies && App.gameData.presidentPolicies[+index]) {
+                if (App.gameData.presidentPolicies[+index].isLiberal) {
+                    return "liberalPolicy";
+                } else {
+                    return "fascistPolicy"
+                }
+            }
+            return "";
+        },
+        policyChoiceClick: function(index) {
+            if (App.amIThePresident()) {
+
+            let choices = [];
+
+
+            switch (index) {
+                case 0:
+                    choices = [App.gameData.presidentPolicies[1],App.gameData.presidentPolicies[2]];
+                    break;
+                case 1:
+                    choices = [App.gameData.presidentPolicies[0],App.gameData.presidentPolicies[2]];
+                    break;
+                case 2:
+                    choices = [App.gameData.presidentPolicies[0],App.gameData.presidentPolicies[1]];
+                    break;
+            }
+
+            IO.socket.emit('choosePresidentPolicies', {id: App.myPlayerId, policies: choices});
+            } else {
+
+            IO.socket.emit('chooseChancellorPolicy', {id: App.myPlayerId, policies: [App.gameData.chancellorPolicies[index === 1 ? 0 : 1]]});
+            }
+            this.policyChoices = [];
+            this.showVetoButton = false;
+        },
+        vetoButtonClick: function() {
+            this.showVetoButton = false;
+            IO.socket.emit('chancellorRequestedVeto');
+        }
     }
 });
+
 
 /***/ }),
 /* 3 */
