@@ -17,7 +17,7 @@
 <div id="gameBody">
     <div id="messageBox"></div>
     <div id="playerButtons">
-        <button class="playerButton" :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
+        <button class="playerButton" :class="p.dead ? 'isDead' : ''" :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
     </div><br>
     <button id="startGameBtn">Start Game</button>
     <div id="enactedPolicies" class="topright">Liberal: [ ] [ ] [ ] [ ] [ ]<br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
