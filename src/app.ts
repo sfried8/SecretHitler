@@ -1,4 +1,4 @@
-const DEBUG = true;
+const DEBUG = false;
 let CPU = false;
 import { WinCondition } from "./Enums";
 import { Executive_Action } from "./Enums";
@@ -11,6 +11,7 @@ import { PolicyDeck } from "./Policy";
 import { Election } from "./models";
 
 import { Player } from "./Player";
+import Toasted from "vue-toasted";
 function updateEnactedPolicies() {
     let ls = App.gameData.enactedPolicies.liberals;
     let fs = App.gameData.enactedPolicies.fascists;
@@ -23,7 +24,7 @@ function updateEnactedPolicies() {
             h += " [ ]";
         }
     }
-    h += "<br/>Fartist:";
+    h += "<br/>Fascist:";
     for (let i = 0; i < 5; i++) {
         if (i < fs) {
             h += " [X]";
@@ -502,18 +503,18 @@ const App = {
             //     }
             // });
             vm.disablePlayerButtons = true;
-            log(
-                `Waiting for President ${
-                    App.gameData.president.name
-                } to nominate Chancellor`
-            );
+            vm.currentAction = `Waiting for President ${
+                App.gameData.president.name
+            } to nominate Chancellor`;
         },
 
         onChancellorNominated: function() {
-            log("time to vote on " + App.gameData.chancellorNominee.name);
             if (App.dead) {
                 return;
             }
+            vm.currentAction = `Vote now whether to elect ${
+                App.gameData.chancellorNominee.name
+            } as Chancellor`;
             vm.showVoteButtons = true;
             if (CPU) {
                 setRandomTimeout(
@@ -556,21 +557,17 @@ const App = {
             App.playerBtns[App.gameData.chancellor.id].classList.add(
                 "isChancellor"
             );
-            log(
-                `Waiting for President ${
-                    App.gameData.president.name
-                } to pick policies`
-            );
+            vm.currentAction = `Waiting for President ${
+                App.gameData.president.name
+            } to pick policies`;
         },
 
         onPresidentPolicyChosen: function() {
-            log(
-                `President ${
-                    App.gameData.president.name
-                } has chosen 2 policies. Waiting for Chancellor ${
-                    App.gameData.chancellor.name
-                } to enact one of them.`
-            );
+            vm.currentAction = `President ${
+                App.gameData.president.name
+            } has chosen 2 policies. Waiting for Chancellor ${
+                App.gameData.chancellor.name
+            } to enact one of them.`;
         },
 
         onVetoRequested: function() {},
@@ -590,25 +587,19 @@ const App = {
         onExecutiveActionTriggered: function() {
             switch (App.gameData.lastExecutiveAction) {
                 case Executive_Action.InvestigateLoyalty:
-                    log(
-                        `Waiting for President ${
-                            App.gameData.president.name
-                        } to investigate someone's loyalty.`
-                    );
+                    vm.currentAction = `Waiting for President ${
+                        App.gameData.president.name
+                    } to investigate someone's loyalty.`;
                     break;
                 case Executive_Action.Execution:
-                    log(
-                        `Waiting for President ${
-                            App.gameData.president.name
-                        } to execute someone.`
-                    );
+                    vm.currentAction = `Waiting for President ${
+                        App.gameData.president.name
+                    } to execute someone.`;
                     break;
                 case Executive_Action.SpecialElection:
-                    log(
-                        `Waiting for President ${
-                            App.gameData.president.name
-                        } to invoke a special election.`
-                    );
+                    vm.currentAction = `Waiting for President ${
+                        App.gameData.president.name
+                    } to invoke a special election.`;
                     break;
             }
         },
@@ -700,6 +691,7 @@ const App = {
 
         beginNewGame: function(data) {
             document.getElementById("startGameBtn").style.display = "none";
+            vm.showBoard = true;
             for (let i = 0; i < App.gameData.players.length; i++) {
                 let p = App.gameData.players[i];
                 vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
@@ -739,7 +731,8 @@ const App = {
     President: {
         onPresidentElected: function() {
             vm.disablePlayerButtons = false;
-            log("Nominate chancellor");
+            vm.currentAction =
+                "You're the president! Choose someone to nominate for chancellor.";
             App.state = "nominateChancellor";
             if (CPU) {
                 setRandomTimeout(
@@ -802,13 +795,15 @@ const App = {
                 App.state = "executiveAction";
                 switch (App.gameData.lastExecutiveAction) {
                     case Executive_Action.InvestigateLoyalty:
-                        log("Choose someone to investigate their loyalty.");
+                        vm.currentAction =
+                            "Choose someone to investigate their loyalty.";
                         break;
                     case Executive_Action.Execution:
-                        log("Choose someone to execute.");
+                        vm.currentAction = "Choose someone to execute.";
                         break;
                     case Executive_Action.SpecialElection:
-                        log("Choose the president for next turn.");
+                        vm.currentAction =
+                            "Choose the president for next turn.";
                         break;
                 }
                 if (CPU) {
@@ -837,6 +832,7 @@ const App = {
     },
     Chancellor: {
         onPresidentPolicyChosen: function() {
+            vm.currentAction = "Choose a policy to discard";
             vm.policyChoices = App.gameData.chancellorPolicies;
 
             if (App.gameData.enactedPolicies.fascists === 5) {
@@ -878,24 +874,26 @@ window.onload = function() {
     App.init();
 };
 
-function setRandomTimeout(func, min, max) {
+function setRandomTimeout(func, min: number, max: number) {
     setTimeout(func, Rand.Range(min, max));
 }
 let $messageBox = undefined;
-function log(message) {
-    if (DEBUG) {
-        if (!$messageBox) {
-            $messageBox = document.getElementById("messageBox");
-        }
-        let existingHtml = $messageBox.innerHTML;
-        existingHtml = existingHtml.split("<br>");
-        if (existingHtml.length > 8) {
-            console.log(existingHtml[0]);
-            existingHtml = existingHtml.slice(existingHtml.length - 8);
-        }
-        existingHtml.push(message);
-        $messageBox.innerHTML = existingHtml.join("<br>");
-    }
+Vue.use(Toasted);
+function log(message: string, duration?: number) {
+    Vue.toasted.show(message, { duration: duration || 4000 });
+    // if (DEBUG) {
+    //     if (!$messageBox) {
+    //         $messageBox = document.getElementById("messageBox");
+    //     }
+    //     let existingHtml = $messageBox.innerHTML;
+    //     existingHtml = existingHtml.split("<br>");
+    //     if (existingHtml.length > 8) {
+    //         console.log(existingHtml[0]);
+    //         existingHtml = existingHtml.slice(existingHtml.length - 8);
+    //     }
+    //     existingHtml.push(message);
+    //     $messageBox.innerHTML = existingHtml.join("<br>");
+    // }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -912,7 +910,9 @@ const vm = new Vue({
         disablePlayerButtons: true,
         roles: "",
         players: [],
-        policyChoices: []
+        policyChoices: [],
+        currentAction: "",
+        showBoard: false
     },
     methods: {
         playerButtonClick: function(id) {
@@ -981,6 +981,9 @@ const vm = new Vue({
             return "";
         },
         policyChoiceClick: function(index) {
+            if (!DEBUG && !confirm("Are you sure?")) {
+                return;
+            }
             if (App.amIThePresident()) {
                 let choices = [];
 

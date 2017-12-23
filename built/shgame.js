@@ -284,9 +284,7 @@ function hostPrepareGame(gameId) {
  * The Countdown has finished, and the game begins!
  * @param gameId The game ID / room ID
  */
-function hostStartGame() {
-    log("Game Started.");
-}
+function hostStartGame() { }
 let gameData = {
     players: [],
     liberals: [],
@@ -330,9 +328,6 @@ function playerJoinGame(data) {
         // Join the room
         sock.join(thisGameId);
         gameData.players.push(new Player_1.Player(gameData.players.length, data.playerName, data.playerId));
-        if (gameData.players.length === 1) {
-            gameData.hostId = data.playerId;
-        }
         // Emit an event notifying the clients that the player has joined the room.
         emit("playerJoinedRoom", gameData);
     }
