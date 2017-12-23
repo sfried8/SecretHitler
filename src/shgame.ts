@@ -9,6 +9,7 @@ import { Policy, PolicyDeck } from "./Policy";
 
 // const Election = models.Election;
 import { Player } from "./Player";
+import { GameData } from "./gameData";
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -296,9 +297,7 @@ function hostPrepareGame(gameId) {
  * The Countdown has finished, and the game begins!
  * @param gameId The game ID / room ID
  */
-function hostStartGame() {
-    log("Game Started.");
-}
+function hostStartGame() {}
 
 let gameData = {
     players: [],
@@ -312,7 +311,7 @@ let gameData = {
     gameRules: {},
     enactedPolicies: {},
     chaosLevel: 0
-};
+} as GameData;
 function getPlayerById(id) {
     for (let i = 0; i < gameData.players.length; i++) {
         if (gameData.players[i].id === id) {
@@ -350,9 +349,6 @@ function playerJoinGame(data) {
         gameData.players.push(
             new Player(gameData.players.length, data.playerName, data.playerId)
         );
-        if (gameData.players.length === 1) {
-            gameData.hostId = data.playerId;
-        }
         // Emit an event notifying the clients that the player has joined the room.
         emit("playerJoinedRoom", gameData);
     } else {

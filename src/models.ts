@@ -4,6 +4,7 @@ export class Election {
     jas: string[];
     neins: string[];
     constructor();
+    constructor(president: Player, chancellor: Player, numVotes: number);
     constructor(
         public president?: Player,
         public chancellor?: Player,

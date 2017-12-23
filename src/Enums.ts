@@ -5,6 +5,12 @@ export enum Executive_Action {
     PolicyPeek,
     Execution
 }
+export interface Setup {
+    Liberals: number;
+    Fascists: number;
+    hitlerKnowsFascists: boolean;
+    board: Executive_Action[];
+}
 export const Setups = {
     3: {
         Liberals: 1,
