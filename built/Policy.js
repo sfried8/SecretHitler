@@ -1,11 +1,13 @@
-const Rand = require('./Rand');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Rand = require("./Rand");
 class PolicyDeck {
     constructor(obj) {
         if (obj) {
             this.deckSource = obj.deckSource.map(x => new Policy(x));
             this.deck = obj.deck.map(x => new Policy(x));
-        } else {
-
+        }
+        else {
             this.deckSource = [];
             this.deck = [];
             for (let i = 0; i < 6; i++) {
@@ -24,34 +26,32 @@ class PolicyDeck {
         if (this.deck.length < numberOfCards) {
             this.shuffleDeck();
         }
-        return this.deck.splice(0,numberOfCards);
+        return this.deck.splice(0, numberOfCards);
     }
     peek(numberOfCards) {
         if (this.deck.length < numberOfCards) {
             this.shuffleDeck();
         }
-        return this.deck.slice(0,numberOfCards)
-
+        return this.deck.slice(0, numberOfCards);
     }
 }
+exports.PolicyDeck = PolicyDeck;
 class Policy {
-
     constructor(obj) {
         if (typeof obj.isLiberal !== "undefined") {
             this.isLiberal = obj.isLiberal;
-        } else {
+        }
+        else {
             this.isLiberal = !!obj;
         }
     }
     toString() {
         if (this.isLiberal) {
             return "Liberal";
-        } else {
+        }
+        else {
             return "Fascist";
         }
     }
 }
-module.exports = {
-    Policy: Policy,
-    PolicyDeck: PolicyDeck
-}
+exports.Policy = Policy;

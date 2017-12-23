@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class Player {
     constructor(index, name, id) {
         this.index = index;
@@ -6,4 +8,4 @@ class Player {
         this.dead = false;
     }
 }
-module.exports = Player;
+exports.Player = Player;
