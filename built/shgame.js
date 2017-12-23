@@ -23,6 +23,7 @@ function initGame(sio, socket) {
     gameSocket.on("hostRoomFull", hostPrepareGame);
     gameSocket.on("hostCountdownFinished", hostStartGame);
     // Player Events
+    gameSocket.on("rejoinGame", playerRejoinGame);
     gameSocket.on("playerJoinGame", playerJoinGame);
     gameSocket.on("VIPStart", onVIPStart);
     gameSocket.on("presidentNominate", onPresidentNominate);
@@ -32,6 +33,7 @@ function initGame(sio, socket) {
     gameSocket.on("chooseEATarget", onChooseEATarget);
     gameSocket.on("chancellorRequestedVeto", onChancellorRequestedVeto);
     gameSocket.on("vetoApproved", onVetoApproved);
+    gameSocket.on("isGameStillGoing", isGameStillGoing);
 }
 function onVIPStart() {
     let tempPlayerArray = Rand.Shuffle(gameData.players.slice());
@@ -311,6 +313,15 @@ function getPlayerById(id) {
  *     PLAYER FUNCTIONS      *
  *                           *
  ***************************** */
+function isGameStillGoing(data, callback) {
+    let room = gameSocket.manager.rooms["/" + thisGameId];
+    // If the room exists...
+    if (room !== undefined) {
+        callback(true);
+        return;
+    }
+    callback(false);
+}
 /**
  * A player clicked the 'START GAME' button.
  * Attempt to connect them to the room that matches
@@ -334,6 +345,26 @@ function playerJoinGame(data) {
     else {
         // Otherwise, send an error message back to the player.
         this.emit("error", { message: "This room does not exist." });
+    }
+}
+function playerRejoinGame(data) {
+    let sock = this;
+    // Look up the room ID in the Socket.IO manager object.
+    let room = gameSocket.manager.rooms["/" + thisGameId];
+    // If the room exists...
+    if (room !== undefined) {
+        // attach the socket id to the data object.
+        data.mySocketId = sock.id;
+        // Join the room
+        sock.join(thisGameId);
+        // Emit an event notifying the clients that the player has joined the room.
+        emit("playerRejoinedRoom", gameData);
+    }
+    else {
+        // Otherwise, send an error message back to the player.
+        this.emit("error", {
+            message: "This room does not exist."
+        });
     }
 }
 /*

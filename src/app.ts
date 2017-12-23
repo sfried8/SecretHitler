@@ -12,6 +12,7 @@ import { Election } from "./models";
 
 import { Player } from "./Player";
 import Toasted from "vue-toasted";
+import * as Cookies from "js-cookie";
 function updateEnactedPolicies() {
     let ls = App.gameData.enactedPolicies.liberals;
     let fs = App.gameData.enactedPolicies.fascists;
@@ -92,6 +93,7 @@ const IO = {
         IO.socket.on("connected", IO.onConnected);
         IO.socket.on("newGameCreated", IO.onNewGameCreated);
         IO.socket.on("playerJoinedRoom", IO.playerJoinedRoom);
+        IO.socket.on("playerRejoinedRoom", IO.playerRejoinedRoom);
         IO.socket.on("beginNewGame", IO.beginNewGame);
         IO.socket.on("gameOver", IO.gameOver);
         IO.socket.on("error", IO.error);
@@ -207,7 +209,9 @@ const IO = {
         convertGameDataToClass(data);
         App.Player.playerJoinedRoom();
     },
-
+    playerRejoinedRoom: function(data) {
+        convertGameDataToClass(data);
+    },
     /**
      * Both players have joined the game.
      * @param data
@@ -427,6 +431,7 @@ const App = {
          */
         onPlayerStartClick: function() {
             // console.log('Player clicked "Start"');
+
             const names = [
                 "Sam",
                 "Mike",
@@ -460,7 +465,14 @@ const App = {
 
             // Send the gameId and playerName to the server
             IO.socket.emit("playerJoinGame", data);
-
+            App.Player.joinGame(data);
+        },
+        joinGame: function(data) {
+            Cookies.set("existingGameInfo", {
+                gameId: App.gameId,
+                playerId: App.myPlayerId,
+                playerName: data.playerName
+            });
             // Set the appropriate properties for the current player.
             App.myRole = "Player";
             App.Player.myName = data.playerName;
@@ -468,7 +480,6 @@ const App = {
             App.$templateJoinGame.style.display = "none";
             App.$gameArea.style.display = "none";
         },
-
         onVIPStart: function() {
             document.getElementById("startGameBtn").style.display = "none";
             CPU = false;
@@ -872,6 +883,30 @@ const App = {
 window.onload = function() {
     IO.init();
     App.init();
+    if (Cookies.get("existingGameInfo")) {
+        const gameInfo = Cookies.getJSON("existingGameInfo");
+        IO.socket.emit(
+            "isGameStillGoing",
+            { gameId: gameInfo.gameId },
+            function(response) {
+                if (response) {
+                    if (
+                        confirm(
+                            "Looks like you were disconnected, but the game is still going. Rejoin?"
+                        )
+                    ) {
+                        App.myPlayerId = gameInfo.playerId;
+                        App.gameId = gameInfo.gameId;
+                        IO.socket.emit("rejoinGame", gameInfo);
+                        App.Player.joinGame(gameInfo);
+                    }
+                }
+                // } else {
+                //     Cookies.remove("existingGameInfo");
+                // }
+            }
+        );
+    }
 };
 
 function setRandomTimeout(func, min: number, max: number) {
