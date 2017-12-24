@@ -7,7 +7,7 @@ Dark Purple : #A22FB0
 
 */
 #gameBody {
-    width: 800px;
+    max-width: 800px;
     height: 100%;
     margin: auto;
     background-color: #fbb969;
@@ -29,8 +29,8 @@ body {
 .playerButton {
     margin: 10px;
     display: inline-block;
-    width: 10%;
-    height: 100%;
+    width: 20%;
+    height: 60%;
     background-color: #333;
     border-radius: 20px;
     font-family: "courier-prime", Courier, sans-serif;
@@ -85,13 +85,14 @@ BUTTONS!
     height: 100%;
     width: 49%;
     margin-bottom: 0;
-    color: #ecffe0;
+    color: #fbb969;
+    font-family: "courier-prime", Courier, sans-serif;
     /*font-family: 'Quicksand', sans-serif;*/
     font-weight: 700;
     font-size: 2em;
     line-height: 1.2;
     text-align: center;
-    background-color: #8ad453;
+    background-color: #333333;
     white-space: nowrap;
     vertical-align: middle;
     cursor: pointer;
@@ -111,7 +112,7 @@ BUTTONS!
 
 .btn:hover,
 .btn:focus {
-    color: #ae37b2;
+    color: #fff;
     text-decoration: none;
 }
 

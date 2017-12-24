@@ -237,7 +237,7 @@ const IO = {
      * @param data
      */
     error: function(data: any) {
-        alert(data.message);
+        alert("message: " + data.message);
     }
 };
 
@@ -329,8 +329,6 @@ const App = {
 
     bindEvents: function() {
         // Host
-        document.getElementById("btnCreateGame").onclick =
-            App.Host.onCreateClick;
         document.getElementById("startGameBtn").onclick = App.Player.onVIPStart;
 
         // Player
@@ -863,6 +861,9 @@ function clickJoinButton() {
 window.onload = function() {
     IO.init();
     App.init();
+    if (!DEBUG) {
+        document.getElementById("DEBUG").style.display = "none";
+    }
     if (Cookies.get("existingGameInfo")) {
         const gameInfo: any = Cookies.getJSON("existingGameInfo");
         IO.socket.emit(

@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
 
     <!-- Ensure that everything scales appropriately on a mobile device -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Let's borrow a cool looking Font from Google -->
     <!--<link href='https://fonts.googleapis.com/css?family=Quicksand:300,400,700' rel='stylesheet' type='text/css'>-->
@@ -22,7 +22,7 @@
                 :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
         </div>
         <br>
-        <button id="startGameBtn">Start Game</button>
+        <button id="startGameBtn" class="topright">Start Game</button>
         <div id="enactedPolicies" class="topright" v-show="showBoard">Liberal: [ ] [ ] [ ] [ ] [ ]
             <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
         <div id="voteButtons" v-show="showVoteButtons">
@@ -52,8 +52,6 @@
                 </div>
 
                 <div class="buttons">
-
-                    <button id="btnCreateGame" class="btn left">CREATE</button>
                     <button id="btnJoinGame" class="btn right">JOIN</button>
                     <div style="clear:both"></div>
                 </div>

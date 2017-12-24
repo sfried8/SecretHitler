@@ -514,7 +514,7 @@ const IO = {
      * @param data
      */
     error: function (data) {
-        alert(data.message);
+        alert("message: " + data.message);
     }
 };
 const App = {
@@ -599,8 +599,6 @@ const App = {
      */
     bindEvents: function () {
         // Host
-        document.getElementById("btnCreateGame").onclick =
-            App.Host.onCreateClick;
         document.getElementById("startGameBtn").onclick = App.Player.onVIPStart;
         // Player
         document.getElementById("btnJoinGame").onclick = App.Player.onJoinClick;
@@ -1004,6 +1002,9 @@ function clickJoinButton() {
 window.onload = function () {
     IO.init();
     App.init();
+    if (!DEBUG) {
+        document.getElementById("DEBUG").style.display = "none";
+    }
     if (Cookies.get("existingGameInfo")) {
         const gameInfo = Cookies.getJSON("existingGameInfo");
         IO.socket.emit("isGameStillGoing", { gameId: gameInfo.gameId }, function (response) {
