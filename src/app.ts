@@ -1,4 +1,4 @@
-const DEBUG = false;
+const DEBUG = true;
 let CPU = false;
 import { WinCondition } from "./Enums";
 import { Executive_Action } from "./Enums";
@@ -13,6 +13,9 @@ import { Election } from "./models";
 import { Player } from "./Player";
 import Toasted from "vue-toasted";
 import * as Cookies from "js-cookie";
+declare const Vue: any;
+declare const io: any;
+import { GameData, EnactedPolicies } from "./gameData";
 function updateEnactedPolicies() {
     let ls = App.gameData.enactedPolicies.liberals;
     let fs = App.gameData.enactedPolicies.fascists;
@@ -36,7 +39,7 @@ function updateEnactedPolicies() {
 
     document.getElementById("enactedPolicies").innerHTML = h;
 }
-function convertGameDataToClass(gameData) {
+function convertGameDataToClass(gameData: GameData) {
     if (gameData.electionArchive) {
         for (let i = 0; i < gameData.electionArchive.length; i++) {
             gameData.electionArchive[i] = new Election().cloneOf(
@@ -54,16 +57,16 @@ function convertGameDataToClass(gameData) {
     }
     if (gameData.presidentPolicies) {
         gameData.presidentPolicies = gameData.presidentPolicies.map(
-            x => new Policy(x)
+            x => new Policy(x.isLiberal)
         );
     }
     if (gameData.chancellorPolicies) {
         gameData.chancellorPolicies = gameData.chancellorPolicies.map(
-            x => new Policy(x)
+            x => new Policy(x.isLiberal)
         );
     }
     if (gameData.lastPolicy) {
-        gameData.lastPolicy = new Policy(gameData.lastPolicy);
+        gameData.lastPolicy = new Policy(gameData.lastPolicy.isLiberal);
     }
     App.gameData = gameData;
     updateEnactedPolicies();
@@ -75,7 +78,7 @@ function convertGameDataToClass(gameData) {
  * @type {{init: init, bindEvents: bindEvents, onPresidentElected: onPresidentElected, onChancellorNominated: onChancellorNominated, onChancellorElected: onChancellorElected, onPresidentPolicyChosen: onPresidentPolicyChosen, onExecutiveActionTriggered: onExecutiveActionTriggered, onPlayerVoted: onPlayerVoted, onVoteFinished: onVoteFinished, onPolicyPlayed: onPolicyPlayed, onConnected: onConnected, onNewGameCreated: onNewGameCreated, playerJoinedRoom: playerJoinedRoom, beginNewGame: beginNewGame, gameOver: gameOver, error: error}}
  */
 const IO = {
-    socket: null,
+    socket: <any>null,
     /**
      * This is called when the page is displayed. It connects the Socket.IO client
      * to the Socket.IO server
@@ -114,7 +117,7 @@ const IO = {
         IO.socket.on("vetoWasRejected", IO.onVetoWasRejected);
     },
 
-    onPresidentElected: function(data) {
+    onPresidentElected: function(data: GameData) {
         convertGameDataToClass(data);
         if (App.amIThePresident()) {
             App.President.onPresidentElected();
@@ -122,11 +125,11 @@ const IO = {
             App.Player.onPresidentElected();
         }
     },
-    onChancellorNominated: function(data) {
+    onChancellorNominated: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onChancellorNominated();
     },
-    onChancellorElected: function(data) {
+    onChancellorElected: function(data: GameData) {
         convertGameDataToClass(data);
         if (App.amIThePresident()) {
             App.President.onChancellorElected();
@@ -134,7 +137,7 @@ const IO = {
             App.Player.onChancellorElected();
         }
     },
-    onPresidentPolicyChosen: function(data) {
+    onPresidentPolicyChosen: function(data: GameData) {
         convertGameDataToClass(data);
         if (App.amITheChancellor()) {
             App.Chancellor.onPresidentPolicyChosen();
@@ -142,22 +145,22 @@ const IO = {
             App.Player.onPresidentPolicyChosen();
         }
     },
-    onVetoRequested: function(data) {
+    onVetoRequested: function(data: GameData) {
         if (App.amIThePresident()) {
             App.President.onVetoRequested();
         } else {
             App.Player.onVetoRequested();
         }
     },
-    onVetoWasApproved: function(data) {
+    onVetoWasApproved: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onVetoWasApproved();
     },
-    onVetoWasRejected: function(data) {
+    onVetoWasRejected: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onVetoWasRejected();
     },
-    onExecutiveActionTriggered: function(data) {
+    onExecutiveActionTriggered: function(data: GameData) {
         convertGameDataToClass(data);
         if (App.amIThePresident()) {
             App.President.onExecutiveActionTriggered();
@@ -165,22 +168,22 @@ const IO = {
             App.Player.onExecutiveActionTriggered();
         }
     },
-    onPlayerVoted: function(data) {
+    onPlayerVoted: function(data: GameData) {
         App.Player.onPlayerVoted(data);
     },
-    onExecutiveActionTargetChosen: function(data) {
+    onExecutiveActionTargetChosen: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onExecutiveActionTargetChosen();
     },
-    onVoteFinished: function(data) {
+    onVoteFinished: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onVoteFinished();
     },
-    onPolicyPlayed: function(data) {
+    onPolicyPlayed: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onPolicyPlayed();
     },
-    onPolicyPlayedByCountry: function(data) {
+    onPolicyPlayedByCountry: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.onPolicyPlayedByCountry();
     },
@@ -197,7 +200,7 @@ const IO = {
      * A new game has been created and a random game ID has been generated.
      * @param data {{ gameId: int, mySocketId: * }}
      */
-    onNewGameCreated: function(data) {
+    onNewGameCreated: function(data: GameData) {
         App.Host.gameInit(data);
     },
 
@@ -205,27 +208,27 @@ const IO = {
      * A player has successfully joined the game.
      * @param data {{playerName: string, gameId: int, mySocketId: int}}
      */
-    playerJoinedRoom: function(data) {
+    playerJoinedRoom: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.playerJoinedRoom();
     },
-    playerRejoinedRoom: function(data) {
+    playerRejoinedRoom: function(data: GameData) {
         convertGameDataToClass(data);
     },
     /**
      * Both players have joined the game.
      * @param data
      */
-    beginNewGame: function(data) {
+    beginNewGame: function(data: GameData) {
         convertGameDataToClass(data);
-        App.Player.beginNewGame(App.gameData);
+        App.Player.beginNewGame();
     },
 
     /**
      * Let everyone know the game has ended.
      * @param data
      */
-    gameOver: function(data) {
+    gameOver: function(data: any) {
         App.Player.gameOver(data);
     },
 
@@ -233,34 +236,11 @@ const IO = {
      * An error has occurred.
      * @param data
      */
-    error: function(data) {
+    error: function(data: any) {
         alert(data.message);
     }
 };
-interface EnactedPolicies {
-    liberals: number;
-    fascists: number;
-}
-interface GameData {
-    players: Player[];
-    liberals: Player[];
-    fascists: Player[];
-    hitler: Player;
-    president: Player;
-    chancellor: Player;
-    lastChancellor: Player;
-    chancellorNominee: Player;
-    gameRules: object;
-    enactedPolicies: EnactedPolicies;
-    policyDeck: PolicyDeck;
-    lastPolicy: Policy;
-    chaosLevel: number;
-    lastExecutiveAction: Executive_Action;
-    lastExecutiveActionTarget: Player;
-    currentElection: Election;
-    presidentPolicies: Policy[];
-    chancellorPolicies: Policy[];
-}
+
 const App = {
     /**
      * Keep track of the gameId, which is identical to the ID
@@ -269,7 +249,7 @@ const App = {
      */
     gameId: 0,
     myPlayerId: 0,
-    playerBtns: [],
+    playerBtns: <HTMLElement[]>[],
     dead: false,
     state: "",
     /**
@@ -312,15 +292,15 @@ const App = {
         App.bindEvents();
     },
 
-    $gameArea: null,
-    $templateIntroScreen: null,
-    $templateNewGame: null,
-    $templateJoinGame: null,
-    $hostGame: null,
-    $neinBtn: null,
-    $jaBtn: null,
-    $policyChoiceArea: null,
-    $policyChoiceBtns: null,
+    $gameArea: <HTMLElement>null,
+    $templateIntroScreen: <HTMLElement>null,
+    $templateNewGame: <HTMLElement>null,
+    $templateJoinGame: <HTMLElement>null,
+    $hostGame: <HTMLElement>null,
+    $neinBtn: <HTMLElement>null,
+    $jaBtn: <HTMLElement>null,
+    $policyChoiceArea: <HTMLElement>null,
+    $policyChoiceBtns: <HTMLElement[]>[],
     /**
      * Create references to on-screen elements used throughout the game.
      */
@@ -388,7 +368,7 @@ const App = {
          * The Host screen is displayed for the first time.
          * @param data{{ gameId: int, mySocketId: * }}
          */
-        gameInit: function(data) {
+        gameInit: function(data: any) {
             App.gameId = data.gameId;
             App.mySocketId = data.mySocketId;
             App.myRole = "Host";
@@ -467,7 +447,7 @@ const App = {
             IO.socket.emit("playerJoinGame", data);
             App.Player.joinGame(data);
         },
-        joinGame: function(data) {
+        joinGame: function(data: any) {
             Cookies.set("existingGameInfo", {
                 gameId: App.gameId,
                 playerId: App.myPlayerId,
@@ -531,10 +511,8 @@ const App = {
                 setRandomTimeout(
                     function() {
                         if (Rand.Boolean(80)) {
-                            App.$jaBtn.disabled = false;
                             App.$jaBtn.click();
                         } else {
-                            App.$neinBtn.disabled = false;
                             App.$neinBtn.click();
                         }
                     },
@@ -543,20 +521,14 @@ const App = {
                 );
             } else {
             }
-            App.$jaBtn.disabled = false;
             App.$jaBtn.onclick = function() {
-                App.$jaBtn.disabled = true;
-                App.$neinBtn.disabled = true;
                 IO.socket.emit("voteForChancellor", {
                     id: App.myPlayerId,
                     vote: true
                 });
                 vm.showVoteButtons = false;
             };
-            App.$neinBtn.disabled = false;
             App.$neinBtn.onclick = function() {
-                App.$jaBtn.disabled = true;
-                App.$neinBtn.disabled = true;
                 IO.socket.emit("voteForChancellor", {
                     id: App.myPlayerId,
                     vote: false
@@ -615,7 +587,7 @@ const App = {
             }
         },
 
-        onPlayerVoted: function(data) {
+        onPlayerVoted: function(data: any) {
             log(
                 `${App.getPlayerById(data.id).name} voted ${
                     data.vote ? "ja" : "nein"
@@ -700,7 +672,7 @@ const App = {
             vm.players = App.gameData.players;
         },
 
-        beginNewGame: function(data) {
+        beginNewGame: function() {
             document.getElementById("startGameBtn").style.display = "none";
             vm.showBoard = true;
             for (let i = 0; i < App.gameData.players.length; i++) {
@@ -710,7 +682,7 @@ const App = {
             }
         },
 
-        gameOver: function(data) {
+        gameOver: function(data: GameData) {
             switch (data.gameOverReason) {
                 case WinCondition.SixLiberalPolicies:
                     alert(
@@ -769,6 +741,7 @@ const App = {
             App.playerBtns[App.gameData.chancellor.id].classList.add(
                 "isChancellor"
             );
+            vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = App.gameData.presidentPolicies;
 
             if (CPU) {
@@ -867,7 +840,7 @@ const App = {
             }
         }
     },
-    getPlayerById: function(id) {
+    getPlayerById: function(id: number): Player {
         let ret = null;
         App.gameData.players.forEach(function(p) {
             if (p.id === id) {
@@ -880,17 +853,25 @@ const App = {
                   UTILITY CODE
            ************************** */
 };
+function clickJoinButton() {
+    if (DEBUG) {
+        setTimeout(() => {
+            document.getElementById("btnJoinGame").click();
+        }, 100);
+    }
+}
 window.onload = function() {
     IO.init();
     App.init();
     if (Cookies.get("existingGameInfo")) {
-        const gameInfo = Cookies.getJSON("existingGameInfo");
+        const gameInfo: any = Cookies.getJSON("existingGameInfo");
         IO.socket.emit(
             "isGameStillGoing",
             { gameId: gameInfo.gameId },
-            function(response) {
+            function(response: boolean) {
                 if (response) {
                     if (
+                        !DEBUG &&
                         confirm(
                             "Looks like you were disconnected, but the game is still going. Rejoin?"
                         )
@@ -899,17 +880,23 @@ window.onload = function() {
                         App.gameId = gameInfo.gameId;
                         IO.socket.emit("rejoinGame", gameInfo);
                         App.Player.joinGame(gameInfo);
+                    } else {
+                        clickJoinButton();
                     }
+                } else {
+                    clickJoinButton();
                 }
                 // } else {
                 //     Cookies.remove("existingGameInfo");
                 // }
             }
         );
+    } else {
+        clickJoinButton();
     }
 };
 
-function setRandomTimeout(func, min: number, max: number) {
+function setRandomTimeout(func: any, min: number, max: number) {
     setTimeout(func, Rand.Range(min, max));
 }
 let $messageBox = undefined;
@@ -950,7 +937,7 @@ const vm = new Vue({
         showBoard: false
     },
     methods: {
-        playerButtonClick: function(id) {
+        playerButtonClick: function(id: string | number) {
             let selectedPlayer = App.getPlayerById(+id);
             if (selectedPlayer.dead) {
                 alert(`${selectedPlayer.name} is dead!`);
@@ -982,7 +969,7 @@ const vm = new Vue({
                 this.disablePlayerButtons = true;
             }
         },
-        disablePlayerButton(id) {
+        disablePlayerButton(id: string | number) {
             if (this.disablePlayerButtons) {
                 return true;
             }
@@ -1001,7 +988,7 @@ const vm = new Vue({
             }
             return false;
         },
-        getPolicyClass: function(index) {
+        getPolicyClass: function(index: number) {
             if (
                 App.gameData &&
                 App.gameData.presidentPolicies &&
@@ -1015,12 +1002,12 @@ const vm = new Vue({
             }
             return "";
         },
-        policyChoiceClick: function(index) {
+        policyChoiceClick: function(index: number) {
             if (!DEBUG && !confirm("Are you sure?")) {
                 return;
             }
             if (App.amIThePresident()) {
-                let choices = [];
+                let choices: Policy[] = [];
 
                 switch (index) {
                     case 0:

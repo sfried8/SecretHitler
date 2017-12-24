@@ -21,7 +21,7 @@ export class Election {
         this.numVotes = otherElection.numVotes;
         return this;
     }
-    vote(data) {
+    vote(data: any) {
         if (data.vote === true) {
             this.jas.push(data.id);
         } else if (data.vote === false) {

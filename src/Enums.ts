@@ -11,8 +11,8 @@ export interface Setup {
     hitlerKnowsFascists: boolean;
     board: Executive_Action[];
 }
-export const Setups = {
-    3: {
+export const Setups: any = {
+    3: <Setup>{
         Liberals: 1,
         Fascists: 1,
         hitlerKnowsFascists: true,
@@ -24,7 +24,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    5: {
+    5: <Setup>{
         Liberals: 3,
         Fascists: 1,
         hitlerKnowsFascists: true,
@@ -36,7 +36,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    6: {
+    6: <Setup>{
         Liberals: 4,
         Fascists: 1,
         hitlerKnowsFascists: true,
@@ -48,7 +48,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    7: {
+    7: <Setup>{
         Liberals: 4,
         Fascists: 2,
         hitlerKnowsFascists: false,
@@ -60,7 +60,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    8: {
+    8: <Setup>{
         Liberals: 5,
         Fascists: 2,
         hitlerKnowsFascists: false,
@@ -72,7 +72,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    9: {
+    9: <Setup>{
         Liberals: 5,
         Fascists: 3,
         hitlerKnowsFascists: false,
@@ -84,7 +84,7 @@ export const Setups = {
             Executive_Action.Execution
         ]
     },
-    10: {
+    10: <Setup>{
         Liberals: 6,
         Fascists: 3,
         hitlerKnowsFascists: false,

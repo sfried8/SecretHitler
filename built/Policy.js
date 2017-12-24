@@ -4,8 +4,8 @@ const Rand = require("./Rand");
 class PolicyDeck {
     constructor(obj) {
         if (obj) {
-            this.deckSource = obj.deckSource.map(x => new Policy(x));
-            this.deck = obj.deck.map(x => new Policy(x));
+            this.deckSource = obj.deckSource.map(x => new Policy(x.isLiberal));
+            this.deck = obj.deck.map(x => new Policy(x.isLiberal));
         }
         else {
             this.deckSource = [];
@@ -37,13 +37,8 @@ class PolicyDeck {
 }
 exports.PolicyDeck = PolicyDeck;
 class Policy {
-    constructor(obj) {
-        if (typeof obj.isLiberal !== "undefined") {
-            this.isLiberal = obj.isLiberal;
-        }
-        else {
-            this.isLiberal = !!obj;
-        }
+    constructor(isLiberal) {
+        this.isLiberal = isLiberal;
     }
     toString() {
         if (this.isLiberal) {

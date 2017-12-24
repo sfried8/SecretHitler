@@ -14,8 +14,10 @@
         "watchify": "^3.9.0",
         "webpack": "^3.10.0"
     },
-    "main": "index.js",
-    "devDependencies": {},
+    "main": "index",
+    "devDependencies": {
+        "@types/js-cookie": "^2.1.0"
+    },
     "scripts": {
         "test": "node index.js",
         "start": "npm run build",

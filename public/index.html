@@ -26,8 +26,8 @@
         <div id="enactedPolicies" class="topright" v-show="showBoard">Liberal: [ ] [ ] [ ] [ ] [ ]
             <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
         <div id="voteButtons" v-show="showVoteButtons">
-            <button id="ja-btn" class="noBorder" disabled="true"></button>
-            <button id="nein-btn" class="noBorder" disabled="true"></button>
+            <button id="ja-btn" class="noBorder"></button>
+            <button id="nein-btn" class="noBorder"></button>
         </div>
         <div id="policyChoices">
             <button @click="policyChoiceClick(index)" class="noBorder policyBtn" :class="p.isLiberal ? 'liberalPolicy' : 'fascistPolicy'"

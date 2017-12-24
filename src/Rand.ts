@@ -1,4 +1,4 @@
-export function Boolean(chanceForTrue) {
+export function Boolean(chanceForTrue: number): boolean {
     if (chanceForTrue === null || typeof chanceForTrue === "undefined") {
         chanceForTrue = 50;
     }
@@ -12,10 +12,10 @@ export function Boolean(chanceForTrue) {
     let rand = (Math.random() * 100) | 0;
     return rand < chanceForTrue;
 }
-export function Range(min, max) {
+export function Range(min: number, max: number): number {
     return (Math.random() * (max - min) + min) | 0;
 }
-export function Shuffle(array) {
+export function Shuffle(array: Array<any>): Array<any> {
     let currentIndex = array.length;
     let temporaryValue;
     let randomIndex;
@@ -34,7 +34,7 @@ export function Shuffle(array) {
 
     return array;
 }
-export function Choice(array) {
+export function Choice(array: Array<any>): any {
     let index = Math.random() * array.length;
     return array[Math.floor(index)];
 }

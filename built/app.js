@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const DEBUG = false;
+const DEBUG = true;
 let CPU = false;
 const Enums_1 = require("./Enums");
 const Enums_2 = require("./Enums");
@@ -47,13 +47,13 @@ function convertGameDataToClass(gameData) {
         gameData.policyDeck = new Policy_2.PolicyDeck(gameData.policyDeck);
     }
     if (gameData.presidentPolicies) {
-        gameData.presidentPolicies = gameData.presidentPolicies.map(x => new Policy_1.Policy(x));
+        gameData.presidentPolicies = gameData.presidentPolicies.map(x => new Policy_1.Policy(x.isLiberal));
     }
     if (gameData.chancellorPolicies) {
-        gameData.chancellorPolicies = gameData.chancellorPolicies.map(x => new Policy_1.Policy(x));
+        gameData.chancellorPolicies = gameData.chancellorPolicies.map(x => new Policy_1.Policy(x.isLiberal));
     }
     if (gameData.lastPolicy) {
-        gameData.lastPolicy = new Policy_1.Policy(gameData.lastPolicy);
+        gameData.lastPolicy = new Policy_1.Policy(gameData.lastPolicy.isLiberal);
     }
     App.gameData = gameData;
     updateEnactedPolicies();
@@ -206,7 +206,7 @@ const IO = {
      */
     beginNewGame: function (data) {
         convertGameDataToClass(data);
-        App.Player.beginNewGame(App.gameData);
+        App.Player.beginNewGame();
     },
     /**
      * Let everyone know the game has ended.
@@ -280,7 +280,7 @@ const App = {
     $neinBtn: null,
     $jaBtn: null,
     $policyChoiceArea: null,
-    $policyChoiceBtns: null,
+    $policyChoiceBtns: [],
     /**
      * Create references to on-screen elements used throughout the game.
      */
@@ -465,31 +465,23 @@ const App = {
             if (CPU) {
                 setRandomTimeout(function () {
                     if (Rand.Boolean(80)) {
-                        App.$jaBtn.disabled = false;
                         App.$jaBtn.click();
                     }
                     else {
-                        App.$neinBtn.disabled = false;
                         App.$neinBtn.click();
                     }
                 }, 500, 5000);
             }
             else {
             }
-            App.$jaBtn.disabled = false;
             App.$jaBtn.onclick = function () {
-                App.$jaBtn.disabled = true;
-                App.$neinBtn.disabled = true;
                 IO.socket.emit("voteForChancellor", {
                     id: App.myPlayerId,
                     vote: true
                 });
                 vm.showVoteButtons = false;
             };
-            App.$neinBtn.disabled = false;
             App.$neinBtn.onclick = function () {
-                App.$jaBtn.disabled = true;
-                App.$neinBtn.disabled = true;
                 IO.socket.emit("voteForChancellor", {
                     id: App.myPlayerId,
                     vote: false
@@ -569,7 +561,7 @@ const App = {
             log(`${App.gameData.players[App.gameData.players.length - 1].name} joined the room!`);
             vm.players = App.gameData.players;
         },
-        beginNewGame: function (data) {
+        beginNewGame: function () {
             document.getElementById("startGameBtn").style.display = "none";
             vm.showBoard = true;
             for (let i = 0; i < App.gameData.players.length; i++) {
@@ -617,6 +609,7 @@ const App = {
         },
         onChancellorElected: function () {
             App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
+            vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = App.gameData.presidentPolicies;
             if (CPU) {
                 setRandomTimeout(function () {
@@ -707,6 +700,13 @@ const App = {
                   UTILITY CODE
            ************************** */
 };
+function clickJoinButton() {
+    if (DEBUG) {
+        setTimeout(() => {
+            document.getElementById("btnJoinGame").click();
+        }, 100);
+    }
+}
 window.onload = function () {
     IO.init();
     App.init();
@@ -714,17 +714,27 @@ window.onload = function () {
         const gameInfo = Cookies.getJSON("existingGameInfo");
         IO.socket.emit("isGameStillGoing", { gameId: gameInfo.gameId }, function (response) {
             if (response) {
-                if (confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
+                if (!DEBUG &&
+                    confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
                     App.myPlayerId = gameInfo.playerId;
                     App.gameId = gameInfo.gameId;
                     IO.socket.emit("rejoinGame", gameInfo);
                     App.Player.joinGame(gameInfo);
                 }
+                else {
+                    clickJoinButton();
+                }
+            }
+            else {
+                clickJoinButton();
             }
             // } else {
             //     Cookies.remove("existingGameInfo");
             // }
         });
+    }
+    else {
+        clickJoinButton();
     }
 };
 function setRandomTimeout(func, min, max) {

@@ -1,5 +1,5 @@
-let io;
-let gameSocket;
+let io: any;
+let gameSocket: any;
 
 // const models = require("./built/models.js");
 import { Election } from "./models";
@@ -16,7 +16,7 @@ import { GameData } from "./gameData";
  * @param sio The Socket.IO library
  * @param socket The socket object for the connected client.
  */
-function initGame(sio, socket) {
+function initGame(sio: any, socket: any) {
     io = sio;
     gameSocket = socket;
     gameSocket.emit("connected", { message: "You are connected!" });
@@ -76,7 +76,7 @@ function electNextPresident() {
     gameData.lastChancellor = gameData.chancellor;
     emit("presidentElected", gameData);
 }
-function specialElection(newPresident) {
+function specialElection(newPresident: Player) {
     gameData.president = newPresident;
     gameData.lastChancellor = gameData.chancellor;
     emit("presidentElected", gameData);
@@ -85,7 +85,7 @@ function sendPoliciesToPresident() {
     gameData.presidentPolicies = gameData.policyDeck.draw(3);
     emit("chancellorElected", gameData);
 }
-function onPresidentNominate(data) {
+function onPresidentNominate(data: any) {
     gameData.chancellorNominee = data.nominee;
     if (gameData.currentElection) {
         gameData.electionArchive = gameData.electionArchive || [];
@@ -104,7 +104,7 @@ function onPresidentNominate(data) {
     );
     emit("chancellorNominated", gameData);
 }
-function onVoteForChancellor(data) {
+function onVoteForChancellor(data: any) {
     gameData.currentElection.vote(data);
     emit("playerVoted", data);
     if (gameData.currentElection.isFinished()) {
@@ -150,7 +150,7 @@ function onVoteForChancellor(data) {
         }
     }
 }
-function onChoosePresidentPolicies(data) {
+function onChoosePresidentPolicies(data: any) {
     gameData.chancellorPolicies = data.policies;
     emit("presidentPolicyChosen", gameData);
 }
@@ -169,10 +169,10 @@ function executiveActionTriggered() {
     }
     return action;
 }
-function onChancellorRequestedVeto(data) {
+function onChancellorRequestedVeto() {
     emit("vetoRequested", gameData);
 }
-function onVetoApproved(data) {
+function onVetoApproved(data: any) {
     if (data.approved) {
         gameData.chaosLevel += 1;
         emit("vetoWasApproved", gameData);
@@ -204,7 +204,7 @@ function onVetoApproved(data) {
         emit("vetoWasRejected", gameData);
     }
 }
-function onChooseChancellorPolicy(data) {
+function onChooseChancellorPolicy(data: any) {
     gameData.lastPolicy = data.policies[0];
     if (gameData.lastPolicy.isLiberal) {
         if (!gameData.enactedPolicies.liberals) {
@@ -240,7 +240,7 @@ function performEA() {
     }
 }
 
-function onChooseEATarget(data) {
+function onChooseEATarget(data: any) {
     if (data) {
         gameData.lastExecutiveActionTarget = data.target;
     } else {
@@ -271,22 +271,15 @@ function onChooseEATarget(data) {
 /**
  * The 'START' button was clicked and 'hostCreateNewGame' event occurred.
  */
-let thisGameId;
 function hostCreateNewGame() {
     // Create a unique Socket.IO Room
-    thisGameId = (Math.random() * 100000) | 0;
-
-    // Return the Room ID (gameId) and the socket ID (mySocketId) to the browser client
-    console.log(thisGameId);
-    // Join the Room and wait for the players
-    this.join(thisGameId.toString());
 }
 
 /*
  * Two players have joined. Alert the host!
  * @param gameId The game ID / room ID
  */
-function hostPrepareGame(gameId) {
+function hostPrepareGame(gameId: number) {
     let sock = this;
     let data = {
         mySocketId: sock.id,
@@ -315,7 +308,7 @@ let gameData = {
     enactedPolicies: {},
     chaosLevel: 0
 } as GameData;
-function getPlayerById(id) {
+function getPlayerById(id: number): Player {
     for (let i = 0; i < gameData.players.length; i++) {
         if (gameData.players[i].id === id) {
             return gameData.players[i];
@@ -329,7 +322,7 @@ function getPlayerById(id) {
  *                           *
  ***************************** */
 
-function isGameStillGoing(data, callback) {
+function isGameStillGoing(data: any, callback: any) {
     let room = gameSocket.manager.rooms["/" + thisGameId];
 
     // If the room exists...
@@ -339,15 +332,23 @@ function isGameStillGoing(data, callback) {
     }
     callback(false);
 }
+let thisGameId: number = 0;
 /**
  * A player clicked the 'START GAME' button.
  * Attempt to connect them to the room that matches
  * the gameId entered by the player.
  * @param data Contains data entered via player's input - playerName and gameId.
  */
-function playerJoinGame(data) {
+function playerJoinGame(data: any) {
     let sock = this;
+    if (!thisGameId) {
+        thisGameId = (Math.random() * 100000) | 0;
 
+        // Return the Room ID (gameId) and the socket ID (mySocketId) to the browser client
+        console.log(thisGameId);
+        // Join the Room and wait for the players
+        this.join(thisGameId.toString());
+    }
     // Look up the room ID in the Socket.IO manager object.
     let room = gameSocket.manager.rooms["/" + thisGameId];
 
@@ -369,7 +370,7 @@ function playerJoinGame(data) {
         this.emit("error", { message: "This room does not exist." });
     }
 }
-function playerRejoinGame(data) {
+function playerRejoinGame(data: any) {
     let sock = this;
 
     // Look up the room ID in the Socket.IO manager object.
@@ -396,6 +397,6 @@ function playerRejoinGame(data) {
  * http://stackoverflow.com/questions/2450954/how-to-randomize-a-javascript-array
  */
 
-function emit(message, data) {
+function emit(message: string, data: any) {
     io.sockets.in(thisGameId).emit(message, data);
 }

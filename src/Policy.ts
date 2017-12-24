@@ -4,10 +4,10 @@ export class PolicyDeck {
     deck: Policy[];
     constructor();
     constructor(obj: PolicyDeck);
-    constructor(obj?) {
+    constructor(obj?: PolicyDeck) {
         if (obj) {
-            this.deckSource = obj.deckSource.map(x => new Policy(x));
-            this.deck = obj.deck.map(x => new Policy(x));
+            this.deckSource = obj.deckSource.map(x => new Policy(x.isLiberal));
+            this.deck = obj.deck.map(x => new Policy(x.isLiberal));
         } else {
             this.deckSource = [];
             this.deck = [];
@@ -23,13 +23,13 @@ export class PolicyDeck {
     shuffleDeck() {
         this.deck = Rand.Shuffle(this.deckSource.slice());
     }
-    draw(numberOfCards) {
+    draw(numberOfCards: number) {
         if (this.deck.length < numberOfCards) {
             this.shuffleDeck();
         }
         return this.deck.splice(0, numberOfCards);
     }
-    peek(numberOfCards) {
+    peek(numberOfCards: number) {
         if (this.deck.length < numberOfCards) {
             this.shuffleDeck();
         }
@@ -38,15 +38,8 @@ export class PolicyDeck {
 }
 export class Policy {
     isLiberal: boolean;
-    constructor();
-    constructor(obj: Policy);
-    constructor(obj: boolean);
-    constructor(obj?) {
-        if (typeof obj.isLiberal !== "undefined") {
-            this.isLiberal = obj.isLiberal;
-        } else {
-            this.isLiberal = !!obj;
-        }
+    constructor(isLiberal: boolean) {
+        this.isLiberal = isLiberal;
     }
     toString() {
         if (this.isLiberal) {

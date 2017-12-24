@@ -153,7 +153,7 @@ function executiveActionTriggered() {
     }
     return action;
 }
-function onChancellorRequestedVeto(data) {
+function onChancellorRequestedVeto() {
     emit("vetoRequested", gameData);
 }
 function onVetoApproved(data) {
@@ -260,14 +260,8 @@ function onChooseEATarget(data) {
 /**
  * The 'START' button was clicked and 'hostCreateNewGame' event occurred.
  */
-let thisGameId;
 function hostCreateNewGame() {
     // Create a unique Socket.IO Room
-    thisGameId = (Math.random() * 100000) | 0;
-    // Return the Room ID (gameId) and the socket ID (mySocketId) to the browser client
-    console.log(thisGameId);
-    // Join the Room and wait for the players
-    this.join(thisGameId.toString());
 }
 /*
  * Two players have joined. Alert the host!
@@ -322,6 +316,7 @@ function isGameStillGoing(data, callback) {
     }
     callback(false);
 }
+let thisGameId = 0;
 /**
  * A player clicked the 'START GAME' button.
  * Attempt to connect them to the room that matches
@@ -330,6 +325,13 @@ function isGameStillGoing(data, callback) {
  */
 function playerJoinGame(data) {
     let sock = this;
+    if (!thisGameId) {
+        thisGameId = (Math.random() * 100000) | 0;
+        // Return the Room ID (gameId) and the socket ID (mySocketId) to the browser client
+        console.log(thisGameId);
+        // Join the Room and wait for the players
+        this.join(thisGameId.toString());
+    }
     // Look up the room ID in the Socket.IO manager object.
     let room = gameSocket.manager.rooms["/" + thisGameId];
     // If the room exists...
