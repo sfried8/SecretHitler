@@ -67,7 +67,10 @@ function convertGameDataToClass(gameData: GameData) {
         gameData.lastPolicy = new Policy(gameData.lastPolicy.isLiberal);
     }
     App.gameData = gameData;
+    vm.president = App.gameData.president;
+    vm.chancellor = App.gameData.chancellor;
     vm.players = App.gameData.players;
+    
     updateEnactedPolicies();
 }
 
@@ -1041,7 +1044,9 @@ const vm = new Vue({
         players: [],
         policyChoices: [],
         currentAction: "",
-        showBoard: false
+        showBoard: false,
+        president: null,
+        chancellor: null
     },
     methods: {
         playerButtonClick: function(id: string | number) {

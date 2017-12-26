@@ -152,23 +152,18 @@ TITLE SCREEN
 }
 
 #voteButtons {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 75%;
     background-color: rgba(255, 255, 255, 0.5);
 }
-#ja-btn {
-    background-image: url("../img/ja.PNG");
-    height: 241px;
-    width: 350px;
-    background-size: contain;
-}
+#ja-btn,
 #nein-btn {
-    background-image: url("../img/nein.PNG");
-    height: 241px;
-    width: 350px;
-    background-size: contain;
+    width: 100%;
 }
+#ja-btn img,
+#nein-btn img {
+    width: 100%;
+}
+
 .titleWrapper {
     position: absolute;
     height: 50%;
