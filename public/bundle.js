@@ -60,127 +60,11 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var Executive_Action;
-(function (Executive_Action) {
-    Executive_Action[Executive_Action["NoAction"] = 0] = "NoAction";
-    Executive_Action[Executive_Action["InvestigateLoyalty"] = 1] = "InvestigateLoyalty";
-    Executive_Action[Executive_Action["SpecialElection"] = 2] = "SpecialElection";
-    Executive_Action[Executive_Action["PolicyPeek"] = 3] = "PolicyPeek";
-    Executive_Action[Executive_Action["Execution"] = 4] = "Execution";
-})(Executive_Action = exports.Executive_Action || (exports.Executive_Action = {}));
-exports.Setups = {
-    3: {
-        Liberals: 1,
-        Fascists: 1,
-        hitlerKnowsFascists: true,
-        board: [
-            Executive_Action.NoAction,
-            Executive_Action.NoAction,
-            Executive_Action.PolicyPeek,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
-    5: {
-        Liberals: 3,
-        Fascists: 1,
-        hitlerKnowsFascists: true,
-        board: [
-            Executive_Action.Execution,
-            Executive_Action.NoAction,
-            Executive_Action.PolicyPeek,
-            Executive_Action.SpecialElection,
-            Executive_Action.Execution
-        ]
-    },
-    6: {
-        Liberals: 4,
-        Fascists: 1,
-        hitlerKnowsFascists: true,
-        board: [
-            Executive_Action.NoAction,
-            Executive_Action.NoAction,
-            Executive_Action.PolicyPeek,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
-    7: {
-        Liberals: 4,
-        Fascists: 2,
-        hitlerKnowsFascists: false,
-        board: [
-            Executive_Action.NoAction,
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.SpecialElection,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
-    8: {
-        Liberals: 5,
-        Fascists: 2,
-        hitlerKnowsFascists: false,
-        board: [
-            Executive_Action.NoAction,
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.SpecialElection,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
-    9: {
-        Liberals: 5,
-        Fascists: 3,
-        hitlerKnowsFascists: false,
-        board: [
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.SpecialElection,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
-    10: {
-        Liberals: 6,
-        Fascists: 3,
-        hitlerKnowsFascists: false,
-        board: [
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.InvestigateLoyalty,
-            Executive_Action.SpecialElection,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    }
-};
-var WinCondition;
-(function (WinCondition) {
-    WinCondition[WinCondition["HitlerIsChancellor"] = 0] = "HitlerIsChancellor";
-    WinCondition[WinCondition["HitlerWasAssassinated"] = 1] = "HitlerWasAssassinated";
-    WinCondition[WinCondition["SixFascistPolicies"] = 2] = "SixFascistPolicies";
-    WinCondition[WinCondition["SixLiberalPolicies"] = 3] = "SixLiberalPolicies";
-})(WinCondition = exports.WinCondition || (exports.WinCondition = {}));
-var Role;
-(function (Role) {
-    Role["Liberal"] = "Liberal";
-    Role["Fascist"] = "Fascist";
-    Role["Hitler"] = "Hitler";
-})(Role = exports.Role || (exports.Role = {}));
-
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -229,79 +113,17 @@ exports.Choice = Choice;
 
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const Rand = __webpack_require__(1);
-class PolicyDeck {
-    constructor(obj) {
-        if (obj) {
-            this.deckSource = obj.deckSource.map(x => new Policy(x.isLiberal));
-            this.deck = obj.deck.map(x => new Policy(x.isLiberal));
-        }
-        else {
-            this.deckSource = [];
-            this.deck = [];
-            for (let i = 0; i < 6; i++) {
-                this.deckSource.push(new Policy(true));
-            }
-            for (let i = 0; i < 11; i++) {
-                this.deckSource.push(new Policy(false));
-            }
-            this.shuffleDeck();
-        }
-    }
-    shuffleDeck() {
-        this.deck = Rand.Shuffle(this.deckSource.slice());
-    }
-    draw(numberOfCards) {
-        if (this.deck.length < numberOfCards) {
-            this.shuffleDeck();
-        }
-        return this.deck.splice(0, numberOfCards);
-    }
-    peek(numberOfCards) {
-        if (this.deck.length < numberOfCards) {
-            this.shuffleDeck();
-        }
-        return this.deck.slice(0, numberOfCards);
-    }
-}
-exports.PolicyDeck = PolicyDeck;
-class Policy {
-    constructor(isLiberal) {
-        this.isLiberal = isLiberal;
-    }
-    toString() {
-        if (this.isLiberal) {
-            return "Liberal";
-        }
-        else {
-            return "Fascist";
-        }
-    }
-}
-exports.Policy = Policy;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const DEBUG = true;
+const DEBUG = false;
 let CPU = false;
-const Enums_1 = __webpack_require__(0);
-const Enums_2 = __webpack_require__(0);
-const Enums_3 = __webpack_require__(0);
-const Rand = __webpack_require__(1);
-const Policy_1 = __webpack_require__(2);
-const Policy_2 = __webpack_require__(2);
+const Enums_1 = __webpack_require__(2);
+const Rand = __webpack_require__(0);
+const Policy_1 = __webpack_require__(3);
 const models_1 = __webpack_require__(4);
 const vue_toasted_1 = __webpack_require__(5);
 const Cookies = __webpack_require__(6);
@@ -338,7 +160,7 @@ function convertGameDataToClass(gameData) {
         gameData.currentElection = new models_1.Election().cloneOf(gameData.currentElection);
     }
     if (gameData.policyDeck) {
-        gameData.policyDeck = new Policy_2.PolicyDeck(gameData.policyDeck);
+        gameData.policyDeck = new Policy_1.PolicyDeck(gameData.policyDeck);
     }
     if (gameData.presidentPolicies) {
         gameData.presidentPolicies = gameData.presidentPolicies.map(x => new Policy_1.Policy(x.isLiberal));
@@ -350,6 +172,7 @@ function convertGameDataToClass(gameData) {
         gameData.lastPolicy = new Policy_1.Policy(gameData.lastPolicy.isLiberal);
     }
     App.gameData = gameData;
+    vm.players = App.gameData.players;
     updateEnactedPolicies();
 }
 /**
@@ -424,7 +247,7 @@ const IO = {
             App.Player.onPresidentPolicyChosen();
         }
     },
-    onVetoRequested: function (data) {
+    onVetoRequested: function () {
         if (App.amIThePresident()) {
             App.President.onVetoRequested();
         }
@@ -493,6 +316,22 @@ const IO = {
     },
     playerRejoinedRoom: function (data) {
         convertGameDataToClass(data);
+        document.getElementById("startGameBtn").style.display = "none";
+        vm.showBoard = true;
+        for (let i = 0; i < App.gameData.players.length; i++) {
+            let p = App.gameData.players[i];
+            vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
+            // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+        }
+        if (App.amIThePresident()) {
+            App.President.rejoinGame();
+        }
+        else if (App.amITheChancellor()) {
+            App.Chancellor.rejoinGame();
+        }
+        else {
+            App.Player.rejoinGame();
+        }
     },
     /**
      * Both players have joined the game.
@@ -527,7 +366,6 @@ const App = {
     myPlayerId: 0,
     playerBtns: [],
     dead: false,
-    state: "",
     /**
      * The Socket.IO socket object identifier. This is unique for
      * each player and host. It is generated when the browser initially
@@ -553,10 +391,12 @@ const App = {
      *                Setup                *
      * *********************************** */
     amIThePresident: function () {
-        return App.gameData.president.id === App.myPlayerId;
+        return (App.gameData.president &&
+            App.gameData.president.id === App.myPlayerId);
     },
     amITheChancellor: function () {
-        return App.gameData.chancellor.id === App.myPlayerId;
+        return (App.gameData.chancellor &&
+            App.gameData.chancellor.id === App.myPlayerId);
     },
     /**
      * This runs when the page initially loads.
@@ -714,6 +554,29 @@ const App = {
             App.$templateJoinGame.style.display = "none";
             App.$gameArea.style.display = "none";
         },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.Player.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.Player.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.Player.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.Player.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Player.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
+                }
+            }
+        },
         onVIPStart: function () {
             document.getElementById("startGameBtn").style.display = "none";
             CPU = false;
@@ -782,7 +645,9 @@ const App = {
             };
         },
         onChancellorElected: function () {
-            App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
+            // App.playerBtns[App.gameData.chancellor.id].classList.add(
+            // "isChancellor"
+            // );
             vm.currentAction = `Waiting for President ${App.gameData.president.name} to pick policies`;
         },
         onPresidentPolicyChosen: function () {
@@ -797,13 +662,13 @@ const App = {
         },
         onExecutiveActionTriggered: function () {
             switch (App.gameData.lastExecutiveAction) {
-                case Enums_2.Executive_Action.InvestigateLoyalty:
+                case Enums_1.Executive_Action.InvestigateLoyalty:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to investigate someone's loyalty.`;
                     break;
-                case Enums_2.Executive_Action.Execution:
+                case Enums_1.Executive_Action.Execution:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to execute someone.`;
                     break;
-                case Enums_2.Executive_Action.SpecialElection:
+                case Enums_1.Executive_Action.SpecialElection:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to invoke a special election.`;
                     break;
             }
@@ -813,20 +678,20 @@ const App = {
         },
         onExecutiveActionTargetChosen: function () {
             switch (App.gameData.lastExecutiveAction) {
-                case Enums_2.Executive_Action.PolicyPeek:
+                case Enums_1.Executive_Action.PolicyPeek:
                     log(`President ${App.gameData.president.name} peeked the next 3 policies.`);
                     break;
-                case Enums_2.Executive_Action.SpecialElection:
+                case Enums_1.Executive_Action.SpecialElection:
                     log(`Special Election! ${App.gameData.lastExecutiveActionTarget.name} will now be president.`);
                     break;
-                case Enums_2.Executive_Action.Execution:
+                case Enums_1.Executive_Action.Execution:
                     log(`President ${App.gameData.president.name} has executed ${App.gameData.lastExecutiveActionTarget.name}!`);
                     if (App.gameData.lastExecutiveActionTarget.id ===
                         App.myPlayerId) {
                         App.dead = true;
                     }
                     break;
-                case Enums_2.Executive_Action.InvestigateLoyalty:
+                case Enums_1.Executive_Action.InvestigateLoyalty:
                     log(`President ${App.gameData.president.name} has investigated ${App.gameData.lastExecutiveActionTarget.name}'s loyalty.`);
                     break;
             }
@@ -859,7 +724,7 @@ const App = {
             for (let i = 0; i < App.gameData.players.length; i++) {
                 let p = App.gameData.players[i];
                 vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
-                App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+                // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
             }
         },
         gameOver: function (data) {
@@ -884,7 +749,6 @@ const App = {
             vm.disablePlayerButtons = false;
             vm.currentAction =
                 "You're the president! Choose someone to nominate for chancellor.";
-            App.state = "nominateChancellor";
             if (CPU) {
                 setRandomTimeout(() => {
                     let selectedPlayer;
@@ -895,12 +759,14 @@ const App = {
                         (App.gameData.lastChancellor &&
                             App.gameData.lastChancellor.id ===
                                 selectedPlayer.id));
-                    App.playerBtns[selectedPlayer.id].click();
+                    // App.playerBtns[selectedPlayer.id].click();
                 }, 500, 3000);
             }
         },
         onChancellorElected: function () {
-            App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
+            // App.playerBtns[App.gameData.chancellor.id].classList.add(
+            //     "isChancellor"
+            // );
             vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = App.gameData.presidentPolicies;
             if (CPU) {
@@ -918,7 +784,7 @@ const App = {
             });
         },
         onExecutiveActionTriggered: function () {
-            if (App.gameData.lastExecutiveAction === Enums_2.Executive_Action.PolicyPeek) {
+            if (App.gameData.lastExecutiveAction === Enums_1.Executive_Action.PolicyPeek) {
                 log("Next 3 Policies are " +
                     App.gameData.policyDeck
                         .peek(3)
@@ -928,16 +794,15 @@ const App = {
             }
             else {
                 vm.disablePlayerButtons = false;
-                App.state = "executiveAction";
                 switch (App.gameData.lastExecutiveAction) {
-                    case Enums_2.Executive_Action.InvestigateLoyalty:
+                    case Enums_1.Executive_Action.InvestigateLoyalty:
                         vm.currentAction =
                             "Choose someone to investigate their loyalty.";
                         break;
-                    case Enums_2.Executive_Action.Execution:
+                    case Enums_1.Executive_Action.Execution:
                         vm.currentAction = "Choose someone to execute.";
                         break;
-                    case Enums_2.Executive_Action.SpecialElection:
+                    case Enums_1.Executive_Action.SpecialElection:
                         vm.currentAction =
                             "Choose the president for next turn.";
                         break;
@@ -952,8 +817,31 @@ const App = {
                             (App.gameData.lastChancellor &&
                                 App.gameData.lastChancellor.id ===
                                     selectedPlayer.id));
-                        App.playerBtns[selectedPlayer.id].click();
+                        // App.playerBtns[selectedPlayer.id].click();
                     }, 500, 3000);
+                }
+            }
+        },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.President.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.President.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.President.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.President.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Player.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
                 }
             }
         }
@@ -976,6 +864,29 @@ const App = {
                     let choice = Rand.Range(0, 2);
                     App.$policyChoiceBtns[choice].click();
                 }, 500, 2000);
+            }
+        },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.Player.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.Player.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.Player.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.Player.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Chancellor.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
+                }
             }
         }
     },
@@ -1009,11 +920,12 @@ window.onload = function () {
         const gameInfo = Cookies.getJSON("existingGameInfo");
         IO.socket.emit("isGameStillGoing", { gameId: gameInfo.gameId }, function (response) {
             if (response) {
-                if (!DEBUG &&
-                    confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
+                if (confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
                     App.myPlayerId = gameInfo.playerId;
                     App.gameId = gameInfo.gameId;
                     IO.socket.emit("rejoinGame", gameInfo);
+                    App.$gameArea.style.display = "none";
+                    App.$templateIntroScreen.style.display = "none";
                     App.Player.joinGame(gameInfo);
                 }
                 else {
@@ -1035,7 +947,6 @@ window.onload = function () {
 function setRandomTimeout(func, min, max) {
     setTimeout(func, Rand.Range(min, max));
 }
-let $messageBox = undefined;
 Vue.use(vue_toasted_1.default);
 function log(message, duration) {
     Vue.toasted.show(message, { duration: duration || 4000 });
@@ -1077,7 +988,7 @@ const vm = new Vue({
             if (selectedPlayer.dead) {
                 alert(`${selectedPlayer.name} is dead!`);
             }
-            if (App.state === "nominateChancellor") {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
                 if (App.gameData.lastChancellor &&
                     selectedPlayer.id === App.gameData.lastChancellor.id) {
                     alert("can't be chancellor twice in a row");
@@ -1089,12 +1000,13 @@ const vm = new Vue({
                     this.disablePlayerButtons = true;
                 }
             }
-            else if (App.state === "executiveAction") {
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
                 if (App.gameData.lastExecutiveAction ===
-                    Enums_2.Executive_Action.InvestigateLoyalty) {
+                    Enums_1.Executive_Action.InvestigateLoyalty) {
                     let loyalty = selectedPlayer.role;
-                    if (loyalty === Enums_3.Role.Hitler) {
-                        loyalty = Enums_3.Role.Fascist;
+                    if (loyalty === Enums_1.Role.Hitler) {
+                        loyalty = Enums_1.Role.Fascist;
                     }
                     log(`${selectedPlayer.name} is ${loyalty}!`);
                 }
@@ -1113,7 +1025,7 @@ const vm = new Vue({
             if (selectedPlayer.dead) {
                 return true;
             }
-            if (App.state === "nominateChancellor") {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
                 return (App.gameData.lastChancellor &&
                     App.gameData.lastChancellor.id == id);
             }
@@ -1183,6 +1095,191 @@ const vm = new Vue({
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var Executive_Action;
+(function (Executive_Action) {
+    Executive_Action[Executive_Action["NoAction"] = 0] = "NoAction";
+    Executive_Action[Executive_Action["InvestigateLoyalty"] = 1] = "InvestigateLoyalty";
+    Executive_Action[Executive_Action["SpecialElection"] = 2] = "SpecialElection";
+    Executive_Action[Executive_Action["PolicyPeek"] = 3] = "PolicyPeek";
+    Executive_Action[Executive_Action["Execution"] = 4] = "Execution";
+})(Executive_Action = exports.Executive_Action || (exports.Executive_Action = {}));
+var GameState;
+(function (GameState) {
+    GameState[GameState["Idle"] = 0] = "Idle";
+    GameState[GameState["PresidentNominateChancellor"] = 1] = "PresidentNominateChancellor";
+    GameState[GameState["VoteForChancellor"] = 2] = "VoteForChancellor";
+    GameState[GameState["PresidentChoosePolicies"] = 3] = "PresidentChoosePolicies";
+    GameState[GameState["ChancellorChoosePolicy"] = 4] = "ChancellorChoosePolicy";
+    GameState[GameState["PresidentChooseExecutiveActionTarget"] = 5] = "PresidentChooseExecutiveActionTarget";
+    GameState[GameState["ChancellorRequestVeto"] = 6] = "ChancellorRequestVeto";
+})(GameState = exports.GameState || (exports.GameState = {}));
+exports.Setups = {
+    3: {
+        Liberals: 1,
+        Fascists: 1,
+        hitlerKnowsFascists: true,
+        board: [
+            Executive_Action.NoAction,
+            Executive_Action.NoAction,
+            Executive_Action.PolicyPeek,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    },
+    5: {
+        Liberals: 3,
+        Fascists: 1,
+        hitlerKnowsFascists: true,
+        board: [
+            Executive_Action.Execution,
+            Executive_Action.NoAction,
+            Executive_Action.PolicyPeek,
+            Executive_Action.SpecialElection,
+            Executive_Action.Execution
+        ]
+    },
+    6: {
+        Liberals: 4,
+        Fascists: 1,
+        hitlerKnowsFascists: true,
+        board: [
+            Executive_Action.NoAction,
+            Executive_Action.NoAction,
+            Executive_Action.PolicyPeek,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    },
+    7: {
+        Liberals: 4,
+        Fascists: 2,
+        hitlerKnowsFascists: false,
+        board: [
+            Executive_Action.NoAction,
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.SpecialElection,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    },
+    8: {
+        Liberals: 5,
+        Fascists: 2,
+        hitlerKnowsFascists: false,
+        board: [
+            Executive_Action.NoAction,
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.SpecialElection,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    },
+    9: {
+        Liberals: 5,
+        Fascists: 3,
+        hitlerKnowsFascists: false,
+        board: [
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.SpecialElection,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    },
+    10: {
+        Liberals: 6,
+        Fascists: 3,
+        hitlerKnowsFascists: false,
+        board: [
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.InvestigateLoyalty,
+            Executive_Action.SpecialElection,
+            Executive_Action.Execution,
+            Executive_Action.Execution
+        ]
+    }
+};
+var WinCondition;
+(function (WinCondition) {
+    WinCondition[WinCondition["HitlerIsChancellor"] = 0] = "HitlerIsChancellor";
+    WinCondition[WinCondition["HitlerWasAssassinated"] = 1] = "HitlerWasAssassinated";
+    WinCondition[WinCondition["SixFascistPolicies"] = 2] = "SixFascistPolicies";
+    WinCondition[WinCondition["SixLiberalPolicies"] = 3] = "SixLiberalPolicies";
+})(WinCondition = exports.WinCondition || (exports.WinCondition = {}));
+var Role;
+(function (Role) {
+    Role["Liberal"] = "Liberal";
+    Role["Fascist"] = "Fascist";
+    Role["Hitler"] = "Hitler";
+})(Role = exports.Role || (exports.Role = {}));
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const Rand = __webpack_require__(0);
+class PolicyDeck {
+    constructor(obj) {
+        if (obj) {
+            this.deckSource = obj.deckSource.map(x => new Policy(x.isLiberal));
+            this.deck = obj.deck.map(x => new Policy(x.isLiberal));
+        }
+        else {
+            this.deckSource = [];
+            this.deck = [];
+            for (let i = 0; i < 6; i++) {
+                this.deckSource.push(new Policy(true));
+            }
+            for (let i = 0; i < 11; i++) {
+                this.deckSource.push(new Policy(false));
+            }
+            this.shuffleDeck();
+        }
+    }
+    shuffleDeck() {
+        this.deck = Rand.Shuffle(this.deckSource.slice());
+    }
+    draw(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.splice(0, numberOfCards);
+    }
+    peek(numberOfCards) {
+        if (this.deck.length < numberOfCards) {
+            this.shuffleDeck();
+        }
+        return this.deck.slice(0, numberOfCards);
+    }
+}
+exports.PolicyDeck = PolicyDeck;
+class Policy {
+    constructor(isLiberal) {
+        this.isLiberal = isLiberal;
+    }
+    toString() {
+        if (this.isLiberal) {
+            return "Liberal";
+        }
+        else {
+            return "Fascist";
+        }
+    }
+}
+exports.Policy = Policy;
+
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1212,6 +1309,19 @@ class Election {
         else if (data.vote === false) {
             this.neins.push(data.id);
         }
+    }
+    didPlayerVote(id) {
+        for (let i = 0; i < this.jas.length; i++) {
+            if (this.jas[i] === id) {
+                return true;
+            }
+        }
+        for (let i = 0; i < this.neins.length; i++) {
+            if (this.neins[i] === id) {
+                return true;
+            }
+        }
+        return false;
     }
     didPass() {
         return this.jas.length > this.neins.length;

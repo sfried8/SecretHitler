@@ -24,6 +24,19 @@ class Election {
             this.neins.push(data.id);
         }
     }
+    didPlayerVote(id) {
+        for (let i = 0; i < this.jas.length; i++) {
+            if (this.jas[i] === id) {
+                return true;
+            }
+        }
+        for (let i = 0; i < this.neins.length; i++) {
+            if (this.neins[i] === id) {
+                return true;
+            }
+        }
+        return false;
+    }
     didPass() {
         return this.jas.length > this.neins.length;
     }

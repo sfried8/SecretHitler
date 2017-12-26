@@ -11,6 +11,16 @@ export interface Setup {
     hitlerKnowsFascists: boolean;
     board: Executive_Action[];
 }
+export enum GameState {
+    Idle,
+    PresidentNominateChancellor,
+    VoteForChancellor,
+    PresidentChoosePolicies,
+    ChancellorChoosePolicy,
+    PresidentChooseExecutiveActionTarget,
+    ChancellorRequestVeto
+}
+
 export const Setups: any = {
     3: <Setup>{
         Liberals: 1,

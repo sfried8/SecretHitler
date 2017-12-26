@@ -1,7 +1,7 @@
 import { Player } from "./Player";
 import { Policy, PolicyDeck } from "./Policy";
 import { Election } from "./models";
-import { Executive_Action, WinCondition, Setup } from "./Enums";
+import { Executive_Action, WinCondition, Setup, GameState } from "./Enums";
 export interface EnactedPolicies {
     liberals: number;
     fascists: number;
@@ -28,4 +28,5 @@ export interface GameData {
     presidentPolicies: Policy[];
     chancellorPolicies: Policy[];
     gameOverReason: WinCondition;
+    gameState: GameState;
 }

@@ -3,10 +3,15 @@ let gameSocket: any;
 
 // const models = require("./built/models.js");
 import { Election } from "./models";
-import { Executive_Action, WinCondition, Role, Setups } from "./Enums";
+import {
+    Executive_Action,
+    WinCondition,
+    Role,
+    Setups,
+    GameState
+} from "./Enums";
 import * as Rand from "./Rand";
-import { Policy, PolicyDeck } from "./Policy";
-
+import { PolicyDeck } from "./Policy";
 // const Election = models.Election;
 import { Player } from "./Player";
 import { GameData } from "./gameData";
@@ -60,7 +65,6 @@ function onVIPStart() {
     tempPlayerArray[j].role = Role.Hitler;
     gameData.hitler = tempPlayerArray[j];
     gameData.policyDeck = new PolicyDeck();
-
     emit("beginNewGame", gameData);
 
     gameData.presidentIndex = -1;
@@ -68,6 +72,7 @@ function onVIPStart() {
 }
 
 function electNextPresident() {
+    gameData.gameState = GameState.PresidentNominateChancellor;
     do {
         gameData.presidentIndex =
             (gameData.presidentIndex + 1) % gameData.players.length;
@@ -82,10 +87,12 @@ function specialElection(newPresident: Player) {
     emit("presidentElected", gameData);
 }
 function sendPoliciesToPresident() {
+    gameData.gameState = GameState.PresidentChoosePolicies;
     gameData.presidentPolicies = gameData.policyDeck.draw(3);
     emit("chancellorElected", gameData);
 }
 function onPresidentNominate(data: any) {
+    gameData.gameState = GameState.VoteForChancellor;
     gameData.chancellorNominee = data.nominee;
     if (gameData.currentElection) {
         gameData.electionArchive = gameData.electionArchive || [];
@@ -104,6 +111,40 @@ function onPresidentNominate(data: any) {
     );
     emit("chancellorNominated", gameData);
 }
+/**
+ * Returns whether game should continue
+ * i.e. "false" indicates game over
+ */
+function incrementChaosLevel(): boolean {
+    gameData.chaosLevel += 1;
+
+    if (gameData.chaosLevel === 3) {
+        gameData.chaosLevel = 0;
+        gameData.lastPolicy = gameData.policyDeck.draw(1)[0];
+        if (gameData.lastPolicy.isLiberal) {
+            if (!gameData.enactedPolicies.liberals) {
+                gameData.enactedPolicies.liberals = 0;
+            }
+            gameData.enactedPolicies.liberals += 1;
+        } else {
+            if (!gameData.enactedPolicies.fascists) {
+                gameData.enactedPolicies.fascists = 0;
+            }
+            gameData.enactedPolicies.fascists += 1;
+        }
+        emit("policyPlayedByCountry", gameData);
+        if (gameData.enactedPolicies.fascists > 5) {
+            gameData.gameOverReason = WinCondition.SixFascistPolicies;
+            emit("gameOver", gameData);
+            return false;
+        } else if (gameData.enactedPolicies.liberals > 5) {
+            gameData.gameOverReason = WinCondition.SixLiberalPolicies;
+            emit("gameOver", gameData);
+            return false;
+        }
+    }
+    return true;
+}
 function onVoteForChancellor(data: any) {
     gameData.currentElection.vote(data);
     emit("playerVoted", data);
@@ -121,36 +162,15 @@ function onVoteForChancellor(data: any) {
                 sendPoliciesToPresident();
             }
         } else {
-            gameData.chaosLevel += 1;
             emit("voteFinished", gameData);
-            if (gameData.chaosLevel === 3) {
-                gameData.chaosLevel = 0;
-                gameData.lastPolicy = gameData.policyDeck.draw(1)[0];
-                if (gameData.lastPolicy.isLiberal) {
-                    if (!gameData.enactedPolicies.liberals) {
-                        gameData.enactedPolicies.liberals = 0;
-                    }
-                    gameData.enactedPolicies.liberals += 1;
-                } else {
-                    if (!gameData.enactedPolicies.fascists) {
-                        gameData.enactedPolicies.fascists = 0;
-                    }
-                    gameData.enactedPolicies.fascists += 1;
-                }
-                emit("policyPlayedByCountry", gameData);
-                if (gameData.enactedPolicies.fascists > 5) {
-                    gameData.gameOverReason = WinCondition.SixFascistPolicies;
-                    emit("gameOver", gameData);
-                } else if (gameData.enactedPolicies.liberals > 5) {
-                    gameData.gameOverReason = WinCondition.SixLiberalPolicies;
-                    emit("gameOver", gameData);
-                }
+            if (incrementChaosLevel()) {
+                electNextPresident();
             }
-            electNextPresident();
         }
     }
 }
 function onChoosePresidentPolicies(data: any) {
+    gameData.gameState = GameState.ChancellorChoosePolicy;
     gameData.chancellorPolicies = data.policies;
     emit("presidentPolicyChosen", gameData);
 }
@@ -170,37 +190,17 @@ function executiveActionTriggered() {
     return action;
 }
 function onChancellorRequestedVeto() {
+    gameData.gameState = GameState.ChancellorRequestVeto;
     emit("vetoRequested", gameData);
 }
 function onVetoApproved(data: any) {
     if (data.approved) {
-        gameData.chaosLevel += 1;
         emit("vetoWasApproved", gameData);
-        if (gameData.chaosLevel === 3) {
-            gameData.chaosLevel = 0;
-            gameData.lastPolicy = gameData.policyDeck.draw(1)[0];
-            if (gameData.lastPolicy.isLiberal) {
-                if (!gameData.enactedPolicies.liberals) {
-                    gameData.enactedPolicies.liberals = 0;
-                }
-                gameData.enactedPolicies.liberals += 1;
-            } else {
-                if (!gameData.enactedPolicies.fascists) {
-                    gameData.enactedPolicies.fascists = 0;
-                }
-                gameData.enactedPolicies.fascists += 1;
-            }
-            emit("policyPlayedByCountry", gameData);
-            if (gameData.enactedPolicies.fascists > 5) {
-                gameData.gameOverReason = WinCondition.SixFascistPolicies;
-                emit("gameOver", gameData);
-            } else if (gameData.enactedPolicies.liberals > 5) {
-                gameData.gameOverReason = WinCondition.SixLiberalPolicies;
-                emit("gameOver", gameData);
-            }
+        if (incrementChaosLevel()) {
+            electNextPresident();
         }
-        electNextPresident();
     } else {
+        gameData.gameState = GameState.ChancellorChoosePolicy;
         emit("vetoWasRejected", gameData);
     }
 }
@@ -236,6 +236,7 @@ function performEA() {
     if (gameData.lastExecutiveAction === Executive_Action.NoAction) {
         electNextPresident();
     } else {
+        gameData.gameState = GameState.PresidentChooseExecutiveActionTarget;
         emit("executiveActionTriggered", gameData);
     }
 }
@@ -306,7 +307,8 @@ let gameData = {
     lastChancellor: null,
     gameRules: {},
     enactedPolicies: {},
-    chaosLevel: 0
+    chaosLevel: 0,
+    gameState: GameState.Idle
 } as GameData;
 function getPlayerById(id: number): Player {
     for (let i = 0; i < gameData.players.length; i++) {
@@ -324,9 +326,11 @@ function getPlayerById(id: number): Player {
 
 function isGameStillGoing(data: any, callback: any) {
     let room = gameSocket.manager.rooms["/" + thisGameId];
-
+    if (data && !data) {
+        return;
+    }
     // If the room exists...
-    if (room !== undefined) {
+    if (room !== undefined && gameData.gameState !== GameState.Idle) {
         callback(true);
         return;
     }

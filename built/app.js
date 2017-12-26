@@ -1,13 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const DEBUG = true;
+const DEBUG = false;
 let CPU = false;
 const Enums_1 = require("./Enums");
-const Enums_2 = require("./Enums");
-const Enums_3 = require("./Enums");
 const Rand = require("./Rand");
 const Policy_1 = require("./Policy");
-const Policy_2 = require("./Policy");
 const models_1 = require("./models");
 const vue_toasted_1 = require("vue-toasted");
 const Cookies = require("js-cookie");
@@ -44,7 +41,7 @@ function convertGameDataToClass(gameData) {
         gameData.currentElection = new models_1.Election().cloneOf(gameData.currentElection);
     }
     if (gameData.policyDeck) {
-        gameData.policyDeck = new Policy_2.PolicyDeck(gameData.policyDeck);
+        gameData.policyDeck = new Policy_1.PolicyDeck(gameData.policyDeck);
     }
     if (gameData.presidentPolicies) {
         gameData.presidentPolicies = gameData.presidentPolicies.map(x => new Policy_1.Policy(x.isLiberal));
@@ -56,6 +53,7 @@ function convertGameDataToClass(gameData) {
         gameData.lastPolicy = new Policy_1.Policy(gameData.lastPolicy.isLiberal);
     }
     App.gameData = gameData;
+    vm.players = App.gameData.players;
     updateEnactedPolicies();
 }
 /**
@@ -130,7 +128,7 @@ const IO = {
             App.Player.onPresidentPolicyChosen();
         }
     },
-    onVetoRequested: function (data) {
+    onVetoRequested: function () {
         if (App.amIThePresident()) {
             App.President.onVetoRequested();
         }
@@ -199,6 +197,22 @@ const IO = {
     },
     playerRejoinedRoom: function (data) {
         convertGameDataToClass(data);
+        document.getElementById("startGameBtn").style.display = "none";
+        vm.showBoard = true;
+        for (let i = 0; i < App.gameData.players.length; i++) {
+            let p = App.gameData.players[i];
+            vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
+            // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+        }
+        if (App.amIThePresident()) {
+            App.President.rejoinGame();
+        }
+        else if (App.amITheChancellor()) {
+            App.Chancellor.rejoinGame();
+        }
+        else {
+            App.Player.rejoinGame();
+        }
     },
     /**
      * Both players have joined the game.
@@ -233,7 +247,6 @@ const App = {
     myPlayerId: 0,
     playerBtns: [],
     dead: false,
-    state: "",
     /**
      * The Socket.IO socket object identifier. This is unique for
      * each player and host. It is generated when the browser initially
@@ -259,10 +272,12 @@ const App = {
      *                Setup                *
      * *********************************** */
     amIThePresident: function () {
-        return App.gameData.president.id === App.myPlayerId;
+        return (App.gameData.president &&
+            App.gameData.president.id === App.myPlayerId);
     },
     amITheChancellor: function () {
-        return App.gameData.chancellor.id === App.myPlayerId;
+        return (App.gameData.chancellor &&
+            App.gameData.chancellor.id === App.myPlayerId);
     },
     /**
      * This runs when the page initially loads.
@@ -420,6 +435,29 @@ const App = {
             App.$templateJoinGame.style.display = "none";
             App.$gameArea.style.display = "none";
         },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.Player.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.Player.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.Player.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.Player.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Player.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
+                }
+            }
+        },
         onVIPStart: function () {
             document.getElementById("startGameBtn").style.display = "none";
             CPU = false;
@@ -488,7 +526,9 @@ const App = {
             };
         },
         onChancellorElected: function () {
-            App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
+            // App.playerBtns[App.gameData.chancellor.id].classList.add(
+            // "isChancellor"
+            // );
             vm.currentAction = `Waiting for President ${App.gameData.president.name} to pick policies`;
         },
         onPresidentPolicyChosen: function () {
@@ -503,13 +543,13 @@ const App = {
         },
         onExecutiveActionTriggered: function () {
             switch (App.gameData.lastExecutiveAction) {
-                case Enums_2.Executive_Action.InvestigateLoyalty:
+                case Enums_1.Executive_Action.InvestigateLoyalty:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to investigate someone's loyalty.`;
                     break;
-                case Enums_2.Executive_Action.Execution:
+                case Enums_1.Executive_Action.Execution:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to execute someone.`;
                     break;
-                case Enums_2.Executive_Action.SpecialElection:
+                case Enums_1.Executive_Action.SpecialElection:
                     vm.currentAction = `Waiting for President ${App.gameData.president.name} to invoke a special election.`;
                     break;
             }
@@ -519,20 +559,20 @@ const App = {
         },
         onExecutiveActionTargetChosen: function () {
             switch (App.gameData.lastExecutiveAction) {
-                case Enums_2.Executive_Action.PolicyPeek:
+                case Enums_1.Executive_Action.PolicyPeek:
                     log(`President ${App.gameData.president.name} peeked the next 3 policies.`);
                     break;
-                case Enums_2.Executive_Action.SpecialElection:
+                case Enums_1.Executive_Action.SpecialElection:
                     log(`Special Election! ${App.gameData.lastExecutiveActionTarget.name} will now be president.`);
                     break;
-                case Enums_2.Executive_Action.Execution:
+                case Enums_1.Executive_Action.Execution:
                     log(`President ${App.gameData.president.name} has executed ${App.gameData.lastExecutiveActionTarget.name}!`);
                     if (App.gameData.lastExecutiveActionTarget.id ===
                         App.myPlayerId) {
                         App.dead = true;
                     }
                     break;
-                case Enums_2.Executive_Action.InvestigateLoyalty:
+                case Enums_1.Executive_Action.InvestigateLoyalty:
                     log(`President ${App.gameData.president.name} has investigated ${App.gameData.lastExecutiveActionTarget.name}'s loyalty.`);
                     break;
             }
@@ -565,7 +605,7 @@ const App = {
             for (let i = 0; i < App.gameData.players.length; i++) {
                 let p = App.gameData.players[i];
                 vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
-                App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+                // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
             }
         },
         gameOver: function (data) {
@@ -590,7 +630,6 @@ const App = {
             vm.disablePlayerButtons = false;
             vm.currentAction =
                 "You're the president! Choose someone to nominate for chancellor.";
-            App.state = "nominateChancellor";
             if (CPU) {
                 setRandomTimeout(() => {
                     let selectedPlayer;
@@ -601,12 +640,14 @@ const App = {
                         (App.gameData.lastChancellor &&
                             App.gameData.lastChancellor.id ===
                                 selectedPlayer.id));
-                    App.playerBtns[selectedPlayer.id].click();
+                    // App.playerBtns[selectedPlayer.id].click();
                 }, 500, 3000);
             }
         },
         onChancellorElected: function () {
-            App.playerBtns[App.gameData.chancellor.id].classList.add("isChancellor");
+            // App.playerBtns[App.gameData.chancellor.id].classList.add(
+            //     "isChancellor"
+            // );
             vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = App.gameData.presidentPolicies;
             if (CPU) {
@@ -624,7 +665,7 @@ const App = {
             });
         },
         onExecutiveActionTriggered: function () {
-            if (App.gameData.lastExecutiveAction === Enums_2.Executive_Action.PolicyPeek) {
+            if (App.gameData.lastExecutiveAction === Enums_1.Executive_Action.PolicyPeek) {
                 log("Next 3 Policies are " +
                     App.gameData.policyDeck
                         .peek(3)
@@ -634,16 +675,15 @@ const App = {
             }
             else {
                 vm.disablePlayerButtons = false;
-                App.state = "executiveAction";
                 switch (App.gameData.lastExecutiveAction) {
-                    case Enums_2.Executive_Action.InvestigateLoyalty:
+                    case Enums_1.Executive_Action.InvestigateLoyalty:
                         vm.currentAction =
                             "Choose someone to investigate their loyalty.";
                         break;
-                    case Enums_2.Executive_Action.Execution:
+                    case Enums_1.Executive_Action.Execution:
                         vm.currentAction = "Choose someone to execute.";
                         break;
-                    case Enums_2.Executive_Action.SpecialElection:
+                    case Enums_1.Executive_Action.SpecialElection:
                         vm.currentAction =
                             "Choose the president for next turn.";
                         break;
@@ -658,8 +698,31 @@ const App = {
                             (App.gameData.lastChancellor &&
                                 App.gameData.lastChancellor.id ===
                                     selectedPlayer.id));
-                        App.playerBtns[selectedPlayer.id].click();
+                        // App.playerBtns[selectedPlayer.id].click();
                     }, 500, 3000);
+                }
+            }
+        },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.President.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.President.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.President.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.President.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Player.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
                 }
             }
         }
@@ -682,6 +745,29 @@ const App = {
                     let choice = Rand.Range(0, 2);
                     App.$policyChoiceBtns[choice].click();
                 }, 500, 2000);
+            }
+        },
+        rejoinGame: function () {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
+                App.Player.onPresidentElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.PresidentChoosePolicies) {
+                App.Player.onChancellorElected();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorRequestVeto) {
+                App.Player.onVetoRequested();
+            }
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
+                App.Player.onExecutiveActionTriggered();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.ChancellorChoosePolicy) {
+                App.Chancellor.onPresidentPolicyChosen();
+            }
+            else if (App.gameData.gameState === Enums_1.GameState.VoteForChancellor) {
+                if (!App.gameData.currentElection.didPlayerVote(App.myPlayerId)) {
+                    App.Player.onChancellorNominated();
+                }
             }
         }
     },
@@ -715,11 +801,12 @@ window.onload = function () {
         const gameInfo = Cookies.getJSON("existingGameInfo");
         IO.socket.emit("isGameStillGoing", { gameId: gameInfo.gameId }, function (response) {
             if (response) {
-                if (!DEBUG &&
-                    confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
+                if (confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
                     App.myPlayerId = gameInfo.playerId;
                     App.gameId = gameInfo.gameId;
                     IO.socket.emit("rejoinGame", gameInfo);
+                    App.$gameArea.style.display = "none";
+                    App.$templateIntroScreen.style.display = "none";
                     App.Player.joinGame(gameInfo);
                 }
                 else {
@@ -741,7 +828,6 @@ window.onload = function () {
 function setRandomTimeout(func, min, max) {
     setTimeout(func, Rand.Range(min, max));
 }
-let $messageBox = undefined;
 Vue.use(vue_toasted_1.default);
 function log(message, duration) {
     Vue.toasted.show(message, { duration: duration || 4000 });
@@ -783,7 +869,7 @@ const vm = new Vue({
             if (selectedPlayer.dead) {
                 alert(`${selectedPlayer.name} is dead!`);
             }
-            if (App.state === "nominateChancellor") {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
                 if (App.gameData.lastChancellor &&
                     selectedPlayer.id === App.gameData.lastChancellor.id) {
                     alert("can't be chancellor twice in a row");
@@ -795,12 +881,13 @@ const vm = new Vue({
                     this.disablePlayerButtons = true;
                 }
             }
-            else if (App.state === "executiveAction") {
+            else if (App.gameData.gameState ===
+                Enums_1.GameState.PresidentChooseExecutiveActionTarget) {
                 if (App.gameData.lastExecutiveAction ===
-                    Enums_2.Executive_Action.InvestigateLoyalty) {
+                    Enums_1.Executive_Action.InvestigateLoyalty) {
                     let loyalty = selectedPlayer.role;
-                    if (loyalty === Enums_3.Role.Hitler) {
-                        loyalty = Enums_3.Role.Fascist;
+                    if (loyalty === Enums_1.Role.Hitler) {
+                        loyalty = Enums_1.Role.Fascist;
                     }
                     log(`${selectedPlayer.name} is ${loyalty}!`);
                 }
@@ -819,7 +906,7 @@ const vm = new Vue({
             if (selectedPlayer.dead) {
                 return true;
             }
-            if (App.state === "nominateChancellor") {
+            if (App.gameData.gameState === Enums_1.GameState.PresidentNominateChancellor) {
                 return (App.gameData.lastChancellor &&
                     App.gameData.lastChancellor.id == id);
             }

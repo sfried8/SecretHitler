@@ -8,6 +8,16 @@ var Executive_Action;
     Executive_Action[Executive_Action["PolicyPeek"] = 3] = "PolicyPeek";
     Executive_Action[Executive_Action["Execution"] = 4] = "Execution";
 })(Executive_Action = exports.Executive_Action || (exports.Executive_Action = {}));
+var GameState;
+(function (GameState) {
+    GameState[GameState["Idle"] = 0] = "Idle";
+    GameState[GameState["PresidentNominateChancellor"] = 1] = "PresidentNominateChancellor";
+    GameState[GameState["VoteForChancellor"] = 2] = "VoteForChancellor";
+    GameState[GameState["PresidentChoosePolicies"] = 3] = "PresidentChoosePolicies";
+    GameState[GameState["ChancellorChoosePolicy"] = 4] = "ChancellorChoosePolicy";
+    GameState[GameState["PresidentChooseExecutiveActionTarget"] = 5] = "PresidentChooseExecutiveActionTarget";
+    GameState[GameState["ChancellorRequestVeto"] = 6] = "ChancellorRequestVeto";
+})(GameState = exports.GameState || (exports.GameState = {}));
 exports.Setups = {
     3: {
         Liberals: 1,
