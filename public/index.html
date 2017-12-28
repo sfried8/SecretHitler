@@ -18,8 +18,8 @@
     <div id="gameBody">
         <div style="width:80%;margin:auto;">{{currentAction}}</div>
         <div id="playerButtons">
-            <button class="playerButton" :class="[p.dead ? 'isDead' : '', president!=null && p.id == president.id ? 'isPresident' : '', chancellor!=null && p.id == chancellor.id ? 'isChancellor' : '']" :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players"
-                :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
+            <button class="playerButton" :class="[p.dead ? 'isDead' : '', president!=null && p.id == president.id ? 'isPresident' : '', chancellor!=null && p.id == chancellor.id ? 'isChancellor' : '']"
+                :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
         </div>
         <br>
         <div id="voteButtons" v-show="showVoteButtons">
@@ -30,10 +30,16 @@
                 <img src="../img/nein.png" />
             </button>
         </div>
+        <div>
+            {{waitingForVotesString}}
+        </div>
         <button id="startGameBtn" class="topright">Start Game</button>
-        <div id="enactedPolicies" class="topright" v-show="showBoard">Liberal: [ ] [ ] [ ] [ ] [ ]
-            <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
+        <div id="bottomDiv" class="topright" v-show="showBoard">
 
+            <div id="enactedPolicies">Liberal: [ ] [ ] [ ] [ ] [ ]
+                <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
+            <button @click="whoAmI()">Who Am I?</button>
+        </div>
         <div id="policyChoices">
             <button @click="policyChoiceClick(index)" class="noBorder policyBtn" :class="p.isLiberal ? 'liberalPolicy' : 'fascistPolicy'"
                 v-for="(p,index) in policyChoices"></button>

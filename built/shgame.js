@@ -65,11 +65,13 @@ function electNextPresident() {
         gameData.president = gameData.players[gameData.presidentIndex];
     } while (gameData.president.dead);
     gameData.lastChancellor = gameData.chancellor;
+    gameData.chancellor = null;
     emit("presidentElected", gameData);
 }
 function specialElection(newPresident) {
     gameData.president = newPresident;
     gameData.lastChancellor = gameData.chancellor;
+    gameData.chancellor = null;
     emit("presidentElected", gameData);
 }
 function sendPoliciesToPresident() {

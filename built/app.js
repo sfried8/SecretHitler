@@ -498,6 +498,12 @@ const App = {
             if (App.dead) {
                 return;
             }
+            vm.waitingForVotes = [];
+            App.gameData.players.forEach(p => {
+                if (!p.dead) {
+                    vm.waitingForVotes.push(p);
+                }
+            });
             vm.currentAction = `Vote now whether to elect ${App.gameData.chancellorNominee.name} as Chancellor`;
             vm.showVoteButtons = true;
             if (CPU) {
@@ -557,7 +563,10 @@ const App = {
             }
         },
         onPlayerVoted: function (data) {
-            log(`${App.getPlayerById(data.id).name} voted ${data.vote ? "ja" : "nein"}`);
+            if (DEBUG) {
+                log(`${App.getPlayerById(data.id).name} voted ${data.vote ? "ja" : "nein"}`);
+            }
+            vm.waitingForVotes = vm.waitingForVotes.filter((x) => x !== App.getPlayerById(data.id));
         },
         onExecutiveActionTargetChosen: function () {
             switch (App.gameData.lastExecutiveAction) {
@@ -608,6 +617,33 @@ const App = {
                 let p = App.gameData.players[i];
                 vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
                 // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+            }
+            App.Player.whoAmI();
+        },
+        whoAmI: function () {
+            const myPlayer = App.getPlayerById(App.myPlayerId);
+            if (myPlayer.role === Enums_1.Role.Liberal) {
+                log("You are Liberal! Find and stop the Secret Hitler!");
+            }
+            else if (myPlayer.role === Enums_1.Role.Fascist) {
+                log("You are Fascist! The other fascists are " +
+                    App.gameData.fascists
+                        .filter((x) => x.id !== myPlayer.id)
+                        .map((x) => x.name)
+                        .join(", "));
+                log(App.gameData.hitler.name + " is Secret Hitler!");
+                if (!App.gameData.gameRules.hitlerKnowsFascists) {
+                    log("You know who Hitler is, but Hitler does NOT know who the fascists are!");
+                }
+            }
+            else {
+                log("You are Secret Hitler!");
+                if (App.gameData.gameRules.hitlerKnowsFascists) {
+                    log("The fascists are " +
+                        App.gameData.fascists
+                            .map((x) => x.name)
+                            .join(", "));
+                }
             }
         },
         gameOver: function (data) {
@@ -865,7 +901,33 @@ const vm = new Vue({
         currentAction: "",
         showBoard: false,
         president: null,
-        chancellor: null
+        chancellor: null,
+        waitingForVotes: []
+    },
+    computed: {
+        waitingForVotesString: function () {
+            const len = this.waitingForVotes.length;
+            if (len === 0) {
+                return "";
+            }
+            else if (len === 1) {
+                return "Waiting for vote from " + this.waitingForVotes[0].name;
+            }
+            else if (len === 2) {
+                return ("Waiting for votes from " +
+                    this.waitingForVotes[0].name +
+                    " and " +
+                    this.waitingForVotes[1].name);
+            }
+            else {
+                let s = "Waiting for votes from ";
+                for (let i = 0; i < len - 1; i++) {
+                    s += this.waitingForVotes[i].name + ", ";
+                }
+                s += "and " + this.waitingForVotes[len - 1].name;
+                return s;
+            }
+        }
     },
     methods: {
         playerButtonClick: function (id) {
@@ -974,6 +1036,9 @@ const vm = new Vue({
         vetoButtonClick: function () {
             this.showVetoButton = false;
             IO.socket.emit("chancellorRequestedVeto");
+        },
+        whoAmI: function () {
+            App.Player.whoAmI();
         }
     }
 });
