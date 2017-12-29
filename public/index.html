@@ -33,16 +33,22 @@
         <div>
             {{waitingForVotesString}}
         </div>
-        <button id="startGameBtn" class="topright">Start Game</button>
+        <button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</button>
         <div id="bottomDiv" class="topright" v-show="showBoard">
 
             <div id="enactedPolicies">Liberal: [ ] [ ] [ ] [ ] [ ]
                 <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
+            <div>
+                Chaos Level: {{chaosLevel}}
+            </div>
             <button @click="whoAmI()">Who Am I?</button>
         </div>
         <div id="policyChoices">
-            <button @click="policyChoiceClick(index)" class="noBorder policyBtn" :class="p.isLiberal ? 'liberalPolicy' : 'fascistPolicy'"
-                v-for="(p,index) in policyChoices"></button>
+            <!-- <button @click="policyChoiceClick(index)" class="noBorder policyBtn" :class="p.isLiberal ? 'liberalPolicy' : 'fascistPolicy'"
+                v-for="(p,index) in policyChoices"></button> -->
+            <button @click="policyChoiceClick(index)" class="noBorder policyBtn" v-for="(p,index) in policyChoices">
+                <img :src="p.isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
+            </button>
             <!--<button id="policyChoice1" value="0" :class="getPolicyClass(0)">Policy</button><button id="policyChoice2" value="1" :class="getPolicyClass(1)">Policy</button><button id="policyChoice3" value="2" :class="getPolicyClass(2)">Policy</button>-->
         </div>
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
@@ -78,7 +84,7 @@
             <div class="joinGameWrapper">
                 <div class="info">
                     <label for="inputPlayerName">Your Name:</label>
-                    <input id="inputPlayerName" type="text" />
+                    <input id="inputPlayerName" type="text" v-model="yourName" />
                 </div>
 
                 <div class="info buttons">

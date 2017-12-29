@@ -120,6 +120,7 @@ exports.Choice = Choice;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const DEBUG = false;
+const autoJoin = false;
 let CPU = false;
 const Enums_1 = __webpack_require__(2);
 const Rand = __webpack_require__(0);
@@ -175,8 +176,10 @@ function convertGameDataToClass(gameData) {
     vm.president = App.gameData.president;
     vm.chancellor = App.gameData.chancellor;
     vm.players = App.gameData.players;
+    vm.chaosLevel = App.gameData.chaosLevel;
     updateEnactedPolicies();
 }
+const getName = (x) => x.name;
 /**
  * All the code relevant to Socket.IO is collected in the IO namespace.
  *
@@ -501,7 +504,7 @@ const App = {
             App.$gameArea.style.display = "none";
             App.$templateIntroScreen.style.display = "none";
             App.$templateJoinGame.style.display = "";
-            setTimeout(() => document.getElementById("btnStart").click(), 100);
+            // setTimeout(() => document.getElementById("btnStart").click(), 100);
         },
         /**
          * The player entered their name and gameId (hopefully)
@@ -509,34 +512,41 @@ const App = {
          */
         onPlayerStartClick: function () {
             // console.log('Player clicked "Start"');
-            const names = [
-                "Sam",
-                "Mike",
-                "George",
-                "Andrew",
-                "Max",
-                "Kutik",
-                "Hussein",
-                "Aaron",
-                "Derrick",
-                "Eden",
-                "Poop",
-                "Butt",
-                "John",
-                "Charlie",
-                "Frank",
-                "Randy",
-                "Jimbo",
-                "Stan",
-                "Kyle",
-                "Eric",
-                "Butters",
-                "Kenny"
-            ];
             App.myPlayerId = (Math.random() * 100000) | 0;
+            let name;
+            if (vm.yourName) {
+                name = vm.yourName;
+            }
+            else {
+                const names = [
+                    "Sam",
+                    "Mike",
+                    "George",
+                    "Andrew",
+                    "Max",
+                    "Kutik",
+                    "Hussein",
+                    "Aaron",
+                    "Derrick",
+                    "Eden",
+                    "Poop",
+                    "Butt",
+                    "John",
+                    "Charlie",
+                    "Frank",
+                    "Randy",
+                    "Jimbo",
+                    "Stan",
+                    "Kyle",
+                    "Eric",
+                    "Butters",
+                    "Kenny"
+                ];
+                name = names[App.myPlayerId % 22] + Rand.Range(1, 100);
+            }
             // collect data to send to the server
             const data = {
-                playerName: names[App.myPlayerId % 22] + Rand.Range(1, 100),
+                playerName: name,
                 playerId: App.myPlayerId
             };
             // Send the gameId and playerName to the server
@@ -578,9 +588,10 @@ const App = {
                     App.Player.onChancellorNominated();
                 }
             }
+            vm.gameHasStarted = true;
         },
         onVIPStart: function () {
-            document.getElementById("startGameBtn").style.display = "none";
+            vm.gameHasStarted = true;
             CPU = false;
             IO.socket.emit("VIPStart");
         },
@@ -730,7 +741,7 @@ const App = {
             vm.players = App.gameData.players;
         },
         beginNewGame: function () {
-            document.getElementById("startGameBtn").style.display = "none";
+            vm.gameHasStarted = true;
             vm.showBoard = true;
             for (let i = 0; i < App.gameData.players.length; i++) {
                 let p = App.gameData.players[i];
@@ -745,24 +756,42 @@ const App = {
                 log("You are Liberal! Find and stop the Secret Hitler!");
             }
             else if (myPlayer.role === Enums_1.Role.Fascist) {
-                log("You are Fascist! The other fascists are " +
-                    App.gameData.fascists
-                        .filter((x) => x.id !== myPlayer.id)
-                        .map((x) => x.name)
-                        .join(", "));
-                log(App.gameData.hitler.name + " is Secret Hitler!");
+                let s = "You are Fascist!";
+                const otherFascistNames = App.gameData.fascists
+                    .filter((x) => x.id !== myPlayer.id)
+                    .map(getName);
+                const len = otherFascistNames.length;
+                if (len === 1) {
+                    s += " The other Fascist is " + otherFascistNames[0] + ". ";
+                }
+                else if (len > 1) {
+                    s +=
+                        " The other Fascists are " +
+                            prettyPrintList(otherFascistNames) +
+                            ". ";
+                }
+                s += App.gameData.hitler.name + " is Secret Hitler!";
+                log(s);
                 if (!App.gameData.gameRules.hitlerKnowsFascists) {
                     log("You know who Hitler is, but Hitler does NOT know who the fascists are!");
                 }
             }
             else {
-                log("You are Secret Hitler!");
+                let s = "You are Secret Hitler!";
                 if (App.gameData.gameRules.hitlerKnowsFascists) {
-                    log("The fascists are " +
-                        App.gameData.fascists
-                            .map((x) => x.name)
-                            .join(", "));
+                    const fascistNames = App.gameData.fascists.map(getName);
+                    const len = fascistNames.length;
+                    if (len === 1) {
+                        s += " The Fascist is " + fascistNames[0] + ". ";
+                    }
+                    else if (len > 1) {
+                        s +=
+                            " The Fascists are " +
+                                prettyPrintList(fascistNames) +
+                                ". ";
+                    }
                 }
+                log(s);
             }
         },
         gameOver: function (data) {
@@ -942,7 +971,7 @@ const App = {
            ************************** */
 };
 function clickJoinButton() {
-    if (DEBUG) {
+    if (autoJoin) {
         setTimeout(() => {
             document.getElementById("btnJoinGame").click();
         }, 100);
@@ -958,7 +987,8 @@ window.onload = function () {
         const gameInfo = Cookies.getJSON("existingGameInfo");
         IO.socket.emit("isGameStillGoing", { gameId: gameInfo.gameId }, function (response) {
             if (response) {
-                if (confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
+                if (autoJoin ||
+                    confirm("Looks like you were disconnected, but the game is still going. Rejoin?")) {
                     App.myPlayerId = gameInfo.playerId;
                     App.gameId = gameInfo.gameId;
                     IO.socket.emit("rejoinGame", gameInfo);
@@ -1021,30 +1051,25 @@ const vm = new Vue({
         showBoard: false,
         president: null,
         chancellor: null,
-        waitingForVotes: []
+        waitingForVotes: [],
+        chaosLevel: 0,
+        gameHasStarted: false,
+        yourName: ""
     },
     computed: {
+        showStartBtn: function () {
+            return (!this.gameHasStarted &&
+                (this.players &&
+                    this.players.length >= 5 &&
+                    this.players.length <= 10));
+        },
         waitingForVotesString: function () {
             const len = this.waitingForVotes.length;
             if (len === 0) {
                 return "";
             }
-            else if (len === 1) {
-                return "Waiting for vote from " + this.waitingForVotes[0].name;
-            }
-            else if (len === 2) {
-                return ("Waiting for votes from " +
-                    this.waitingForVotes[0].name +
-                    " and " +
-                    this.waitingForVotes[1].name);
-            }
             else {
-                let s = "Waiting for votes from ";
-                for (let i = 0; i < len - 1; i++) {
-                    s += this.waitingForVotes[i].name + ", ";
-                }
-                s += "and " + this.waitingForVotes[len - 1].name;
-                return s;
+                return `Waiting for vote${len > 1 ? "s" : ""} from ${prettyPrintList(this.waitingForVotes.map(getName))}`;
             }
         }
     },
@@ -1161,6 +1186,26 @@ const vm = new Vue({
         }
     }
 });
+function prettyPrintList(listToPrint) {
+    const len = listToPrint.length;
+    if (len === 0) {
+        return "";
+    }
+    else if (len === 1) {
+        return listToPrint[0];
+    }
+    else if (len === 2) {
+        return listToPrint[0] + " and " + listToPrint[1];
+    }
+    else {
+        let s = "";
+        for (let i = 0; i < len - 1; i++) {
+            s += listToPrint[i] + ", ";
+        }
+        s += "and " + listToPrint[len - 1];
+        return s;
+    }
+}
 
 
 /***/ }),
