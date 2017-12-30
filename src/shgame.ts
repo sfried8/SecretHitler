@@ -1,7 +1,6 @@
 let io: any;
 let gameSocket: any;
 
-// const models = require("./built/models.js");
 import { Election } from "./models";
 import {
     Executive_Action,
@@ -12,9 +11,9 @@ import {
 } from "./Enums";
 import * as Rand from "./Rand";
 import { PolicyDeck } from "./Policy";
-// const Election = models.Election;
 import { Player } from "./Player";
 import { GameData } from "./gameData";
+
 /**
  * This function is called by index.js to initialize a new game instance.
  *
@@ -47,23 +46,23 @@ function initGame(sio: any, socket: any) {
     gameSocket.on("isGameStillGoing", isGameStillGoing);
 }
 export = { initGame: initGame };
+
 function onVIPStart() {
     let tempPlayerArray = Rand.Shuffle(gameData.players.slice());
     gameData.gameRules = Setups[gameData.players.length];
-    let j = 0;
-    let i;
-    for (i = 0; i < gameData.gameRules.Fascists; i++) {
-        tempPlayerArray[j].role = Role.Fascist;
-        gameData.fascists.push(tempPlayerArray[j]);
-        j++;
-    }
-    for (i = 0; i < gameData.gameRules.Liberals; i++) {
-        tempPlayerArray[j].role = Role.Liberal;
-        gameData.liberals.push(tempPlayerArray[j]);
-        j++;
-    }
-    tempPlayerArray[j].role = Role.Hitler;
-    gameData.hitler = tempPlayerArray[j];
+
+    tempPlayerArray.splice(0, gameData.gameRules.Fascists).map(p => {
+        p.role = Role.Fascist;
+        gameData.fascists.push(p);
+    });
+    tempPlayerArray.splice(0, gameData.gameRules.Liberals).map(p => {
+        p.role = Role.Liberal;
+        gameData.liberals.push(p);
+    });
+
+    tempPlayerArray[0].role = Role.Hitler;
+    gameData.hitler = tempPlayerArray[0];
+
     gameData.policyDeck = new PolicyDeck();
     emit("beginNewGame", gameData);
 
@@ -100,12 +99,8 @@ function onPresidentNominate(data: any) {
         gameData.electionArchive = gameData.electionArchive || [];
         gameData.electionArchive.push(gameData.currentElection);
     }
-    let numPlayersLiving = 0;
-    for (let i = 0; i < gameData.players.length; i++) {
-        if (!gameData.players[i].dead) {
-            numPlayersLiving++;
-        }
-    }
+    const numPlayersLiving = gameData.players.filter(p => !p.dead).length;
+
     gameData.currentElection = new Election(
         gameData.president,
         gameData.chancellor,
@@ -312,13 +307,9 @@ let gameData = {
     chaosLevel: 0,
     gameState: GameState.Idle
 } as GameData;
+
 function getPlayerById(id: number): Player {
-    for (let i = 0; i < gameData.players.length; i++) {
-        if (gameData.players[i].id === id) {
-            return gameData.players[i];
-        }
-    }
-    return null;
+    return gameData.players.filter(p => p.id === id)[0];
 }
 /******************************
  *                           *
@@ -398,10 +389,6 @@ function playerRejoinGame(data: any) {
         });
     }
 }
-/*
- * Javascript implementation of Fisher-Yates shuffle algorithm
- * http://stackoverflow.com/questions/2450954/how-to-randomize-a-javascript-array
- */
 
 function emit(message: string, data: any) {
     io.sockets.in(thisGameId).emit(message, data);

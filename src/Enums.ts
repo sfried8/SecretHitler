@@ -22,27 +22,15 @@ export enum GameState {
 }
 
 export const Setups: any = {
-    3: <Setup>{
-        Liberals: 1,
-        Fascists: 1,
-        hitlerKnowsFascists: true,
-        board: [
-            Executive_Action.NoAction,
-            Executive_Action.NoAction,
-            Executive_Action.PolicyPeek,
-            Executive_Action.Execution,
-            Executive_Action.Execution
-        ]
-    },
     5: <Setup>{
         Liberals: 3,
         Fascists: 1,
         hitlerKnowsFascists: true,
         board: [
-            Executive_Action.Execution,
+            Executive_Action.NoAction,
             Executive_Action.NoAction,
             Executive_Action.PolicyPeek,
-            Executive_Action.SpecialElection,
+            Executive_Action.Execution,
             Executive_Action.Execution
         ]
     },
