@@ -7,16 +7,20 @@
         "eslint": "^4.13.1",
         "express": "3.x",
         "js-cookie": "^2.2.0",
+        "mint-ui": "^2.2.13",
         "socket.io": "0.9",
         "typescript": "^2.6.2",
         "uglify-js": "2.6.0",
+        "vue": "^2.5.13",
         "vue-toasted": "^1.1.24",
         "watchify": "^3.9.0",
         "webpack": "^3.10.0"
     },
     "main": "index",
     "devDependencies": {
-        "@types/js-cookie": "^2.1.0"
+        "@types/js-cookie": "^2.1.0",
+        "css-loader": "^0.28.7",
+        "style-loader": "^0.19.1"
     },
     "scripts": {
         "test": "node index.js",

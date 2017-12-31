@@ -1,12 +1,10 @@
 "use strict";
 let io;
 let gameSocket;
-// const models = require("./built/models.js");
 const models_1 = require("./models");
 const Enums_1 = require("./Enums");
 const Rand = require("./Rand");
 const Policy_1 = require("./Policy");
-// const Election = models.Election;
 const Player_1 = require("./Player");
 /**
  * This function is called by index.js to initialize a new game instance.
@@ -38,20 +36,16 @@ function initGame(sio, socket) {
 function onVIPStart() {
     let tempPlayerArray = Rand.Shuffle(gameData.players.slice());
     gameData.gameRules = Enums_1.Setups[gameData.players.length];
-    let j = 0;
-    let i;
-    for (i = 0; i < gameData.gameRules.Fascists; i++) {
-        tempPlayerArray[j].role = Enums_1.Role.Fascist;
-        gameData.fascists.push(tempPlayerArray[j]);
-        j++;
-    }
-    for (i = 0; i < gameData.gameRules.Liberals; i++) {
-        tempPlayerArray[j].role = Enums_1.Role.Liberal;
-        gameData.liberals.push(tempPlayerArray[j]);
-        j++;
-    }
-    tempPlayerArray[j].role = Enums_1.Role.Hitler;
-    gameData.hitler = tempPlayerArray[j];
+    tempPlayerArray.splice(0, gameData.gameRules.Fascists).map(p => {
+        p.role = Enums_1.Role.Fascist;
+        gameData.fascists.push(p);
+    });
+    tempPlayerArray.splice(0, gameData.gameRules.Liberals).map(p => {
+        p.role = Enums_1.Role.Liberal;
+        gameData.liberals.push(p);
+    });
+    tempPlayerArray[0].role = Enums_1.Role.Hitler;
+    gameData.hitler = tempPlayerArray[0];
     gameData.policyDeck = new Policy_1.PolicyDeck();
     emit("beginNewGame", gameData);
     gameData.presidentIndex = -1;
@@ -86,12 +80,7 @@ function onPresidentNominate(data) {
         gameData.electionArchive = gameData.electionArchive || [];
         gameData.electionArchive.push(gameData.currentElection);
     }
-    let numPlayersLiving = 0;
-    for (let i = 0; i < gameData.players.length; i++) {
-        if (!gameData.players[i].dead) {
-            numPlayersLiving++;
-        }
-    }
+    const numPlayersLiving = gameData.players.filter(p => !p.dead).length;
     gameData.currentElection = new models_1.Election(gameData.president, gameData.chancellor, numPlayersLiving);
     emit("chancellorNominated", gameData);
 }
@@ -292,12 +281,7 @@ let gameData = {
     gameState: Enums_1.GameState.Idle
 };
 function getPlayerById(id) {
-    for (let i = 0; i < gameData.players.length; i++) {
-        if (gameData.players[i].id === id) {
-            return gameData.players[i];
-        }
-    }
-    return null;
+    return gameData.players.filter(p => p.id === id)[0];
 }
 /******************************
  *                           *
@@ -369,10 +353,6 @@ function playerRejoinGame(data) {
         });
     }
 }
-/*
- * Javascript implementation of Fisher-Yates shuffle algorithm
- * http://stackoverflow.com/questions/2450954/how-to-randomize-a-javascript-array
- */
 function emit(message, data) {
     io.sockets.in(thisGameId).emit(message, data);
 }

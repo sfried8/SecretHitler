@@ -1,13 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const DEBUG = false;
-const autoJoin = false;
+const autoJoin = true;
 let CPU = false;
 const Enums_1 = require("./Enums");
 const Rand = require("./Rand");
 const Policy_1 = require("./Policy");
 const models_1 = require("./models");
-const vue_toasted_1 = require("vue-toasted");
+const vue_1 = require("vue");
+const mint_ui_1 = require("mint-ui");
+require("mint-ui/lib/style.css");
+vue_1.default.component(mint_ui_1.Button.name, mint_ui_1.Button);
+vue_1.default.component(mint_ui_1.Popup.name, mint_ui_1.Popup);
+// import Toasted from "vue-toasted";
 const Cookies = require("js-cookie");
 function updateEnactedPolicies() {
     let ls = App.gameData.enactedPolicies.liberals;
@@ -34,9 +39,7 @@ function updateEnactedPolicies() {
 }
 function convertGameDataToClass(gameData) {
     if (gameData.electionArchive) {
-        for (let i = 0; i < gameData.electionArchive.length; i++) {
-            gameData.electionArchive[i] = new models_1.Election().cloneOf(gameData.electionArchive[i]);
-        }
+        gameData.electionArchive.map(e => new models_1.Election().cloneOf(e));
     }
     if (gameData.currentElection) {
         gameData.currentElection = new models_1.Election().cloneOf(gameData.currentElection);
@@ -204,10 +207,49 @@ const IO = {
         convertGameDataToClass(data);
         document.getElementById("startGameBtn").style.display = "none";
         vm.showBoard = true;
-        for (let i = 0; i < App.gameData.players.length; i++) {
-            let p = App.gameData.players[i];
-            vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
-            // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
+        App.gameData.players.map(p => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`));
+        const myPlayer = App.getPlayerById(App.myPlayerId);
+        if (myPlayer.role === Enums_1.Role.Liberal) {
+            vm.myRole = "You are Liberal! Find and stop the Secret Hitler!";
+        }
+        else if (myPlayer.role === Enums_1.Role.Fascist) {
+            let s = "You are Fascist!";
+            const otherFascistNames = App.gameData.fascists
+                .filter((x) => x.id !== myPlayer.id)
+                .map(getName);
+            const len = otherFascistNames.length;
+            if (len === 1) {
+                s += " The other Fascist is " + otherFascistNames[0] + ". ";
+            }
+            else if (len > 1) {
+                s +=
+                    " The other Fascists are " +
+                        prettyPrintList(otherFascistNames) +
+                        ". ";
+            }
+            s += App.gameData.hitler.name + " is Secret Hitler!";
+            vm.myRole = s;
+            if (!App.gameData.gameRules.hitlerKnowsFascists) {
+                vm.myRole =
+                    "You know who Hitler is, but Hitler does NOT know who the fascists are!";
+            }
+        }
+        else {
+            let s = "You are Secret Hitler!";
+            if (App.gameData.gameRules.hitlerKnowsFascists) {
+                const fascistNames = App.gameData.fascists.map(getName);
+                const len = fascistNames.length;
+                if (len === 1) {
+                    s += " The Fascist is " + fascistNames[0] + ". ";
+                }
+                else if (len > 1) {
+                    s +=
+                        " The Fascists are " +
+                            prettyPrintList(fascistNames) +
+                            ". ";
+                }
+            }
+            vm.myRole = s;
         }
         if (App.amIThePresident()) {
             App.President.rejoinGame();
@@ -239,7 +281,7 @@ const IO = {
      * @param data
      */
     error: function (data) {
-        alert("message: " + data.message);
+        alert("Error: " + data.message);
     }
 };
 const App = {
@@ -491,17 +533,6 @@ const App = {
         /////////////////////////////////////////////////
         ///////////////////////////////////////////////////
         onPresidentElected: function () {
-            // App.playerBtns.forEach(function (b) {
-            //     // b.disabled = true;
-            //     b.classList.remove("isPresident");
-            //     b.classList.remove("isChancellor");
-            //     if (+b.value=== App.gameData.president.id) {
-            //         b.classList.add("isPresident");
-            //     }
-            //     if (App.getPlayerById(+b.value).dead) {
-            //         b.classList.add("isDead");
-            //     }
-            // });
             vm.disablePlayerButtons = true;
             vm.currentAction = `Waiting for President ${App.gameData.president.name} to nominate Chancellor`;
         },
@@ -545,9 +576,6 @@ const App = {
             };
         },
         onChancellorElected: function () {
-            // App.playerBtns[App.gameData.chancellor.id].classList.add(
-            // "isChancellor"
-            // );
             vm.currentAction = `Waiting for President ${App.gameData.president.name} to pick policies`;
         },
         onPresidentPolicyChosen: function () {
@@ -624,17 +652,10 @@ const App = {
         beginNewGame: function () {
             vm.gameHasStarted = true;
             vm.showBoard = true;
-            for (let i = 0; i < App.gameData.players.length; i++) {
-                let p = App.gameData.players[i];
-                vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`;
-                // App.playerBtns[p.id] = document.getElementById(`${p.id}-btn`);
-            }
-            App.Player.whoAmI();
-        },
-        whoAmI: function () {
+            App.gameData.players.map(p => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`));
             const myPlayer = App.getPlayerById(App.myPlayerId);
             if (myPlayer.role === Enums_1.Role.Liberal) {
-                log("You are Liberal! Find and stop the Secret Hitler!");
+                vm.myRole = "You are Liberal! Find and stop the Secret Hitler!";
             }
             else if (myPlayer.role === Enums_1.Role.Fascist) {
                 let s = "You are Fascist!";
@@ -652,9 +673,10 @@ const App = {
                             ". ";
                 }
                 s += App.gameData.hitler.name + " is Secret Hitler!";
-                log(s);
+                vm.myRole = s;
                 if (!App.gameData.gameRules.hitlerKnowsFascists) {
-                    log("You know who Hitler is, but Hitler does NOT know who the fascists are!");
+                    vm.myRole =
+                        "You know who Hitler is, but Hitler does NOT know who the fascists are!";
                 }
             }
             else {
@@ -672,8 +694,51 @@ const App = {
                                 ". ";
                     }
                 }
-                log(s);
+                vm.myRole = s;
             }
+        },
+        whoAmI: function () {
+            // const myPlayer = App.getPlayerById(App.myPlayerId);
+            // if (myPlayer.role === Role.Liberal) {
+            //     log("You are Liberal! Find and stop the Secret Hitler!");
+            // } else if (myPlayer.role === Role.Fascist) {
+            //     let s = "You are Fascist!";
+            //     const otherFascistNames = App.gameData.fascists
+            //         .filter((x: Player) => x.id !== myPlayer.id)
+            //         .map(getName);
+            //     const len = otherFascistNames.length;
+            //     if (len === 1) {
+            //         s += " The other Fascist is " + otherFascistNames[0] + ". ";
+            //     } else if (len > 1) {
+            //         s +=
+            //             " The other Fascists are " +
+            //             prettyPrintList(otherFascistNames) +
+            //             ". ";
+            //     }
+            //     s += App.gameData.hitler.name + " is Secret Hitler!";
+            //     log(s);
+            //     if (!App.gameData.gameRules.hitlerKnowsFascists) {
+            //         log(
+            //             "You know who Hitler is, but Hitler does NOT know who the fascists are!"
+            //         );
+            //     }
+            // } else {
+            //     let s = "You are Secret Hitler!";
+            //     if (App.gameData.gameRules.hitlerKnowsFascists) {
+            //         const fascistNames = App.gameData.fascists.map(getName);
+            //         const len = fascistNames.length;
+            //         if (len === 1) {
+            //             s += " The Fascist is " + fascistNames[0] + ". ";
+            //         } else if (len > 1) {
+            //             s +=
+            //                 " The Fascists are " +
+            //                 prettyPrintList(fascistNames) +
+            //                 ". ";
+            //         }
+            //     }
+            //     log(s);
+            // }
+            vm.whoAmIVisible = true;
         },
         gameOver: function (data) {
             switch (data.gameOverReason) {
@@ -712,18 +777,22 @@ const App = {
             }
         },
         onChancellorElected: function () {
-            // App.playerBtns[App.gameData.chancellor.id].classList.add(
-            //     "isChancellor"
-            // );
             vm.currentAction = "Choose a policy to discard.";
-            vm.policyChoices = App.gameData.presidentPolicies;
+            vm.policyChoices = [];
+            vm.showPolicyChoices = true;
+            for (let i = 0; i < 3; i++) {
+                const x = i;
+                setTimeout(() => {
+                    vm.policyChoices.push(App.gameData.presidentPolicies[x]);
+                }, x * 100);
+            }
+            // vm.policyChoices = App.gameData.presidentPolicies;
             if (CPU) {
                 setRandomTimeout(function () {
                     let choice = Rand.Range(0, 3);
                     App.$policyChoiceBtns[choice].click();
                 }, 500, 2000);
             }
-            vm.showPolicyChoices = true;
         },
         onVetoRequested: function () {
             IO.socket.emit("vetoApproved", {
@@ -734,10 +803,9 @@ const App = {
         onExecutiveActionTriggered: function () {
             if (App.gameData.lastExecutiveAction === Enums_1.Executive_Action.PolicyPeek) {
                 log("Next 3 Policies are " +
-                    App.gameData.policyDeck
+                    prettyPrintList(App.gameData.policyDeck
                         .peek(3)
-                        .map(x => x.toString())
-                        .join(", "));
+                        .map(x => x.toString())), 6000);
                 IO.socket.emit("chooseEATarget");
             }
             else {
@@ -799,12 +867,6 @@ const App = {
             vm.currentAction = "Choose a policy to discard";
             vm.policyChoices = App.gameData.chancellorPolicies;
             if (App.gameData.enactedPolicies.fascists === 5) {
-                // App.$policyChoiceBtns[2].disabled = false;
-                // App.$policyChoiceBtns[2].onclick = function() {
-                //     App.$policyChoiceBtns[2].disabled = true;
-                //     vm.showPolicyChoices = false;
-                //
-                // }
                 vm.showVetoButton = true;
             }
             if (CPU) {
@@ -856,6 +918,9 @@ function clickJoinButton() {
         setTimeout(() => {
             document.getElementById("btnJoinGame").click();
         }, 100);
+        setTimeout(() => {
+            document.getElementById("btnStart").click();
+        }, 200);
     }
 }
 window.onload = function () {
@@ -896,29 +961,23 @@ window.onload = function () {
 function setRandomTimeout(func, min, max) {
     setTimeout(func, Rand.Range(min, max));
 }
-Vue.use(vue_toasted_1.default);
+// Vue.use(Toasted);
 function log(message, duration) {
-    Vue.toasted.show(message, { duration: duration || 4000 });
-    // if (DEBUG) {
-    //     if (!$messageBox) {
-    //         $messageBox = document.getElementById("messageBox");
-    //     }
-    //     let existingHtml = $messageBox.innerHTML;
-    //     existingHtml = existingHtml.split("<br>");
-    //     if (existingHtml.length > 8) {
-    //         console.log(existingHtml[0]);
-    //         existingHtml = existingHtml.slice(existingHtml.length - 8);
-    //     }
-    //     existingHtml.push(message);
-    //     $messageBox.innerHTML = existingHtml.join("<br>");
-    // }
+    // Vue.toasted.show(message, { duration: duration || 4000 });
+    // Alert.create({ html: message });
+    mint_ui_1.Toast(message);
+    // MessageBox("Notice", message);
 }
+// Vue.use(Quasar, {
+//     directives: { Ripple },
+//     components: { QBtn }
+// });
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 ///////////////////////Vue.js CODE///////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-const vm = new Vue({
+const vm = new vue_1.default({
     el: "#gameBody",
     data: {
         showPolicyChoices: false,
@@ -935,7 +994,9 @@ const vm = new Vue({
         waitingForVotes: [],
         chaosLevel: 0,
         gameHasStarted: false,
-        yourName: ""
+        yourName: "",
+        whoAmIVisible: false,
+        myRole: ""
     },
     computed: {
         showStartBtn: function () {
@@ -946,7 +1007,8 @@ const vm = new Vue({
         },
         waitingForVotesString: function () {
             const len = this.waitingForVotes.length;
-            if (len === 0) {
+            if (len === 0 ||
+                this.waitingForVotes.filter((p) => p.id === App.myPlayerId).length === 1) {
                 return "";
             }
             else {
@@ -1017,9 +1079,6 @@ const vm = new Vue({
             return "";
         },
         policyChoiceClick: function (index) {
-            if (!DEBUG && !confirm("Are you sure?")) {
-                return;
-            }
             if (App.amIThePresident()) {
                 let choices = [];
                 switch (index) {
@@ -1042,9 +1101,21 @@ const vm = new Vue({
                         ];
                         break;
                 }
-                IO.socket.emit("choosePresidentPolicies", {
-                    id: App.myPlayerId,
-                    policies: choices
+                mint_ui_1.MessageBox({
+                    title: "",
+                    message: `Give Chancellor ${this.chancellor.name} ${prettyPrintPolicies(choices)}?`,
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    cancelButtonText: "No"
+                }).then((action) => {
+                    if (action != "cancel") {
+                        IO.socket.emit("choosePresidentPolicies", {
+                            id: App.myPlayerId,
+                            policies: choices
+                        });
+                        this.policyChoices = [];
+                        this.showVetoButton = false;
+                    }
                 });
             }
             else {
@@ -1054,9 +1125,9 @@ const vm = new Vue({
                         App.gameData.chancellorPolicies[index === 1 ? 0 : 1]
                     ]
                 });
+                this.policyChoices = [];
+                this.showVetoButton = false;
             }
-            this.policyChoices = [];
-            this.showVetoButton = false;
         },
         vetoButtonClick: function () {
             this.showVetoButton = false;
@@ -1085,5 +1156,23 @@ function prettyPrintList(listToPrint) {
         }
         s += "and " + listToPrint[len - 1];
         return s;
+    }
+}
+function prettyPrintPolicies(listToPrint) {
+    if (listToPrint.length === 1) {
+        return ("1 " +
+            (listToPrint[0].isLiberal ? "Liberal" : "Fascist") +
+            " Policy");
+    }
+    else {
+        const numLibs = listToPrint.filter(p => p.isLiberal).length;
+        if (numLibs === listToPrint.length) {
+            return numLibs + " Liberal Policies";
+        }
+        else if (numLibs === 0) {
+            return listToPrint.length + " Fascist Policies";
+        }
+        const numFas = listToPrint.length - numLibs;
+        return `${numLibs} Liberal Polic${numLibs === 1 ? "y" : "ies"} and ${numFas} Fascist Polic${numFas === 1 ? "y" : "ies"}`;
     }
 }

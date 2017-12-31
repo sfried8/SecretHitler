@@ -6,31 +6,49 @@
 
     <!-- Ensure that everything scales appropriately on a mobile device -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
 </head>
 
 <body>
     <div id="gameBody">
-        <div style="width:80%;margin:auto;">{{currentAction}}</div>
+
+        <div style="width:80%;margin:auto;height:10%;">{{currentAction}}</div>
+        <transition appear name="grow-vertical">
+
+            <div id="votePolicyContainer" v-show="gameHasStarted">
+
+                <div id="voteButtons" v-show="showVoteButtons">
+                    <button id="ja-btn" class="noBorder">
+                        <img src="../img/ja.png" />
+                    </button>
+                    <button id="nein-btn" class="noBorder">
+                        <img src="../img/nein.png" />
+                    </button>
+                </div>
+                <div>
+                    {{waitingForVotesString}}
+                </div>
+                <div id="policyChoices">
+                    <transition-group name="grow-vertical">
+
+                        <button @click="policyChoiceClick(index)" class="noBorder policyBtn" v-for="(p,index) in policyChoices" :key="index">
+                            <img :src="p.isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
+                        </button>
+                    </transition-group>
+                </div>
+            </div>
+        </transition>
         <div id="playerButtons">
-            <button class="playerButton" :class="[p.dead ? 'isDead' : '', president!=null && p.id == president.id ? 'isPresident' : '', chancellor!=null && p.id == chancellor.id ? 'isChancellor' : '']"
-                :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :disabled="disablePlayerButton(p.id)">{{p.name}}</button>
+            <!-- <transition-group name="flip-players"> -->
+
+            <mt-button class="playerButton" :class="[p.dead ? 'isDead' : '', president!=null && p.id == president.id ? 'isPresident' : '', chancellor!=null && p.id == chancellor.id ? 'isChancellor' : '']"
+                :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :key="p.id" :disabled="disablePlayerButton(p.id)">{{p.name}}</mt-button>
+            <!-- </transition-group> -->
         </div>
-        <br>
-        <div id="voteButtons" v-show="showVoteButtons">
-            <button id="ja-btn" class="noBorder">
-                <img src="../img/ja.png" />
-            </button>
-            <button id="nein-btn" class="noBorder">
-                <img src="../img/nein.png" />
-            </button>
-        </div>
-        <div>
-            {{waitingForVotesString}}
-        </div>
-        <button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</button>
+        <mt-button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</mt-button>
         <div id="bottomDiv" class="topright" v-show="showBoard">
 
             <div id="enactedPolicies">Liberal: [ ] [ ] [ ] [ ] [ ]
@@ -40,11 +58,7 @@
             </div>
             <button @click="whoAmI()">Who Am I?</button>
         </div>
-        <div id="policyChoices">
-            <button @click="policyChoiceClick(index)" class="noBorder policyBtn" v-for="(p,index) in policyChoices">
-                <img :src="p.isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
-            </button>
-        </div>
+
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
             <div id="roles" v-html="roles"></div>
@@ -63,14 +77,19 @@
                 </div>
 
                 <div class="buttons">
-                    <button id="btnJoinGame" class="btn right">JOIN</button>
+                    <mt-button id="btnJoinGame" class="right">JOIN</mt-button>
                     <div style="clear:both"></div>
                 </div>
 
             </div>
 
         </div>
-
+        <mt-popup v-model="whoAmIVisible" class="whoAmIModal" position="right" :modal="false">
+            <div>{{myRole}}
+                <br/>
+                <mt-button @click="whoAmIVisible=false">OK!</mt-button>
+            </div>
+        </mt-popup>
 
 
         <!-- This scrreen appears when a player clicks "JOIN" on the Title Screen -->
@@ -87,6 +106,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
 
@@ -95,9 +115,9 @@
 
 
     <!-- If Socket.IO is used with Express, then the /socket.io/ path will
-        serve the proper Socket.IO javascript files used by the browser -->
+                serve the proper Socket.IO javascript files used by the browser -->
     <script src="/socket.io/socket.io.js"></script>
-
+    <!-- <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script> -->
     <!-- app.js is where all the client-side Anagrammatix game logic -->
     <script src="bundle.js"></script>
 </body>
