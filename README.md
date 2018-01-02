@@ -1,5 +1,5 @@
 # Secret Hitler
-
+This game is designed to be played locally with each player using a web-connected device to connect to a server, sort of like Jackbox Party Pack games. I am creating this for fun to teach myself Typescript, back-end Javascript, socket.io, and Vue.js (and reactive frameworks in general).
 ## CREDITS & LICENSE
 Secret Hitler was created by Mike Boxleiter,
 Tommy Maranges, Max Temkin, and Mac Schubert.
