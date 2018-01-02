@@ -6,8 +6,8 @@
 
     <!-- Ensure that everything scales appropriately on a mobile device -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" rel="stylesheet" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
-    <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
 </head>
@@ -32,12 +32,7 @@
                     {{waitingForVotesString}}
                 </div>
                 <div id="policyChoices">
-                    <transition-group name="grow-vertical">
-
-                        <button @click="policyChoiceClick(index)" class="noBorder policyBtn" v-for="(p,index) in policyChoices" :key="index">
-                            <img :src="p.isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
-                        </button>
-                    </transition-group>
+                    <policy-btngroup :policy-choices="policyChoices" @policy-choice-click="policyChoiceClick"></policy-btngroup>
                 </div>
             </div>
         </transition>
@@ -49,16 +44,18 @@
             <!-- </transition-group> -->
         </div>
         <mt-button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</mt-button>
-        <div id="bottomDiv" class="topright" v-show="showBoard">
-
-            <div id="enactedPolicies">Liberal: [ ] [ ] [ ] [ ] [ ]
-                <br/>Fascist: [ ] [ ] [ ] [ ] [ ]</div>
-            <div>
-                Chaos Level: {{chaosLevel}}
+        <div id="bottomDiv" v-show="showBoard">
+            <div class="board">
+                <board-space v-for="(ea, index) in gameRules.board" :key="'F'+index" :is-liberal="false" :executive-action="ea" :policy-played="index < enactedPolicies.fascists"></board-space>
+                <board-space v-for="(ea, index) in gameRules.board" :is-liberal="true" :key="'L'+index" :executive-action="0" :policy-played="index < enactedPolicies.liberals"></board-space>
+                <election-tracker :chaos-level="chaosLevel"></election-tracker>
             </div>
             <button @click="whoAmI()">Who Am I?</button>
         </div>
-
+        <div style="display:none">
+            <input type="checkbox" v-model="adminOverride" />
+            <mt-button @click="admin(0)">Give me policies</mt-button>
+        </div>
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
             <div id="roles" v-html="roles"></div>
@@ -108,17 +105,9 @@
         </div>
 
     </div>
-
-
-    <!-- JavaScript Libraries -->
-
-
-
     <!-- If Socket.IO is used with Express, then the /socket.io/ path will
                 serve the proper Socket.IO javascript files used by the browser -->
     <script src="/socket.io/socket.io.js"></script>
-    <!-- <script src="https://unpkg.com/vuetify/dist/vuetify.js"></script> -->
-    <!-- app.js is where all the client-side Anagrammatix game logic -->
     <script src="bundle.js"></script>
 </body>
 

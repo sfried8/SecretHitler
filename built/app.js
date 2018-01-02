@@ -8,35 +8,18 @@ const Rand = require("./Rand");
 const Policy_1 = require("./Policy");
 const models_1 = require("./models");
 const vue_1 = require("vue");
+const BoardSpaceComponent_1 = require("./BoardSpaceComponent");
 const mint_ui_1 = require("mint-ui");
+const PolicyBtnComponent_1 = require("./PolicyBtnComponent");
 require("mint-ui/lib/style.css");
+vue_1.default.component("board-space", BoardSpaceComponent_1.BoardSpaceComponent);
+vue_1.default.component("policy-btngroup", PolicyBtnComponent_1.PolicyChoiceGroup);
+vue_1.default.component("policy-btn", PolicyBtnComponent_1.PolicyBtn);
 vue_1.default.component(mint_ui_1.Button.name, mint_ui_1.Button);
 vue_1.default.component(mint_ui_1.Popup.name, mint_ui_1.Popup);
+vue_1.default.component("election-tracker", BoardSpaceComponent_1.ElectionTracker);
 // import Toasted from "vue-toasted";
 const Cookies = require("js-cookie");
-function updateEnactedPolicies() {
-    let ls = App.gameData.enactedPolicies.liberals;
-    let fs = App.gameData.enactedPolicies.fascists;
-    let h = "Liberal:";
-    for (let i = 0; i < 5; i++) {
-        if (i < ls) {
-            h += " [X]";
-        }
-        else {
-            h += " [ ]";
-        }
-    }
-    h += "<br/>Fascist:";
-    for (let i = 0; i < 5; i++) {
-        if (i < fs) {
-            h += " [X]";
-        }
-        else {
-            h += " [ ]";
-        }
-    }
-    document.getElementById("enactedPolicies").innerHTML = h;
-}
 function convertGameDataToClass(gameData) {
     if (gameData.electionArchive) {
         gameData.electionArchive.map(e => new models_1.Election().cloneOf(e));
@@ -61,7 +44,7 @@ function convertGameDataToClass(gameData) {
     vm.chancellor = App.gameData.chancellor;
     vm.players = App.gameData.players;
     vm.chaosLevel = App.gameData.chaosLevel;
-    updateEnactedPolicies();
+    vm.enactedPolicies = App.gameData.enactedPolicies;
 }
 const getName = (x) => x.name;
 /**
@@ -651,6 +634,7 @@ const App = {
         },
         beginNewGame: function () {
             vm.gameHasStarted = true;
+            vm.gameRules = App.gameData.gameRules;
             vm.showBoard = true;
             App.gameData.players.map(p => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`));
             const myPlayer = App.getPlayerById(App.myPlayerId);
@@ -996,7 +980,11 @@ const vm = new vue_1.default({
         gameHasStarted: false,
         yourName: "",
         whoAmIVisible: false,
-        myRole: ""
+        myRole: "",
+        discardingPolicy: false,
+        adminOverride: false,
+        gameRules: {},
+        enactedPolicies: {}
     },
     computed: {
         showStartBtn: function () {
@@ -1079,54 +1067,77 @@ const vm = new vue_1.default({
             return "";
         },
         policyChoiceClick: function (index) {
-            if (App.amIThePresident()) {
+            if (this.adminOverride || App.amIThePresident()) {
                 let choices = [];
                 switch (index) {
                     case 0:
                         choices = [
-                            App.gameData.presidentPolicies[1],
-                            App.gameData.presidentPolicies[2]
+                            this.policyChoices[1],
+                            this.policyChoices[2]
                         ];
                         break;
                     case 1:
                         choices = [
-                            App.gameData.presidentPolicies[0],
-                            App.gameData.presidentPolicies[2]
+                            this.policyChoices[0],
+                            this.policyChoices[2]
                         ];
                         break;
                     case 2:
                         choices = [
-                            App.gameData.presidentPolicies[0],
-                            App.gameData.presidentPolicies[1]
+                            this.policyChoices[0],
+                            this.policyChoices[1]
                         ];
                         break;
                 }
                 mint_ui_1.MessageBox({
                     title: "",
-                    message: `Give Chancellor ${this.chancellor.name} ${prettyPrintPolicies(choices)}?`,
+                    message: `Give Chancellor ${this.chancellor ? this.chancellor.name : "?"} ${prettyPrintPolicies(choices)}?`,
                     showCancelButton: true,
                     confirmButtonText: "Yes",
                     cancelButtonText: "No"
                 }).then((action) => {
                     if (action != "cancel") {
-                        IO.socket.emit("choosePresidentPolicies", {
-                            id: App.myPlayerId,
-                            policies: choices
-                        });
-                        this.policyChoices = [];
-                        this.showVetoButton = false;
+                        this.discardingPolicy = true;
+                        if (!this.adminOverride) {
+                            IO.socket.emit("choosePresidentPolicies", {
+                                id: App.myPlayerId,
+                                policies: choices
+                            });
+                        }
+                        this.policyChoices.splice(index, 1);
+                        setTimeout(() => {
+                            this.discardingPolicy = false;
+                            this.policyChoices = [];
+                            this.showVetoButton = false;
+                        }, 750);
                     }
                 });
             }
             else {
-                IO.socket.emit("chooseChancellorPolicy", {
-                    id: App.myPlayerId,
-                    policies: [
-                        App.gameData.chancellorPolicies[index === 1 ? 0 : 1]
-                    ]
+                const toEnact = App.gameData.chancellorPolicies[index === 1 ? 0 : 1];
+                mint_ui_1.MessageBox({
+                    title: "",
+                    message: `Enact a ${toEnact.toString()} Policy?`,
+                    showCancelButton: true,
+                    confirmButtonText: "Yes",
+                    cancelButtonText: "No"
+                }).then((action) => {
+                    if (action != "cancel") {
+                        this.discardingPolicy = true;
+                        if (!this.adminOverride) {
+                            IO.socket.emit("chooseChancellorPolicy", {
+                                id: App.myPlayerId,
+                                policies: [toEnact]
+                            });
+                        }
+                        this.policyChoices.splice(index, 1);
+                        setTimeout(() => {
+                            this.discardingPolicy = false;
+                            this.policyChoices = [];
+                            this.showVetoButton = false;
+                        }, 750);
+                    }
                 });
-                this.policyChoices = [];
-                this.showVetoButton = false;
             }
         },
         vetoButtonClick: function () {
@@ -1135,6 +1146,15 @@ const vm = new vue_1.default({
         },
         whoAmI: function () {
             App.Player.whoAmI();
+        },
+        admin: function (index) {
+            switch (index) {
+                case 0:
+                    this.policyChoices = [];
+                    this.showPolicyChoices = true;
+                    staggerFunctions([false, true, false].map(p => () => this.policyChoices.push(new Policy_1.Policy(p))), 300);
+                    break;
+            }
         }
     }
 });
@@ -1174,5 +1194,17 @@ function prettyPrintPolicies(listToPrint) {
         }
         const numFas = listToPrint.length - numLibs;
         return `${numLibs} Liberal Polic${numLibs === 1 ? "y" : "ies"} and ${numFas} Fascist Polic${numFas === 1 ? "y" : "ies"}`;
+    }
+}
+function staggerFunctions(funcs, interval, done) {
+    interval = interval || 200;
+    for (let i = 0; i < funcs.length; i++) {
+        const x = i;
+        setTimeout(() => {
+            funcs[x]();
+            if (x === funcs.length - 1 && done) {
+                done();
+            }
+        }, x * interval);
     }
 }

@@ -32,35 +32,32 @@ body {
     border-radius: 20px;
     font-family: "courier-prime", Courier, sans-serif;
     /* font-weight: 700; */
-    font-size: 12pt !important;
+    font-size: 9pt !important;
     line-height: 20px;
     color: #fbb969;
 }
+.board {
+    width: 90%;
+    min-height: 200px;
+    display: grid;
+    grid-gap: 10px;
+    margin: auto;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: 2fr 2fr 1fr;
+}
+.electionTrackerSpot {
+    width: 30px;
+    height: 30px;
+    border-radius: 18px;
+    border: 3px dotted #fbb969;
+}
+.electionTrackerSpot.filled {
+    background-color: #fbb969;
+}
+.policy-anim-move {
+    transition: all 0.75s;
+}
 
-.grow-vertical-enter-active,
-.grow-vertical-leave-active {
-    /* animation: vertical-grow 1s reverse; */
-    transform-origin: 0% 100%;
-    transition: all 1s;
-}
-.grow-vertical-enter,
-.grow-vertical-leave-to {
-    transform: rotate3d(1, 0, 0, -90deg);
-}
-@keyframes vertical-grow {
-    0% {
-        transform: scale(0);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-.flip-players-move {
-    transition: all 1s;
-}
-.flip-players-enter {
-    transform: scale(0.1, 0.1);
-}
 /*
 #playerButtons {
     width: 90%;
@@ -121,7 +118,7 @@ body {
 }
 .policyBtn {
     width: 30%;
-
+    display: inline-block;
     margin: 1.5%;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
     border-radius: 12px;
@@ -135,7 +132,27 @@ body {
 .liberalPolicy {
     background-image: url("../img/liberalpolicy.png");
 }
+.tooltipPopup {
+    width: 200px;
+    border-radius: 8px;
+    padding: 10px;
+    transform: translate(-50%, 0);
+}
+.tooltipPopup > p {
+    margin-bottom: 10px;
+}
+/* .tooltipPopup::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    right: 50px;
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
 
+    border-bottom: 5px solid white;
+} */
 .noBorder {
     outline: none;
     border: none;
@@ -172,8 +189,16 @@ body {
 #nein-btn img {
     width: 100%;
 }
+#bottomDiv {
+    padding: 10px 0px 10px 0px;
+    background-color: #333;
+    width: 95%;
+    margin: auto;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
 #votePolicyContainer {
-    height: 40%;
+    height: 30%;
     /* background-color: black; */
 }
 .titleWrapper {

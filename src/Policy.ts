@@ -37,9 +37,11 @@ export class PolicyDeck {
     }
 }
 export class Policy {
+    id: number;
     isLiberal: boolean;
     constructor(isLiberal: boolean) {
         this.isLiberal = isLiberal;
+        this.id = Rand.Range(0, 999999);
     }
     toString() {
         if (this.isLiberal) {

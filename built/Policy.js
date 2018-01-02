@@ -39,6 +39,7 @@ exports.PolicyDeck = PolicyDeck;
 class Policy {
     constructor(isLiberal) {
         this.isLiberal = isLiberal;
+        this.id = Rand.Range(0, 999999);
     }
     toString() {
         if (this.isLiberal) {
