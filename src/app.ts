@@ -1,5 +1,5 @@
 const DEBUG = false;
-const autoJoin = true;
+const autoJoin = false;
 let CPU = false;
 import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
 import * as Rand from "./Rand";
@@ -58,6 +58,7 @@ function convertGameDataToClass(gameData: GameData) {
     vm.players = App.gameData.players;
     vm.chaosLevel = App.gameData.chaosLevel;
     vm.enactedPolicies = App.gameData.enactedPolicies;
+    vm.gameData = App.gameData;
 }
 const getName = (x: Player) => x.name;
 /**
@@ -458,31 +459,7 @@ const App = {
             if (vm.yourName) {
                 name = vm.yourName;
             } else {
-                const names = [
-                    "Sam",
-                    "Mike",
-                    "George",
-                    "Andrew",
-                    "Max",
-                    "Kutik",
-                    "Hussein",
-                    "Aaron",
-                    "Derrick",
-                    "Eden",
-                    "Poop",
-                    "Butt",
-                    "John",
-                    "Charlie",
-                    "Frank",
-                    "Randy",
-                    "Jimbo",
-                    "Stan",
-                    "Kyle",
-                    "Eric",
-                    "Butters",
-                    "Kenny"
-                ];
-                name = names[App.myPlayerId % 22] + Rand.Range(1, 100);
+                name = Rand.randomName();
             }
             // collect data to send to the server
             const data = {
@@ -493,6 +470,14 @@ const App = {
             // Send the gameId and playerName to the server
             IO.socket.emit("playerJoinGame", data);
             App.Player.joinGame(data);
+            if (vm.adminOverride) {
+                for (let index = 0; index < 4; index++) {
+                    IO.socket.emit("playerJoinGame", {
+                        playerName: Rand.randomName(),
+                        playerId: Rand.Range(0, 100000)
+                    });
+                }
+            }
         },
         joinGame: function(data: any) {
             Cookies.set("existingGameInfo", {
@@ -536,10 +521,8 @@ const App = {
                     App.Player.onChancellorNominated();
                 }
             }
-            vm.gameHasStarted = true;
         },
         onVIPStart: function() {
-            vm.gameHasStarted = true;
             CPU = false;
             IO.socket.emit("VIPStart");
         },
@@ -579,7 +562,6 @@ const App = {
             vm.currentAction = `Vote now whether to elect ${
                 App.gameData.chancellorNominee.name
             } as Chancellor`;
-            vm.showVoteButtons = true;
             if (CPU) {
                 setRandomTimeout(
                     function() {
@@ -599,14 +581,12 @@ const App = {
                     id: App.myPlayerId,
                     vote: true
                 });
-                vm.showVoteButtons = false;
             };
             App.$neinBtn.onclick = function() {
                 IO.socket.emit("voteForChancellor", {
                     id: App.myPlayerId,
                     vote: false
                 });
-                vm.showVoteButtons = false;
             };
         },
         onChancellorElected: function() {
@@ -748,7 +728,6 @@ const App = {
         },
 
         beginNewGame: function() {
-            vm.gameHasStarted = true;
             vm.gameRules = App.gameData.gameRules;
             vm.showBoard = true;
 
@@ -895,7 +874,6 @@ const App = {
         onChancellorElected: function() {
             vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = [];
-            vm.showPolicyChoices = true;
             for (let i = 0; i < 3; i++) {
                 const x = i;
                 setTimeout(() => {
@@ -1009,9 +987,6 @@ const App = {
             vm.currentAction = "Choose a policy to discard";
             vm.policyChoices = App.gameData.chancellorPolicies;
 
-            if (App.gameData.enactedPolicies.fascists === 5) {
-                vm.showVetoButton = true;
-            }
             if (CPU) {
                 setRandomTimeout(
                     function() {
@@ -1142,9 +1117,6 @@ function log(message: string, duration?: number) {
 const vm = new Vue({
     el: "#gameBody",
     data: {
-        showPolicyChoices: false,
-        showVetoButton: false,
-        showVoteButtons: false,
         disablePlayerButtons: true,
         roles: "",
         players: [],
@@ -1155,16 +1127,33 @@ const vm = new Vue({
         chancellor: null,
         waitingForVotes: [],
         chaosLevel: 0,
-        gameHasStarted: false,
         yourName: "",
         whoAmIVisible: false,
         myRole: "",
         discardingPolicy: false,
         adminOverride: false,
         gameRules: {},
+        gameData: {},
         enactedPolicies: {}
     },
     computed: {
+        gameHasStarted: function() {
+            return this.gameData.gameState !== GameState.Idle;
+        },
+        showVetoButton: function() {
+            return (
+                this.chancellor &&
+                App.myPlayerId == this.chancellorId &&
+                this.enactedPolicies.fascists > 5
+            );
+        },
+        showPolicyChoices: function() {
+            return (
+                ((this.president && App.myPlayerId == this.president.id) ||
+                    (this.chancellor && App.myPlayerId == this.chancellorId)) &&
+                this.policyChoices.length > 0
+            );
+        },
         showStartBtn: function() {
             return (
                 !this.gameHasStarted &&
@@ -1191,6 +1180,12 @@ const vm = new Vue({
         }
     },
     methods: {
+        showVoteButtons: function() {
+            return (
+                this.gameData.gameState == GameState.VoteForChancellor &&
+                !this.gameData.currentElection.didPlayerVote(App.myPlayerId)
+            );
+        },
         playerButtonClick: function(id: string | number) {
             let selectedPlayer = App.getPlayerById(+id);
             if (selectedPlayer.dead) {
@@ -1308,7 +1303,6 @@ const vm = new Vue({
                         setTimeout(() => {
                             this.discardingPolicy = false;
                             this.policyChoices = [];
-                            this.showVetoButton = false;
                         }, 750);
                     }
                 });
@@ -1334,25 +1328,50 @@ const vm = new Vue({
                         setTimeout(() => {
                             this.discardingPolicy = false;
                             this.policyChoices = [];
-                            this.showVetoButton = false;
                         }, 750);
                     }
                 });
             }
         },
         vetoButtonClick: function() {
-            this.showVetoButton = false;
             IO.socket.emit("chancellorRequestedVeto");
         },
         whoAmI: function() {
             App.Player.whoAmI();
         },
-
+        CPUAction: function(action: number, value: any) {
+            switch (action) {
+                case 0:
+                    this.players.forEach((p: Player) => {
+                        if (p.id != App.myPlayerId && !p.dead) {
+                            let vote;
+                            if (value === 0) {
+                                vote = true;
+                            } else if (value === 1) {
+                                vote = false;
+                            } else {
+                                vote = Rand.Boolean(50);
+                            }
+                            IO.socket.emit("voteForChancellor", {
+                                id: p.id,
+                                vote: vote
+                            });
+                        }
+                    });
+                    break;
+                case 1:
+                    let toEnact = new Policy(value == 0);
+                    IO.socket.emit("chooseChancellorPolicy", {
+                        id: this.chancellor.id,
+                        policies: [toEnact]
+                    });
+                    break;
+            }
+        },
         admin: function(index: number) {
             switch (index) {
                 case 0:
                     this.policyChoices = [];
-                    this.showPolicyChoices = true;
                     staggerFunctions(
                         [false, true, false].map(p => () =>
                             this.policyChoices.push(new Policy(p))

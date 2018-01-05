@@ -38,3 +38,30 @@ export function Choice(array: Array<any>): any {
     let index = Math.random() * array.length;
     return array[Math.floor(index)];
 }
+export function randomName(): string {
+    const names = [
+        "Sam",
+        "Mike",
+        "George",
+        "Andrew",
+        "Max",
+        "Kutik",
+        "Hussein",
+        "Aaron",
+        "Derrick",
+        "Eden",
+        "Poop",
+        "Butt",
+        "John",
+        "Charlie",
+        "Frank",
+        "Randy",
+        "Jimbo",
+        "Stan",
+        "Kyle",
+        "Eric",
+        "Butters",
+        "Kenny"
+    ];
+    return Choice(names) + Range(1, 100);
+}

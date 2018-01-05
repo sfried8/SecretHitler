@@ -20,11 +20,11 @@
 
             <div id="votePolicyContainer" v-show="gameHasStarted">
 
-                <div id="voteButtons" v-show="showVoteButtons">
-                    <button id="ja-btn" class="noBorder">
+                <div id="voteButtons" v-show="showVoteButtons()">
+                    <button id="ja-btn" class="noBorder" :class="showVoteButtons() ? 'animated pulse':''">
                         <img src="../img/ja.png" />
                     </button>
-                    <button id="nein-btn" class="noBorder">
+                    <button id="nein-btn" class="noBorder" :class="showVoteButtons() ? 'animated pulse':''">
                         <img src="../img/nein.png" />
                     </button>
                 </div>
@@ -52,9 +52,14 @@
             </div>
             <button @click="whoAmI()">Who Am I?</button>
         </div>
-        <div style="display:none">
+        <div>
             <input type="checkbox" v-model="adminOverride" />
-            <mt-button @click="admin(0)">Give me policies</mt-button>
+            <button @click="CPUAction(0,0)">Vote Yes</button>
+            <button @click="CPUAction(0,1)">Vote No</button>
+            <button @click="CPUAction(0,2)">Vote Random</button>
+            <br>
+            <button @click="CPUAction(1,0)">Chancellor Enact L</button>
+            <button @click="CPUAction(1,1)">Chancellor Enact F</button>
         </div>
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
@@ -70,7 +75,7 @@
             <div class="titleWrapper">
 
                 <div>
-                    <img src="../img/title.png" style="width:100%;" />
+                    <img src="../img/title.png" style="width:100%;" class="animated bounceIn" />
                 </div>
 
                 <div class="buttons">

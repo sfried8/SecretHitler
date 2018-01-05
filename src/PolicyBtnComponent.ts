@@ -19,7 +19,7 @@ export const PolicyChoiceGroup = {
                     </transition-group>`,
     props: ["policyChoices"],
     data: function() {
-        return { discardingPolicy: true, lastSize: 0 };
+        return { discardingPolicy: true, lastSize: 0, x: 0, y: 0 };
     },
     watch: {
         policyChoices: function(val, oldVal) {
@@ -37,13 +37,15 @@ export const PolicyChoiceGroup = {
         policyAnimEnter: function(el, done) {
             const elStyler = styler(el);
             tween({
-                from: { rotateX: -90 },
-                to: { rotateX: 0 },
+                from: { rotateX: -90, x: -this.x, y: 250 - this.y, scale: 0.5 },
+                to: { rotateX: 0, x: 0, y: 0, scale: 1 },
                 duration: 750
             }).start({ update: elStyler.set, complete: done });
         },
         policyAnimBeforeEnter: function(el: HTMLElement, done) {
-            // el.style.transform = "rotate3d(1, 0, 0, -90deg)";
+            let rect = el.getBoundingClientRect();
+            this.x = rect.left;
+            this.y = rect.top;
         },
         discardPolicyLeave: function(el: Element, done: any) {
             const elStyler = styler(el);
