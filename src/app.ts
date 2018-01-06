@@ -1,7 +1,7 @@
 const DEBUG = false;
 const autoJoin = false;
 let CPU = false;
-const CPU2 = true;
+const CPU2 = false;
 import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
 import * as Rand from "./Rand";
 
@@ -784,6 +784,7 @@ const App = {
                 }
                 vm.myRole = s;
             }
+            vm.whoAmIVisible = true;
         },
         whoAmI: function() {
             // const myPlayer = App.getPlayerById(App.myPlayerId);
@@ -1154,6 +1155,25 @@ const vm = new Vue({
         lastChancellor: null
     },
     computed: {
+        waitingForOthers: function() {
+            switch (this.gameState) {
+                case GameState.PresidentNominateChancellor:
+                    return this.president.id != App.myPlayerId;
+                case GameState.VoteForChancellor:
+                    return true;
+                case GameState.ChancellorChoosePolicy:
+                    return this.chancellor.id != App.myPlayerId;
+                case GameState.Idle:
+                    return false;
+                case GameState.PresidentChooseExecutiveActionTarget:
+                    return this.president.id != App.myPlayerId;
+                case GameState.PresidentChoosePolicies:
+                    return this.president.id != App.myPlayerId;
+
+                default:
+                    return false;
+            }
+        },
         showVoteButtons: function() {
             return (
                 this.waitingForVotes.filter(
@@ -1326,7 +1346,7 @@ const vm = new Vue({
                 this.disablePlayerButtons = true;
             }
         },
-        log: function(value:string) {
+        log: function(value: string) {
             log(value);
         },
         disablePlayerButton(id: string | number) {},

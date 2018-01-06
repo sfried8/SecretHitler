@@ -34,7 +34,7 @@
                 <div id="policyChoices">
                     <policy-btngroup :policy-choices="policyChoices"  @policy-choice-click="policyChoiceClick"></policy-btngroup>
                 </div>
-                <player-btngroup v-show="!showVoteButtons && policyChoices.length==0" @log="log" :players="players" :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
+                <player-btngroup v-show="(!showVoteButtons && policyChoices.length==0) && !waitingForOthers" @log="log" :players="players" :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
                     @player-button-click="playerButtonClick"></player-btngroup>
             </div>
         </transition>
