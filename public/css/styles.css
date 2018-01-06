@@ -127,6 +127,9 @@ body {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
     border-radius: 12px;
 }
+.policyBtn.selected {
+    border: 5px solid limegreen;
+}
 .fascistPolicy {
     background-image: url("../img/fascistpolicy.png");
 }

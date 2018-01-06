@@ -20,11 +20,11 @@
 
             <div id="votePolicyContainer" v-show="gameHasStarted">
 
-                <div id="voteButtons" v-show="showVoteButtons()">
-                    <button id="ja-btn" class="noBorder" :class="showVoteButtons() ? 'animated pulse':''">
+                <div id="voteButtons" v-show="showVoteButtons">
+                    <button id="ja-btn" class="noBorder" :class="showVoteButtons ? 'animated pulse':''">
                         <img src="../img/ja.png" />
                     </button>
-                    <button id="nein-btn" class="noBorder" :class="showVoteButtons() ? 'animated pulse':''">
+                    <button id="nein-btn" class="noBorder" :class="showVoteButtons ? 'animated pulse':''">
                         <img src="../img/nein.png" />
                     </button>
                 </div>
@@ -60,6 +60,10 @@
             <br>
             <button @click="CPUAction(1,0)">Chancellor Enact L</button>
             <button @click="CPUAction(1,1)">Chancellor Enact F</button>
+            <br>
+            <button @click="CPUAction(2,0)">President Pass LL</button>
+            <button @click="CPUAction(2,1)">President Pass LF</button>
+            <button @click="CPUAction(2,2)">President Pass FF</button>
         </div>
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
