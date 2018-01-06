@@ -22,7 +22,7 @@ export const PolicyChoiceGroup = {
                         </policy-btn>
 
                     </transition-group>                        <br/>
-                        <mt-button @click="submitChoices" :disabled="disableSubmit">Submit</mt-button></div>`,
+                        <mt-button @click="submitChoices" v-show="policyChoices.length > 0" :disabled="disableSubmit">Submit</mt-button></div>`,
     props: ["policyChoices"],
     data: function() {
         return { discardingPolicy: true, lastSize: 0, x: 0, y: 0 };

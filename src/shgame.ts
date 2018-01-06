@@ -103,7 +103,7 @@ function onPresidentNominate(data: any) {
 
     gameData.currentElection = new Election(
         gameData.president,
-        gameData.chancellor,
+        gameData.chancellorNominee,
         numPlayersLiving
     );
     emit("chancellorNominated", gameData);

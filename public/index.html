@@ -18,7 +18,7 @@
         <div style="width:80%;margin:auto;height:10%;">{{currentAction}}</div>
         <transition appear name="grow-vertical">
 
-            <div id="votePolicyContainer" v-show="gameHasStarted">
+            <div id="votePolicyContainer" v-show="showBoard">
 
                 <div id="voteButtons" v-show="showVoteButtons">
                     <button id="ja-btn" class="noBorder" :class="showVoteButtons ? 'animated pulse':''">
@@ -32,39 +32,36 @@
                     {{waitingForVotesString}}
                 </div>
                 <div id="policyChoices">
-                    <policy-btngroup :policy-choices="policyChoices" @policy-choice-click="policyChoiceClick"></policy-btngroup>
+                    <policy-btngroup :policy-choices="policyChoices"  @policy-choice-click="policyChoiceClick"></policy-btngroup>
                 </div>
+                <player-btngroup v-show="!showVoteButtons && policyChoices.length==0" @log="log" :players="players" :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
+                    @player-button-click="playerButtonClick"></player-btngroup>
             </div>
         </transition>
-        <div id="playerButtons">
-            <!-- <transition-group name="flip-players"> -->
-
-            <mt-button class="playerButton" :class="[p.dead ? 'isDead' : '', president!=null && p.id == president.id ? 'isPresident' : '', chancellor!=null && p.id == chancellor.id ? 'isChancellor' : '']"
-                :id="p.id + '-btn'" @click="playerButtonClick(p.id)" v-for="p in players" :key="p.id" :disabled="disablePlayerButton(p.id)">{{p.name}}</mt-button>
-            <!-- </transition-group> -->
-        </div>
         <mt-button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</mt-button>
-        <div id="bottomDiv" v-show="showBoard">
+        <div id="bottomDiv" v-if="showBoard">
             <div class="board">
                 <board-space v-for="(ea, index) in gameRules.board" :key="'F'+index" :is-liberal="false" :executive-action="ea" :policy-played="index < enactedPolicies.fascists"></board-space>
                 <board-space v-for="(ea, index) in gameRules.board" :is-liberal="true" :key="'L'+index" :executive-action="0" :policy-played="index < enactedPolicies.liberals"></board-space>
                 <election-tracker :chaos-level="chaosLevel"></election-tracker>
             </div>
-            <button @click="whoAmI()">Who Am I?</button>
+
         </div>
-        <div>
-            <input type="checkbox" v-model="adminOverride" />
-            <button @click="CPUAction(0,0)">Vote Yes</button>
-            <button @click="CPUAction(0,1)">Vote No</button>
-            <button @click="CPUAction(0,2)">Vote Random</button>
-            <br>
-            <button @click="CPUAction(1,0)">Chancellor Enact L</button>
-            <button @click="CPUAction(1,1)">Chancellor Enact F</button>
-            <br>
-            <button @click="CPUAction(2,0)">President Pass LL</button>
-            <button @click="CPUAction(2,1)">President Pass LF</button>
-            <button @click="CPUAction(2,2)">President Pass FF</button>
-        </div>
+        <mt-popup v-model="adminOverride" :modal="false">
+            <div>
+                <button @click="CPUAction(0,0)">Vote Yes</button>
+                <button @click="CPUAction(0,1)">Vote No</button>
+                <button @click="CPUAction(0,2)">Vote Random</button>
+                <br>
+                <button @click="CPUAction(1,0)">Chancellor Enact L</button>
+                <button @click="CPUAction(1,1)">Chancellor Enact F</button>
+                <br>
+                <button @click="CPUAction(2,0)">President Pass LL</button>
+                <button @click="CPUAction(2,1)">President Pass LF</button>
+                <button @click="CPUAction(2,2)">President Pass FF</button>
+            </div>
+        </mt-popup>
+
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
             <div id="roles" v-html="roles"></div>
@@ -96,8 +93,27 @@
                 <mt-button @click="whoAmIVisible=false">OK!</mt-button>
             </div>
         </mt-popup>
-
-
+        <mt-popup class="historyPopup" v-model="historyVisible" :modal="false">
+            <div v-for="e in electionArchive">
+                P: {{e.president.name}} C: {{e.chancellor.name}} {{e.didPass()?"Passed":"Failed"}} {{e.jas.length}} to {{e.neins.length}}
+                <br/>
+            </div>
+            <mt-button @click="historyVisible=false">OK!</mt-button>
+        </mt-popup>
+        <mt-popup class="playersPopup" v-model="playersPopupVisible" :modal="false">
+            <div v-for="p in players">
+                {{president != null && p.id == president.id ? "🅿 ":""}} {{chancellor != null && p.id == chancellor.id ? "🅲 ":""}} {{p.name}}
+                {{p.dead ? " (DEAD)":""}}
+                <br/>
+            </div>
+            <mt-button @click="playersPopupVisible=false">OK!</mt-button>
+        </mt-popup>
+        <div id="footer" class="footer">
+            <button @click="whoAmI()">Who Am I?</button>
+            <button @click="adminOverride=!adminOverride">Admin</button>
+            <button @click="historyVisible=!historyVisible">History</button>
+            <button @click="playersPopupVisible=!playersPopupVisible">Players</button>
+        </div>
         <!-- This scrreen appears when a player clicks "JOIN" on the Title Screen -->
         <div id="join-game-template" style="display: none">
             <div class="joinGameWrapper">
@@ -112,8 +128,8 @@
                 </div>
             </div>
         </div>
-
     </div>
+
     <!-- If Socket.IO is used with Express, then the /socket.io/ path will
                 serve the proper Socket.IO javascript files used by the browser -->
     <script src="/socket.io/socket.io.js"></script>

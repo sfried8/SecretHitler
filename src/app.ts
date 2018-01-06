@@ -1,6 +1,7 @@
 const DEBUG = false;
 const autoJoin = false;
 let CPU = false;
+const CPU2 = true;
 import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
 import * as Rand from "./Rand";
 
@@ -13,10 +14,14 @@ import { BoardSpaceComponent, ElectionTracker } from "./BoardSpaceComponent";
 import { tween, styler } from "popmotion";
 import { MessageBox, Button, Toast, Popup } from "mint-ui";
 import { PolicyBtn, PolicyChoiceGroup } from "./PolicyBtnComponent";
+import { PlayerBtn, PlayerBtnGroup } from "./PlayerBtnComponent";
 import "mint-ui/lib/style.css";
 Vue.component("board-space", BoardSpaceComponent);
 Vue.component("policy-btngroup", PolicyChoiceGroup);
 Vue.component("policy-btn", PolicyBtn);
+Vue.component("player-btn", PlayerBtn);
+Vue.component("player-btngroup", PlayerBtnGroup);
+
 Vue.component(Button.name, Button);
 Vue.component(Popup.name, Popup);
 Vue.component("election-tracker", ElectionTracker);
@@ -29,7 +34,9 @@ import { easeIn } from "popmotion/easing";
 
 function convertGameDataToClass(gameData: GameData) {
     if (gameData.electionArchive) {
-        gameData.electionArchive.map(e => new Election().cloneOf(e));
+        gameData.electionArchive = gameData.electionArchive.map(e =>
+            new Election().cloneOf(e)
+        );
     }
     if (gameData.currentElection) {
         gameData.currentElection = new Election().cloneOf(
@@ -55,11 +62,13 @@ function convertGameDataToClass(gameData: GameData) {
     App.gameData = gameData;
     vm.president = App.gameData.president;
     vm.chancellor = App.gameData.chancellor;
+    vm.lastChancellor = App.gameData.lastChancellor;
     vm.players = App.gameData.players;
     vm.chaosLevel = App.gameData.chaosLevel;
     vm.enactedPolicies = App.gameData.enactedPolicies;
     vm.gameState = App.gameData.gameState;
     vm.lastExecutiveAction = App.gameData.lastExecutiveAction;
+    vm.electionArchive = App.gameData.electionArchive;
 }
 const getName = (x: Player) => x.name;
 /**
@@ -456,6 +465,7 @@ const App = {
         onPlayerStartClick: function() {
             // console.log('Player clicked "Start"');
             App.myPlayerId = (Math.random() * 100000) | 0;
+            vm.myPlayerId = App.myPlayerId;
             let name;
             if (vm.yourName) {
                 name = vm.yourName;
@@ -471,7 +481,7 @@ const App = {
             // Send the gameId and playerName to the server
             IO.socket.emit("playerJoinGame", data);
             App.Player.joinGame(data);
-            if (vm.adminOverride) {
+            if (CPU2) {
                 for (let index = 0; index < 4; index++) {
                     IO.socket.emit("playerJoinGame", {
                         playerName: Rand.randomName(),
@@ -1073,6 +1083,7 @@ window.onload = function() {
                         )
                     ) {
                         App.myPlayerId = gameInfo.playerId;
+                        vm.myPlayerId = gameInfo.playerId;
                         App.gameId = gameInfo.gameId;
                         IO.socket.emit("rejoinGame", gameInfo);
                         App.$gameArea.style.display = "none";
@@ -1135,7 +1146,12 @@ const vm = new Vue({
         gameRules: {},
         lastExecutiveAction: Executive_Action.NoAction,
         gameState: GameState.Idle,
-        enactedPolicies: {}
+        enactedPolicies: {},
+        electionArchive: [],
+        historyVisible: false,
+        playersPopupVisible: false,
+        myPlayerId: -1,
+        lastChancellor: null
     },
     computed: {
         showVoteButtons: function() {
@@ -1186,6 +1202,20 @@ const vm = new Vue({
                 } from ${prettyPrintList(this.waitingForVotes.map(getName))}`;
             }
         },
+        electionHistory: function() {
+            if (!this.electionArchive) {
+                return "";
+            }
+            return this.electionArchive
+                .map((e: Election) => {
+                    return `P: ${e.president.name}, C: ${
+                        e.chancellor.name
+                    }, Vote ${e.didPass() ? "passed" : "failed"} ${
+                        e.jas.length
+                    } to ${e.neins.length}`;
+                })
+                .join("\n");
+        },
         currentAction: function() {
             switch (this.gameState) {
                 case GameState.PresidentNominateChancellor:
@@ -1208,7 +1238,7 @@ const vm = new Vue({
                             this.chancellor.name
                         } to enact one of them.`;
                     } else {
-                        return `Choose a policy to discard`;
+                        return `Choose a policy to enact`;
                     }
                 case GameState.Idle:
                     return "";
@@ -1248,7 +1278,9 @@ const vm = new Vue({
                             this.president.name
                         } to pick policies`;
                     } else {
-                        return "Choose a policy to discard.";
+                        return `Choose 2 policies to pass to Chancellor ${
+                            this.chancellor.name
+                        }.`;
                     }
 
                 default:
@@ -1260,7 +1292,7 @@ const vm = new Vue({
         playerButtonClick: function(id: string | number) {
             let selectedPlayer = App.getPlayerById(+id);
             if (selectedPlayer.dead) {
-                alert(`${selectedPlayer.name} is dead!`);
+                log(`${selectedPlayer.name} is dead!`);
             }
             if (
                 App.gameData.gameState === GameState.PresidentNominateChancellor
@@ -1294,29 +1326,10 @@ const vm = new Vue({
                 this.disablePlayerButtons = true;
             }
         },
-        disablePlayerButton(id: string | number) {
-            /*
-            if (this.disablePlayerButtons) {
-                return true;
-            }
-            if (id == App.myPlayerId) {
-                return true;
-            }
-            let selectedPlayer = App.getPlayerById(+id);
-            if (selectedPlayer.dead) {
-                return true;
-            }
-            if (
-                App.gameData.gameState === GameState.PresidentNominateChancellor
-            ) {
-                return (
-                    App.gameData.lastChancellor &&
-                    App.gameData.lastChancellor.id == id
-                );
-            }
-            return false;
-            */
+        log: function(value:string) {
+            log(value);
         },
+        disablePlayerButton(id: string | number) {},
         getPolicyClass: function(index: number) {
             if (
                 App.gameData &&
@@ -1332,7 +1345,7 @@ const vm = new Vue({
             return "";
         },
         policyChoiceClick: function(selected: Policy[]) {
-            if (this.adminOverride || App.amIThePresident()) {
+            if (App.amIThePresident()) {
                 MessageBox({
                     title: "",
                     message: `Give Chancellor ${
@@ -1367,12 +1380,11 @@ const vm = new Vue({
                 }).then((action: any) => {
                     if (action != "cancel") {
                         this.discardingPolicy = true;
-                        if (!this.adminOverride) {
-                            IO.socket.emit("chooseChancellorPolicy", {
-                                id: App.myPlayerId,
-                                policies: [toEnact]
-                            });
-                        }
+                        IO.socket.emit("chooseChancellorPolicy", {
+                            id: App.myPlayerId,
+                            policies: [toEnact]
+                        });
+
                         this.policyChoices = selected;
                         setTimeout(() => {
                             this.discardingPolicy = false;
@@ -1389,6 +1401,7 @@ const vm = new Vue({
             App.Player.whoAmI();
         },
         CPUAction: function(action: number, value: any) {
+            this.adminOverride = false;
             switch (action) {
                 case 0:
                     this.players.forEach((p: Player) => {

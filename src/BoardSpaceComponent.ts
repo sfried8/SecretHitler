@@ -1,7 +1,9 @@
 import { Executive_Action } from "./Enums";
+import { tween, styler } from "popmotion";
+import { easeIn } from "popmotion/easing";
 export const BoardSpaceComponent = {
     template: `<div style="border-radius:3px;"  :style="{backgroundColor:backgroundColor}"><div @click="displayTooltip()">
-    <img v-if="imgsrc!=null" :src="imgsrc" style="width:90%;margin:auto;"/></div>    
+    <img v-if="imgsrc!=null" :src="imgsrc" :class="policyPlayed?'animated zoomIn':''" style="width:90%;margin:auto;"/></div>    
     <mt-popup v-model="tooltipVisible" class="tooltipPopup" popup-transition="popup-fade">
       <p>{{tooltip}}</p>
 </mt-popup></div>`,
@@ -67,8 +69,43 @@ export const BoardSpaceComponent = {
 export const ElectionTracker = {
     props: ["chaosLevel"],
     template: `<div style="display:flex;justify-content:space-around;grid-column:1 / 6;">
-    <div class="electionTrackerSpot" :class="chaosLevel===0 ? 'filled' : ''"></div>
-    <div class="electionTrackerSpot" :class="chaosLevel===1 ? 'filled' : ''"></div>
-    <div class="electionTrackerSpot" :class="chaosLevel===2 ? 'filled' : ''"></div>
-    </div>`
+    <div class="electionTrackerSpot" id="electionTrackerSpot0" ></div>
+    <div class="electionTrackerSpot" id="electionTrackerSpot1" ></div>
+    <div class="electionTrackerSpot" id="electionTrackerSpot2" ></div>
+    <div id="electionTracker" style="position:absolute" :class="chaosLevel==2?'animated pulse infinite':''" class="electionTrackerSpot filled"></div></div>`,
+    data: function() {
+        return {
+            electionTracker: null
+        };
+    },
+    mounted: function() {
+        if (this.electionTracker == null) {
+            this.electionTracker = document.getElementById("electionTracker");
+            const elStyler = styler(this.electionTracker);
+            const newBoundingBox = document
+                .getElementById("electionTrackerSpot0")
+                .getBoundingClientRect();
+            console.log(newBoundingBox);
+            tween({
+                to: { left: newBoundingBox.left },
+                duration: 10
+            }).start({ update: elStyler.set });
+        }
+    },
+    watch: {
+        chaosLevel: function(newval: number, oldval: number) {
+            const elStyler = styler(this.electionTracker);
+            const oldBoundingBox = document
+                .getElementById("electionTrackerSpot" + oldval)
+                .getBoundingClientRect();
+            const newBoundingBox = document
+                .getElementById("electionTrackerSpot" + newval)
+                .getBoundingClientRect();
+            tween({
+                from: { left: oldBoundingBox.left },
+                to: { left: newBoundingBox.left },
+                duration: 750
+            }).start({ update: elStyler.set });
+        }
+    }
 };
