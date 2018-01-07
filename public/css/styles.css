@@ -244,7 +244,7 @@ body {
     height: 50px;
     bottom: 0%;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     /* justify-content: space-around; */
     background-color: white;
 }

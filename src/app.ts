@@ -1,7 +1,6 @@
 const DEBUG = false;
 const autoJoin = false;
 let CPU = false;
-const CPU2 = false;
 import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
 import * as Rand from "./Rand";
 
@@ -481,7 +480,7 @@ const App = {
             // Send the gameId and playerName to the server
             IO.socket.emit("playerJoinGame", data);
             App.Player.joinGame(data);
-            if (CPU2) {
+            if (vm.CPU2) {
                 for (let index = 0; index < 4; index++) {
                     IO.socket.emit("playerJoinGame", {
                         playerName: Rand.randomName(),
@@ -832,30 +831,29 @@ const App = {
         gameOver: function(data: GameData) {
             switch (data.gameOverReason) {
                 case WinCondition.SixLiberalPolicies:
-                    alert(
-                        "Liberals Win! Six Liberal Policies have been played."
-                    );
+                    vm.gameOver =
+                        "Liberals Win! Six Liberal Policies have been played.";
+
                     break;
                 case WinCondition.SixFascistPolicies:
-                    alert(
-                        "Fascists Win! Six Fascist Policies have been played."
-                    );
+                    vm.gameOver =
+                        "Fascists Win! Six Fascist Policies have been played.";
+
                     break;
                 case WinCondition.HitlerIsChancellor:
-                    alert(
-                        `Fascists Win! Hitler (${
-                            App.gameData.hitler.name
-                        }) has been elected Chancellor!`
-                    );
+                    vm.gameOver = `Fascists Win! Hitler (${
+                        App.gameData.hitler.name
+                    }) has been elected Chancellor!`;
+
                     break;
                 case WinCondition.HitlerWasAssassinated:
-                    alert(
-                        `Liberals Win! Hitler (${
-                            App.gameData.hitler.name
-                        }) has been assassinated!`
-                    );
+                    vm.gameOver = `Liberals Win! Hitler (${
+                        App.gameData.hitler.name
+                    }) has been assassinated!`;
+
                     break;
             }
+            alert(vm.gameOver);
         }
     },
     President: {
@@ -915,16 +913,20 @@ const App = {
             if (
                 App.gameData.lastExecutiveAction === Executive_Action.PolicyPeek
             ) {
-                log(
-                    "Next 3 Policies are " +
+                MessageBox({
+                    title: "",
+                    message:
+                        "Next 3 Policies are " +
                         prettyPrintList(
                             App.gameData.policyDeck
                                 .peek(3)
                                 .map(x => x.toString())
                         ),
-                    6000
-                );
-                IO.socket.emit("chooseEATarget");
+                    showCancelButton: false,
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    IO.socket.emit("chooseEATarget");
+                });
             } else {
                 vm.disablePlayerButtons = false;
                 // switch (App.gameData.lastExecutiveAction) {
@@ -1067,6 +1069,7 @@ function clickJoinButton() {
 window.onload = function() {
     IO.init();
     App.init();
+    document.getElementById("gameBody").style.display = "";
     if (!DEBUG) {
         document.getElementById("DEBUG").style.display = "none";
     }
@@ -1152,7 +1155,9 @@ const vm = new Vue({
         historyVisible: false,
         playersPopupVisible: false,
         myPlayerId: -1,
-        lastChancellor: null
+        lastChancellor: null,
+        gameOver: "",
+        CPU2: false
     },
     computed: {
         waitingForOthers: function() {
@@ -1237,6 +1242,9 @@ const vm = new Vue({
                 .join("\n");
         },
         currentAction: function() {
+            if (this.gameOver != "") {
+                return this.gameOver;
+            }
             switch (this.gameState) {
                 case GameState.PresidentNominateChancellor:
                     if (this.president.id != App.myPlayerId) {
@@ -1340,10 +1348,43 @@ const vm = new Vue({
                     if (loyalty === Role.Hitler) {
                         loyalty = Role.Fascist;
                     }
-                    log(`${selectedPlayer.name} is ${loyalty}!`);
+                    MessageBox({
+                        title: "",
+                        message: `${selectedPlayer.name} is ${loyalty}!`,
+                        showCancelButton: false,
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        IO.socket.emit("chooseEATarget", {
+                            target: selectedPlayer
+                        });
+                        this.disablePlayerButtons = true;
+                    });
+                } else if (
+                    App.gameData.lastExecutiveAction ===
+                    Executive_Action.Execution
+                ) {
+                    MessageBox({
+                        title: "",
+                        message: `Are you sure you want to execute ${
+                            selectedPlayer.name
+                        }?`,
+                        showCancelButton: true,
+                        confirmButtonText: "Yes",
+                        cancelButtonText: "No"
+                    }).then((action: any) => {
+                        if (action != "cancel") {
+                            IO.socket.emit("chooseEATarget", {
+                                target: selectedPlayer
+                            });
+                            this.disablePlayerButtons = true;
+                        }
+                    });
+                } else {
+                    IO.socket.emit("chooseEATarget", {
+                        target: selectedPlayer
+                    });
+                    this.disablePlayerButtons = true;
                 }
-                IO.socket.emit("chooseEATarget", { target: selectedPlayer });
-                this.disablePlayerButtons = true;
             }
         },
         log: function(value: string) {
