@@ -9,36 +9,33 @@
     <link href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" rel="stylesheet" type="text/css">
     <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
     <link href="css/styles.css" rel="stylesheet">
-    <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
 </head>
 
 <body>
     <div id="gameBody" style="display: none">
 
         <div style="width:80%;margin:auto;height:10%;">{{currentAction}}</div>
-        <transition appear name="grow-vertical">
 
-            <div id="votePolicyContainer" v-show="showBoard && gameOver==''">
+        <div id="votePolicyContainer" v-show="showBoard && gameOver==''">
 
-                <div id="voteButtons" v-show="showVoteButtons">
-                    <button id="ja-btn" class="noBorder" :class="showVoteButtons ? 'animated pulse':''">
-                        <img src="../img/ja.png" />
-                    </button>
-                    <button id="nein-btn" class="noBorder" :class="showVoteButtons ? 'animated pulse':''">
-                        <img src="../img/nein.png" />
-                    </button>
-                </div>
-                <div>
-                    {{waitingForVotesString}}
-                </div>
-                <div id="policyChoices">
-                    <policy-btngroup :policy-choices="policyChoices" @policy-choice-click="policyChoiceClick"></policy-btngroup>
-                </div>
-                <player-btngroup v-show="(!showVoteButtons && policyChoices.length==0) && !waitingForOthers" @log="log" :players="players"
-                    :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState"
-                    :my-player-id="myPlayerId" @player-button-click="playerButtonClick"></player-btngroup>
+            <div id="voteButtons" v-show="showVoteButtons">
+                <button id="ja-btn" class="noBorder" @click="voteButtonClick(true)" :class="showVoteButtons ? 'animated pulse':''">
+                    <img src="../img/ja.png" />
+                </button>
+                <button id="nein-btn" class="noBorder" @click="voteButtonClick(false)" :class="showVoteButtons ? 'animated pulse':''">
+                    <img src="../img/nein.png" />
+                </button>
             </div>
-        </transition>
+            <div>
+                {{waitingForVotesString}}
+            </div>
+            <div id="policyChoices">
+                <policy-btngroup :policy-choices="policyChoices" @policy-choice-click="policyChoiceClick"></policy-btngroup>
+            </div>
+            <player-btngroup v-show="(!showVoteButtons && policyChoices.length==0) && !waitingForOthers" @log="log" :players="players"
+                :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
+                @player-button-click="playerButtonClick"></player-btngroup>
+        </div>
         <mt-button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</mt-button>
         <div id="bottomDiv" v-if="showBoard">
             <div class="board">
@@ -66,9 +63,6 @@
         <button id="vetoButton" @click="vetoButtonClick" v-show="showVetoButton">Veto?</button>
         <div id="DEBUG">
             <div id="roles" v-html="roles"></div>
-        </div>
-        <div id="gameArea">
-            <!-- This is where the templates defined below will be used -->
         </div>
 
         <!-- Main Title Screen that appears when the page loads for the first time -->

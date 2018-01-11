@@ -1,6 +1,6 @@
+declare const io: any;
 const DEBUG = false;
 const autoJoin = false;
-let CPU = false;
 import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
 import * as Rand from "./Rand";
 
@@ -10,7 +10,6 @@ import { Election } from "./models";
 
 import Vue from "vue";
 import { BoardSpaceComponent, ElectionTracker } from "./BoardSpaceComponent";
-import { tween, styler } from "popmotion";
 import { MessageBox, Button, Toast, Popup } from "mint-ui";
 import { PolicyBtn, PolicyChoiceGroup } from "./PolicyBtnComponent";
 import { PlayerBtn, PlayerBtnGroup } from "./PlayerBtnComponent";
@@ -25,11 +24,8 @@ Vue.component(Button.name, Button);
 Vue.component(Popup.name, Popup);
 Vue.component("election-tracker", ElectionTracker);
 import { Player } from "./Player";
-// import Toasted from "vue-toasted";
 import * as Cookies from "js-cookie";
-declare const io: any;
 import { GameData } from "./gameData";
-import { easeIn } from "popmotion/easing";
 
 function convertGameDataToClass(gameData: GameData) {
     if (gameData.electionArchive) {
@@ -58,16 +54,15 @@ function convertGameDataToClass(gameData: GameData) {
     if (gameData.lastPolicy) {
         gameData.lastPolicy = new Policy(gameData.lastPolicy.isLiberal);
     }
-    App.gameData = gameData;
-    vm.president = App.gameData.president;
-    vm.chancellor = App.gameData.chancellor;
-    vm.lastChancellor = App.gameData.lastChancellor;
-    vm.players = App.gameData.players;
-    vm.chaosLevel = App.gameData.chaosLevel;
-    vm.enactedPolicies = App.gameData.enactedPolicies;
-    vm.gameState = App.gameData.gameState;
-    vm.lastExecutiveAction = App.gameData.lastExecutiveAction;
-    vm.electionArchive = App.gameData.electionArchive;
+    vm.president = gameData.president;
+    vm.chancellor = gameData.chancellor;
+    vm.lastChancellor = gameData.lastChancellor;
+    vm.players = gameData.players;
+    vm.chaosLevel = gameData.chaosLevel;
+    vm.enactedPolicies = gameData.enactedPolicies;
+    vm.gameState = gameData.gameState;
+    vm.lastExecutiveAction = gameData.lastExecutiveAction;
+    vm.electionArchive = gameData.electionArchive;
 }
 const getName = (x: Player) => x.name;
 /**
@@ -91,8 +86,6 @@ const IO = {
      * by the Socket.IO server, then run the appropriate function.
      */
     bindEvents: function() {
-        IO.socket.on("connected", IO.onConnected);
-        IO.socket.on("newGameCreated", IO.onNewGameCreated);
         IO.socket.on("playerJoinedRoom", IO.playerJoinedRoom);
         IO.socket.on("playerRejoinedRoom", IO.playerRejoinedRoom);
         IO.socket.on("beginNewGame", IO.beginNewGame);
@@ -185,22 +178,6 @@ const IO = {
         convertGameDataToClass(data);
         App.Player.onPolicyPlayedByCountry();
     },
-    /**
-     * The client is successfully connected!
-     */
-    onConnected: function() {
-        // Cache a copy of the client's socket.IO session ID on the App
-        App.mySocketId = IO.socket.socket.sessionid;
-        // console.log(data.message);
-    },
-
-    /**
-     * A new game has been created and a random game ID has been generated.
-     * @param data {{ gameId: int, mySocketId: * }}
-     */
-    onNewGameCreated: function(data: GameData) {
-        App.Host.gameInit(data);
-    },
 
     /**
      * A player has successfully joined the game.
@@ -214,48 +191,10 @@ const IO = {
         convertGameDataToClass(data);
         document.getElementById("startGameBtn").style.display = "none";
         vm.showBoard = true;
-        App.gameData.players.map(
-            p => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
+        vm.players.map(
+            (p: Player) => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
         );
-        const myPlayer = App.getPlayerById(App.myPlayerId);
-        if (myPlayer.role === Role.Liberal) {
-            vm.myRole = "You are Liberal! Find and stop the Secret Hitler!";
-        } else if (myPlayer.role === Role.Fascist) {
-            let s = "You are Fascist!";
-            const otherFascistNames = App.gameData.fascists
-                .filter((x: Player) => x.id !== myPlayer.id)
-                .map(getName);
-            const len = otherFascistNames.length;
-            if (len === 1) {
-                s += " The other Fascist is " + otherFascistNames[0] + ". ";
-            } else if (len > 1) {
-                s +=
-                    " The other Fascists are " +
-                    prettyPrintList(otherFascistNames) +
-                    ". ";
-            }
-            s += App.gameData.hitler.name + " is Secret Hitler!";
-            vm.myRole = s;
-            if (!App.gameData.gameRules.hitlerKnowsFascists) {
-                vm.myRole =
-                    "You know who Hitler is, but Hitler does NOT know who the fascists are!";
-            }
-        } else {
-            let s = "You are Secret Hitler!";
-            if (App.gameData.gameRules.hitlerKnowsFascists) {
-                const fascistNames = App.gameData.fascists.map(getName);
-                const len = fascistNames.length;
-                if (len === 1) {
-                    s += " The Fascist is " + fascistNames[0] + ". ";
-                } else if (len > 1) {
-                    s +=
-                        " The Fascists are " +
-                        prettyPrintList(fascistNames) +
-                        ". ";
-                }
-            }
-            vm.myRole = s;
-        }
+        vm.whoAmI();
         if (App.amIThePresident()) {
             App.President.rejoinGame();
         } else if (App.amITheChancellor()) {
@@ -264,10 +203,7 @@ const IO = {
             App.Player.rejoinGame();
         }
     },
-    /**
-     * Both players have joined the game.
-     * @param data
-     */
+
     beginNewGame: function(data: GameData) {
         convertGameDataToClass(data);
         App.Player.beginNewGame();
@@ -297,84 +233,33 @@ const App = {
      *
      */
     gameId: 0,
-    myPlayerId: 0,
-    playerBtns: <HTMLElement[]>[],
-    dead: false,
-    /**
-     * The Socket.IO socket object identifier. This is unique for
-     * each player and host. It is generated when the browser initially
-     * connects to the server when the page loads for the first time.
-     */
-    mySocketId: "",
-    myRole: "",
-    currentRound: 0,
 
-    gameData: {
-        players: [],
-        liberals: [],
-        fascists: [],
-        hitler: null,
-        president: null,
-        chancellor: null,
-        lastChancellor: null,
-        chancellorNominee: null,
-        gameRules: {},
-        enactedPolicies: {},
-        chaosLevel: 0
-    } as GameData,
-    /**************************************
-     *                Setup                *
-     * *********************************** */
+    // gameData: {
+    //     players: [],
+    //     liberals: [],
+    //     fascists: [],
+    //     hitler: null,
+    //     president: null,
+    //     chancellor: null,
+    //     lastChancellor: null,
+    //     chancellorNominee: null,
+    //     gameRules: {},
+    //     enactedPolicies: {},
+    //     chaosLevel: 0
+    // } as GameData,
+
     amIThePresident: function() {
-        return (
-            App.gameData.president &&
-            App.gameData.president.id === App.myPlayerId
-        );
+        return vm.president && vm.president.id === vm.myPlayerId;
     },
     amITheChancellor: function() {
-        return (
-            App.gameData.chancellor &&
-            App.gameData.chancellor.id === App.myPlayerId
-        );
+        return vm.chancellor && vm.chancellor.id === vm.myPlayerId;
     },
     /**
      * This runs when the page initially loads.
      */
     init: function() {
-        App.cacheElements();
         App.showInitScreen();
         App.bindEvents();
-    },
-
-    $gameArea: <HTMLElement>null,
-    $templateIntroScreen: <HTMLElement>null,
-    $templateNewGame: <HTMLElement>null,
-    $templateJoinGame: <HTMLElement>null,
-    $hostGame: <HTMLElement>null,
-    $neinBtn: <HTMLElement>null,
-    $jaBtn: <HTMLElement>null,
-    $policyChoiceArea: <HTMLElement>null,
-    $policyChoiceBtns: <HTMLElement[]>[],
-    /**
-     * Create references to on-screen elements used throughout the game.
-     */
-    cacheElements: function() {
-        // Templates
-        App.$gameArea = document.getElementById("gameArea");
-        App.$templateIntroScreen = document.getElementById(
-            "intro-screen-template"
-        );
-        App.$templateNewGame = document.getElementById("create-game-template");
-        App.$templateJoinGame = document.getElementById("join-game-template");
-        App.$hostGame = document.getElementById("host-game-template");
-        App.$neinBtn = document.getElementById("nein-btn");
-        App.$jaBtn = document.getElementById("ja-btn");
-        App.$policyChoiceArea = document.getElementById("policyChoices");
-        App.$policyChoiceBtns = [
-            document.getElementById("policyChoice1"),
-            document.getElementById("policyChoice2"),
-            document.getElementById("policyChoice3")
-        ];
     },
 
     /**
@@ -396,37 +281,11 @@ const App = {
      * *********************************** */
 
     /**
-     * Show the initial Anagrammatix Title Screen
+     * Show the initial Secret Hitler Title Screen
      * (with Start and Join buttons)
      */
     showInitScreen: function() {
-        App.$gameArea.style.display = "none";
         App.$templateIntroScreen.style.display = "";
-    },
-
-    /********************************
-     *         HOST CODE           *
-     ******************************* */
-    Host: {
-        /**
-         * Handler for the "Start" button on the Title Screen.
-         */
-        onCreateClick: function() {
-            // console.log('Clicked "Create A Game"');
-            IO.socket.emit("hostCreateNewGame");
-        },
-
-        /**
-         * The Host screen is displayed for the first time.
-         * @param data{{ gameId: int, mySocketId: * }}
-         */
-        gameInit: function(data: any) {
-            App.gameId = data.gameId;
-            App.mySocketId = data.mySocketId;
-            App.myRole = "Host";
-
-            // console.log("Game started with ID: " + App.gameId + ' by host: ' + App.mySocketId);
-        }
     },
 
     /******************************
@@ -434,11 +293,6 @@ const App = {
      ***************************** */
 
     Player: {
-        /**
-         * A reference to the socket ID of the Host
-         */
-        hostSocketId: "",
-
         /**
          * The player's name entered on the 'Join' screen.
          */
@@ -451,10 +305,8 @@ const App = {
             // console.log('Clicked "Join A Game"');
 
             // Display the Join Game HTML on the player's screen.
-            App.$gameArea.style.display = "none";
             App.$templateIntroScreen.style.display = "none";
             App.$templateJoinGame.style.display = "";
-            // setTimeout(() => document.getElementById("btnStart").click(), 100);
         },
 
         /**
@@ -463,18 +315,13 @@ const App = {
          */
         onPlayerStartClick: function() {
             // console.log('Player clicked "Start"');
-            App.myPlayerId = (Math.random() * 100000) | 0;
-            vm.myPlayerId = App.myPlayerId;
-            let name;
-            if (vm.yourName) {
-                name = vm.yourName;
-            } else {
-                name = Rand.randomName();
-            }
+            vm.myPlayerId = (Math.random() * 100000) | 0;
+            vm.myPlayerId = vm.myPlayerId;
+
             // collect data to send to the server
             const data = {
-                playerName: name,
-                playerId: App.myPlayerId
+                playerName: vm.yourName || Rand.randomName(),
+                playerId: vm.myPlayerId
             };
 
             // Send the gameId and playerName to the server
@@ -492,48 +339,34 @@ const App = {
         joinGame: function(data: any) {
             Cookies.set("existingGameInfo", {
                 gameId: App.gameId,
-                playerId: App.myPlayerId,
+                playerId: vm.myPlayerId,
                 playerName: data.playerName
             });
             // Set the appropriate properties for the current player.
-            App.myRole = "Player";
             App.Player.myName = data.playerName;
             document.title = data.playerName;
             App.$templateJoinGame.style.display = "none";
-            App.$gameArea.style.display = "none";
         },
         rejoinGame: function() {
-            if (
-                App.gameData.gameState === GameState.PresidentNominateChancellor
-            ) {
+            if (vm.gameState === GameState.PresidentNominateChancellor) {
                 App.Player.onPresidentElected();
-            } else if (
-                App.gameData.gameState === GameState.PresidentChoosePolicies
-            ) {
+            } else if (vm.gameState === GameState.PresidentChoosePolicies) {
                 App.Player.onChancellorElected();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorRequestVeto
-            ) {
+            } else if (vm.gameState === GameState.ChancellorRequestVeto) {
                 App.Player.onVetoRequested();
             } else if (
-                App.gameData.gameState ===
-                GameState.PresidentChooseExecutiveActionTarget
+                vm.gameState === GameState.PresidentChooseExecutiveActionTarget
             ) {
                 App.Player.onExecutiveActionTriggered();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorChoosePolicy
-            ) {
+            } else if (vm.gameState === GameState.ChancellorChoosePolicy) {
                 App.Player.onPresidentPolicyChosen();
-            } else if (App.gameData.gameState === GameState.VoteForChancellor) {
-                if (
-                    !App.gameData.currentElection.didPlayerVote(App.myPlayerId)
-                ) {
+            } else if (vm.gameState === GameState.VoteForChancellor) {
+                if (!vm.currentElection.didPlayerVote(vm.myPlayerId)) {
                     App.Player.onChancellorNominated();
                 }
             }
         },
         onVIPStart: function() {
-            CPU = false;
             IO.socket.emit("VIPStart");
         },
 
@@ -547,105 +380,40 @@ const App = {
                 playerName: App.Player.myName
             };
             IO.socket.emit("playerRestart", data);
-            App.currentRound = 0;
         },
 
         /////////////////////////////////////////////////
         ///////////////////////////////////////////////////
-        onPresidentElected: function() {
-            vm.disablePlayerButtons = true;
-            // vm.currentAction = `Waiting for President ${
-            // App.gameData.president.name
-            // } to nominate Chancellor`;
-        },
+        onPresidentElected: function() {},
 
         onChancellorNominated: function() {
             if (App.dead) {
                 return;
             }
             vm.waitingForVotes = [];
-            App.gameData.players.forEach(p => {
+            vm.players.forEach(p => {
                 if (!p.dead) {
                     vm.waitingForVotes.push(p);
                 }
             });
-            // vm.currentAction = `Vote now whether to elect ${
-            // App.gameData.chancellorNominee.name
-            // } as Chancellor`;
-            if (CPU) {
-                setRandomTimeout(
-                    function() {
-                        if (Rand.Boolean(80)) {
-                            App.$jaBtn.click();
-                        } else {
-                            App.$neinBtn.click();
-                        }
-                    },
-                    500,
-                    5000
-                );
-            } else {
-            }
-            App.$jaBtn.onclick = function() {
-                IO.socket.emit("voteForChancellor", {
-                    id: App.myPlayerId,
-                    vote: true
-                });
-            };
-            App.$neinBtn.onclick = function() {
-                IO.socket.emit("voteForChancellor", {
-                    id: App.myPlayerId,
-                    vote: false
-                });
-            };
         },
-        onChancellorElected: function() {
-            // vm.currentAction = `Waiting for President ${
-            // App.gameData.president.name
-            // } to pick policies`;
-        },
+        onChancellorElected: function() {},
 
-        onPresidentPolicyChosen: function() {
-            // vm.currentAction = `President ${
-            // App.gameData.president.name
-            // } has chosen 2 policies. Waiting for Chancellor ${
-            // App.gameData.chancellor.name
-            // } to enact one of them.`;
-        },
+        onPresidentPolicyChosen: function() {},
 
         onVetoRequested: function() {},
 
         onVetoWasApproved: function() {
-            log(`President ${App.gameData.president.name} approved the veto.`);
+            log(`President ${vm.president.name} approved the veto.`);
         },
         onVetoWasRejected: function() {
             log(
-                `President ${
-                    App.gameData.president.name
-                } rejected the veto. Chancellor ${
-                    App.gameData.chancellor.name
+                `President ${vm.president.name} rejected the veto. Chancellor ${
+                    vm.chancellor.name
                 } must enact a policy.`
             );
         },
-        onExecutiveActionTriggered: function() {
-            // switch (App.gameData.lastExecutiveAction) {
-            //     case Executive_Action.InvestigateLoyalty:
-            //         vm.currentAction = `Waiting for President ${
-            //             App.gameData.president.name
-            //         } to investigate someone's loyalty.`;
-            //         break;
-            //     case Executive_Action.Execution:
-            //         vm.currentAction = `Waiting for President ${
-            //             App.gameData.president.name
-            //         } to execute someone.`;
-            //         break;
-            //     case Executive_Action.SpecialElection:
-            //         vm.currentAction = `Waiting for President ${
-            //             App.gameData.president.name
-            //         } to invoke a special election.`;
-            //         break;
-            // }
-        },
+        onExecutiveActionTriggered: function() {},
 
         onPlayerVoted: function(data: any) {
             if (DEBUG) {
@@ -660,68 +428,54 @@ const App = {
             );
         },
         onExecutiveActionTargetChosen: function() {
-            switch (App.gameData.lastExecutiveAction) {
+            switch (vm.lastExecutiveAction) {
                 case Executive_Action.PolicyPeek:
                     log(
                         `President ${
-                            App.gameData.president.name
+                            vm.president.name
                         } peeked the next 3 policies.`
                     );
                     break;
                 case Executive_Action.SpecialElection:
                     log(
                         `Special Election! ${
-                            App.gameData.lastExecutiveActionTarget.name
+                            vm.lastExecutiveActionTarget.name
                         } will now be president.`
                     );
                     break;
                 case Executive_Action.Execution:
                     log(
-                        `President ${
-                            App.gameData.president.name
-                        } has executed ${
-                            App.gameData.lastExecutiveActionTarget.name
+                        `President ${vm.president.name} has executed ${
+                            vm.lastExecutiveActionTarget.name
                         }!`
                     );
-                    if (
-                        App.gameData.lastExecutiveActionTarget.id ===
-                        App.myPlayerId
-                    ) {
-                        App.dead = true;
-                    }
                     break;
                 case Executive_Action.InvestigateLoyalty:
                     log(
-                        `President ${
-                            App.gameData.president.name
-                        } has investigated ${
-                            App.gameData.lastExecutiveActionTarget.name
+                        `President ${vm.president.name} has investigated ${
+                            vm.lastExecutiveActionTarget.name
                         }'s loyalty.`
                     );
                     break;
             }
         },
         onVoteFinished: function() {
-            if (App.gameData.currentElection.didPass()) {
-                log(
-                    `Vote passed! ${
-                        App.gameData.chancellor.name
-                    } is now Chancellor.`
-                );
+            if (vm.currentElection.didPass()) {
+                log(`Vote passed! ${vm.chancellor.name} is now Chancellor.`);
             } else {
                 log(`Vote failed!`);
             }
         },
         onPolicyPlayed: function() {
             log(
-                `President ${App.gameData.president.name} and Chancellor ${
-                    App.gameData.chancellor.name
-                } have enacted a ${App.gameData.lastPolicy.toString()} policy!`
+                `President ${vm.president.name} and Chancellor ${
+                    vm.chancellor.name
+                } have enacted a ${vm.lastPolicy.toString()} policy!`
             );
         },
         onPolicyPlayedByCountry: function() {
             log(
-                `The country is in chaos! The people have enacted a ${App.gameData.lastPolicy.toString()} policy!`
+                `The country is in chaos! The people have enacted a ${vm.lastPolicy.toString()} policy!`
             );
         },
         /**
@@ -729,110 +483,70 @@ const App = {
          * @param data {{playerName: string, gameId: int, mySocketId: int}}
          */
         playerJoinedRoom: function() {
-            log(
-                `${
-                    App.gameData.players[App.gameData.players.length - 1].name
-                } joined the room!`
-            );
-            vm.players = App.gameData.players;
+            log(`${vm.players[vm.players.length - 1].name} joined the room!`);
         },
 
         beginNewGame: function() {
-            vm.gameRules = App.gameData.gameRules;
             vm.showBoard = true;
 
-            App.gameData.players.map(
-                p => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
+            vm.players.map(
+                (p: Player) =>
+                    (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
             );
-            const myPlayer = App.getPlayerById(App.myPlayerId);
-            if (myPlayer.role === Role.Liberal) {
-                vm.myRole = "You are Liberal! Find and stop the Secret Hitler!";
-            } else if (myPlayer.role === Role.Fascist) {
-                let s = "You are Fascist!";
-                const otherFascistNames = App.gameData.fascists
-                    .filter((x: Player) => x.id !== myPlayer.id)
-                    .map(getName);
-                const len = otherFascistNames.length;
-                if (len === 1) {
-                    s += " The other Fascist is " + otherFascistNames[0] + ". ";
-                } else if (len > 1) {
-                    s +=
-                        " The other Fascists are " +
-                        prettyPrintList(otherFascistNames) +
-                        ". ";
-                }
-                s += App.gameData.hitler.name + " is Secret Hitler!";
-                vm.myRole = s;
-                if (!App.gameData.gameRules.hitlerKnowsFascists) {
-                    vm.myRole =
-                        "You know who Hitler is, but Hitler does NOT know who the fascists are!";
-                }
-            } else {
-                let s = "You are Secret Hitler!";
-                if (App.gameData.gameRules.hitlerKnowsFascists) {
-                    const fascistNames = App.gameData.fascists.map(getName);
-                    const len = fascistNames.length;
-                    if (len === 1) {
-                        s += " The Fascist is " + fascistNames[0] + ". ";
-                    } else if (len > 1) {
-                        s +=
-                            " The Fascists are " +
-                            prettyPrintList(fascistNames) +
-                            ". ";
-                    }
-                }
-                vm.myRole = s;
-            }
-            vm.whoAmIVisible = true;
         },
         whoAmI: function() {
-            // const myPlayer = App.getPlayerById(App.myPlayerId);
-            // if (myPlayer.role === Role.Liberal) {
-            //     log("You are Liberal! Find and stop the Secret Hitler!");
-            // } else if (myPlayer.role === Role.Fascist) {
-            //     let s = "You are Fascist!";
-            //     const otherFascistNames = App.gameData.fascists
-            //         .filter((x: Player) => x.id !== myPlayer.id)
-            //         .map(getName);
-            //     const len = otherFascistNames.length;
-            //     if (len === 1) {
-            //         s += " The other Fascist is " + otherFascistNames[0] + ". ";
-            //     } else if (len > 1) {
-            //         s +=
-            //             " The other Fascists are " +
-            //             prettyPrintList(otherFascistNames) +
-            //             ". ";
-            //     }
-            //     s += App.gameData.hitler.name + " is Secret Hitler!";
-            //     log(s);
-            //     if (!App.gameData.gameRules.hitlerKnowsFascists) {
-            //         log(
-            //             "You know who Hitler is, but Hitler does NOT know who the fascists are!"
-            //         );
-            //     }
-            // } else {
-            //     let s = "You are Secret Hitler!";
-            //     if (App.gameData.gameRules.hitlerKnowsFascists) {
-            //         const fascistNames = App.gameData.fascists.map(getName);
-            //         const len = fascistNames.length;
-            //         if (len === 1) {
-            //             s += " The Fascist is " + fascistNames[0] + ". ";
-            //         } else if (len > 1) {
-            //             s +=
-            //                 " The Fascists are " +
-            //                 prettyPrintList(fascistNames) +
-            //                 ". ";
-            //         }
-            //     }
-            //     log(s);
-            // }
+            if (!vm.myRole) {
+                const myPlayer = App.getPlayerById(vm.myPlayerId);
+                if (myPlayer.role === Role.Liberal) {
+                    vm.myRole =
+                        "You are Liberal! Find and stop the Secret Hitler!";
+                } else if (myPlayer.role === Role.Fascist) {
+                    let s = "You are Fascist!";
+                    const otherFascistNames = vm.fascists
+                        .filter((x: Player) => x.id !== myPlayer.id)
+                        .map(getName);
+                    const len = otherFascistNames.length;
+                    if (len === 1) {
+                        s +=
+                            " The other Fascist is " +
+                            otherFascistNames[0] +
+                            ". ";
+                    } else if (len > 1) {
+                        s +=
+                            " The other Fascists are " +
+                            prettyPrintList(otherFascistNames) +
+                            ". ";
+                    }
+                    s += " " + vm.hitler.name + " is Secret Hitler!";
+                    vm.myRole = s;
+                    if (!vm.gameRules.hitlerKnowsFascists) {
+                        vm.myRole +=
+                            " You know who Hitler is, but Hitler does NOT know who the fascists are!";
+                    }
+                } else {
+                    let s = "You are Secret Hitler!";
+                    if (vm.gameRules.hitlerKnowsFascists) {
+                        const fascistNames = vm.fascists.map(getName);
+                        const len = fascistNames.length;
+                        if (len === 1) {
+                            s += " The Fascist is " + fascistNames[0] + ". ";
+                        } else if (len > 1) {
+                            s +=
+                                " The Fascists are " +
+                                prettyPrintList(fascistNames) +
+                                ". ";
+                        }
+                    }
+                    vm.myRole = s;
+                }
+            }
             vm.whoAmIVisible = true;
         },
         gameOver: function(data: GameData) {
             switch (data.gameOverReason) {
                 case WinCondition.SixLiberalPolicies:
                     vm.gameOver =
-                        "Liberals Win! Six Liberal Policies have been played.";
+                        "Liberals Win! Five Liberal Policies have been played.";
 
                     break;
                 case WinCondition.SixFascistPolicies:
@@ -842,13 +556,13 @@ const App = {
                     break;
                 case WinCondition.HitlerIsChancellor:
                     vm.gameOver = `Fascists Win! Hitler (${
-                        App.gameData.hitler.name
+                        vm.hitler.name
                     }) has been elected Chancellor!`;
 
                     break;
                 case WinCondition.HitlerWasAssassinated:
                     vm.gameOver = `Liberals Win! Hitler (${
-                        App.gameData.hitler.name
+                        vm.hitler.name
                     }) has been assassinated!`;
 
                     break;
@@ -857,70 +571,31 @@ const App = {
         }
     },
     President: {
-        onPresidentElected: function() {
-            vm.disablePlayerButtons = false;
-            // vm.currentAction =
-            // "You're the president! Choose someone to nominate for chancellor.";
-            if (CPU) {
-                setRandomTimeout(
-                    () => {
-                        let selectedPlayer;
-                        do {
-                            selectedPlayer = Rand.Choice(App.gameData.players);
-                        } while (
-                            selectedPlayer.id === App.myPlayerId ||
-                            selectedPlayer.dead ||
-                            (App.gameData.lastChancellor &&
-                                App.gameData.lastChancellor.id ===
-                                    selectedPlayer.id)
-                        );
-                        // App.playerBtns[selectedPlayer.id].click();
-                    },
-                    500,
-                    3000
-                );
-            }
-        },
+        onPresidentElected: function() {},
         onChancellorElected: function() {
             // vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = [];
             for (let i = 0; i < 3; i++) {
                 const x = i;
                 setTimeout(() => {
-                    vm.policyChoices.push(App.gameData.presidentPolicies[x]);
+                    vm.policyChoices.push(vm.presidentPolicies[x]);
                 }, x * 100);
-            }
-            // vm.policyChoices = App.gameData.presidentPolicies;
-
-            if (CPU) {
-                setRandomTimeout(
-                    function() {
-                        let choice = Rand.Range(0, 3);
-                        App.$policyChoiceBtns[choice].click();
-                    },
-                    500,
-                    2000
-                );
             }
         },
         onVetoRequested: function() {
             IO.socket.emit("vetoApproved", {
-                id: App.myPlayerId,
+                id: vm.myPlayerId,
                 approved: confirm("Approve the veto?")
             });
         },
         onExecutiveActionTriggered: function() {
-            if (
-                App.gameData.lastExecutiveAction === Executive_Action.PolicyPeek
-            ) {
+            if (vm.lastExecutiveAction === Executive_Action.PolicyPeek) {
                 MessageBox({
                     title: "",
                     message:
                         "Next 3 Policies are " +
                         prettyPrintList(
-                            App.gameData.policyDeck
-                                .peek(3)
-                                .map(x => x.toString())
+                            vm.policyDeck.peek(3).map(x => x.toString())
                         ),
                     showCancelButton: false,
                     confirmButtonText: "OK"
@@ -929,68 +604,23 @@ const App = {
                 });
             } else {
                 vm.disablePlayerButtons = false;
-                // switch (App.gameData.lastExecutiveAction) {
-                //     case Executive_Action.InvestigateLoyalty:
-                //         vm.currentAction =
-                //             "Choose someone to investigate their loyalty.";
-                //         break;
-                //     case Executive_Action.Execution:
-                //         vm.currentAction = "Choose someone to execute.";
-                //         break;
-                //     case Executive_Action.SpecialElection:
-                //         vm.currentAction =
-                //             "Choose the president for next turn.";
-                //         break;
-                // }
-                if (CPU) {
-                    setRandomTimeout(
-                        () => {
-                            let selectedPlayer;
-                            do {
-                                selectedPlayer = Rand.Choice(
-                                    App.gameData.players
-                                );
-                            } while (
-                                selectedPlayer.id === App.myPlayerId ||
-                                selectedPlayer.dead ||
-                                (App.gameData.lastChancellor &&
-                                    App.gameData.lastChancellor.id ===
-                                        selectedPlayer.id)
-                            );
-                            // App.playerBtns[selectedPlayer.id].click();
-                        },
-                        500,
-                        3000
-                    );
-                }
             }
         },
         rejoinGame: function() {
-            if (
-                App.gameData.gameState === GameState.PresidentNominateChancellor
-            ) {
+            if (vm.gameState === GameState.PresidentNominateChancellor) {
                 App.President.onPresidentElected();
-            } else if (
-                App.gameData.gameState === GameState.PresidentChoosePolicies
-            ) {
+            } else if (vm.gameState === GameState.PresidentChoosePolicies) {
                 App.President.onChancellorElected();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorRequestVeto
-            ) {
+            } else if (vm.gameState === GameState.ChancellorRequestVeto) {
                 App.President.onVetoRequested();
             } else if (
-                App.gameData.gameState ===
-                GameState.PresidentChooseExecutiveActionTarget
+                vm.gameState === GameState.PresidentChooseExecutiveActionTarget
             ) {
                 App.President.onExecutiveActionTriggered();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorChoosePolicy
-            ) {
+            } else if (vm.gameState === GameState.ChancellorChoosePolicy) {
                 App.Player.onPresidentPolicyChosen();
-            } else if (App.gameData.gameState === GameState.VoteForChancellor) {
-                if (
-                    !App.gameData.currentElection.didPlayerVote(App.myPlayerId)
-                ) {
+            } else if (vm.gameState === GameState.VoteForChancellor) {
+                if (!vm.currentElection.didPlayerVote(vm.myPlayerId)) {
                     App.Player.onChancellorNominated();
                 }
             }
@@ -999,45 +629,23 @@ const App = {
     Chancellor: {
         onPresidentPolicyChosen: function() {
             // vm.currentAction = "Choose a policy to discard";
-            vm.policyChoices = App.gameData.chancellorPolicies;
-
-            if (CPU) {
-                setRandomTimeout(
-                    function() {
-                        let choice = Rand.Range(0, 2);
-                        App.$policyChoiceBtns[choice].click();
-                    },
-                    500,
-                    2000
-                );
-            }
+            vm.policyChoices = vm.chancellorPolicies;
         },
         rejoinGame: function() {
-            if (
-                App.gameData.gameState === GameState.PresidentNominateChancellor
-            ) {
+            if (vm.gameState === GameState.PresidentNominateChancellor) {
                 App.Player.onPresidentElected();
-            } else if (
-                App.gameData.gameState === GameState.PresidentChoosePolicies
-            ) {
+            } else if (vm.gameState === GameState.PresidentChoosePolicies) {
                 App.Player.onChancellorElected();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorRequestVeto
-            ) {
+            } else if (vm.gameState === GameState.ChancellorRequestVeto) {
                 App.Player.onVetoRequested();
             } else if (
-                App.gameData.gameState ===
-                GameState.PresidentChooseExecutiveActionTarget
+                vm.gameState === GameState.PresidentChooseExecutiveActionTarget
             ) {
                 App.Player.onExecutiveActionTriggered();
-            } else if (
-                App.gameData.gameState === GameState.ChancellorChoosePolicy
-            ) {
+            } else if (vm.gameState === GameState.ChancellorChoosePolicy) {
                 App.Chancellor.onPresidentPolicyChosen();
-            } else if (App.gameData.gameState === GameState.VoteForChancellor) {
-                if (
-                    !App.gameData.currentElection.didPlayerVote(App.myPlayerId)
-                ) {
+            } else if (vm.gameState === GameState.VoteForChancellor) {
+                if (!vm.currentElection.didPlayerVote(vm.myPlayerId)) {
                     App.Player.onChancellorNominated();
                 }
             }
@@ -1045,7 +653,7 @@ const App = {
     },
     getPlayerById: function(id: number): Player {
         let ret = null;
-        App.gameData.players.forEach(function(p) {
+        vm.players.forEach(function(p) {
             if (p.id === id) {
                 ret = p;
             }
@@ -1086,11 +694,10 @@ window.onload = function() {
                             "Looks like you were disconnected, but the game is still going. Rejoin?"
                         )
                     ) {
-                        App.myPlayerId = gameInfo.playerId;
+                        vm.myPlayerId = gameInfo.playerId;
                         vm.myPlayerId = gameInfo.playerId;
                         App.gameId = gameInfo.gameId;
                         IO.socket.emit("rejoinGame", gameInfo);
-                        App.$gameArea.style.display = "none";
                         App.$templateIntroScreen.style.display = "none";
                         App.Player.joinGame(gameInfo);
                     } else {
@@ -1109,21 +716,9 @@ window.onload = function() {
     }
 };
 
-function setRandomTimeout(func: any, min: number, max: number) {
-    setTimeout(func, Rand.Range(min, max));
-}
-// Vue.use(Toasted);
 function log(message: string, duration?: number) {
-    // Vue.toasted.show(message, { duration: duration || 4000 });
-    // Alert.create({ html: message });
     Toast(message);
-    // MessageBox("Notice", message);
 }
-
-// Vue.use(Quasar, {
-//     directives: { Ripple },
-//     components: { QBtn }
-// });
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -1133,7 +728,6 @@ function log(message: string, duration?: number) {
 const vm = new Vue({
     el: "#gameBody",
     data: {
-        disablePlayerButtons: true,
         roles: "",
         players: [],
         policyChoices: [],
@@ -1160,20 +754,31 @@ const vm = new Vue({
         CPU2: false
     },
     computed: {
+        fascists: function() {
+            return this.players.filter((p: Player) => p.role === Role.Fascist);
+        },
+        liberals: function() {
+            return this.players.filter((p: Player) => p.role === Role.Liberal);
+        },
+        hitler: function() {
+            return this.players.filter(
+                (p: Player) => p.role === Role.Hitler
+            )[0];
+        },
         waitingForOthers: function() {
             switch (this.gameState) {
                 case GameState.PresidentNominateChancellor:
-                    return this.president.id != App.myPlayerId;
+                    return this.president.id != this.myPlayerId;
                 case GameState.VoteForChancellor:
                     return true;
                 case GameState.ChancellorChoosePolicy:
-                    return this.chancellor.id != App.myPlayerId;
+                    return this.chancellor.id != this.myPlayerId;
                 case GameState.Idle:
                     return false;
                 case GameState.PresidentChooseExecutiveActionTarget:
-                    return this.president.id != App.myPlayerId;
+                    return this.president.id != this.myPlayerId;
                 case GameState.PresidentChoosePolicies:
-                    return this.president.id != App.myPlayerId;
+                    return this.president.id != this.myPlayerId;
 
                 default:
                     return false;
@@ -1182,7 +787,7 @@ const vm = new Vue({
         showVoteButtons: function() {
             return (
                 this.waitingForVotes.filter(
-                    (p: Player) => p.id == App.myPlayerId
+                    (p: Player) => p.id == this.myPlayerId
                 ).length > 0
             );
         },
@@ -1192,14 +797,15 @@ const vm = new Vue({
         showVetoButton: function() {
             return (
                 this.chancellor &&
-                App.myPlayerId == this.chancellorId &&
+                this.myPlayerId == this.chancellorId &&
                 this.enactedPolicies.fascists > 5
             );
         },
         showPolicyChoices: function() {
             return (
-                ((this.president && App.myPlayerId == this.president.id) ||
-                    (this.chancellor && App.myPlayerId == this.chancellorId)) &&
+                ((this.president && this.myPlayerId == this.president.id) ||
+                    (this.chancellor &&
+                        this.myPlayerId == this.chancellorId)) &&
                 this.policyChoices.length > 0
             );
         },
@@ -1217,7 +823,7 @@ const vm = new Vue({
             if (
                 len === 0 ||
                 this.waitingForVotes.filter(
-                    (p: Player) => p.id === App.myPlayerId
+                    (p: Player) => p.id === this.myPlayerId
                 ).length === 1
             ) {
                 return "";
@@ -1247,7 +853,7 @@ const vm = new Vue({
             }
             switch (this.gameState) {
                 case GameState.PresidentNominateChancellor:
-                    if (this.president.id != App.myPlayerId) {
+                    if (this.president.id != this.myPlayerId) {
                         return `Waiting for President ${
                             this.president.name
                         } to nominate Chancellor`;
@@ -1256,10 +862,10 @@ const vm = new Vue({
                     }
                 case GameState.VoteForChancellor:
                     return `Vote now whether to elect ${
-                        App.gameData.chancellorNominee.name
+                        this.chancellorNominee.name
                     } as Chancellor`;
                 case GameState.ChancellorChoosePolicy:
-                    if (this.chancellor.id != App.myPlayerId) {
+                    if (this.chancellor.id != this.myPlayerId) {
                         return `President ${
                             this.president.name
                         } has chosen 2 policies. Waiting for Chancellor ${
@@ -1271,7 +877,7 @@ const vm = new Vue({
                 case GameState.Idle:
                     return "";
                 case GameState.PresidentChooseExecutiveActionTarget:
-                    if (this.president.id != App.myPlayerId) {
+                    if (this.president.id != this.myPlayerId) {
                         return this.lastExecutiveAction ==
                             Executive_Action.InvestigateLoyalty
                             ? `Waiting for President ${
@@ -1301,7 +907,7 @@ const vm = new Vue({
                                 : "";
                     }
                 case GameState.PresidentChoosePolicies:
-                    if (this.president.id != App.myPlayerId) {
+                    if (this.president.id != this.myPlayerId) {
                         return `Waiting for President ${
                             this.president.name
                         } to pick policies`;
@@ -1317,17 +923,21 @@ const vm = new Vue({
         }
     },
     methods: {
+        voteButtonClick: function(vote: boolean) {
+            IO.socket.emit("voteForChancellor", {
+                id: this.myPlayerId,
+                vote: vote
+            });
+        },
         playerButtonClick: function(id: string | number) {
             let selectedPlayer = App.getPlayerById(+id);
             if (selectedPlayer.dead) {
                 log(`${selectedPlayer.name} is dead!`);
             }
-            if (
-                App.gameData.gameState === GameState.PresidentNominateChancellor
-            ) {
+            if (this.gameState === GameState.PresidentNominateChancellor) {
                 if (
-                    App.gameData.lastChancellor &&
-                    selectedPlayer.id === App.gameData.lastChancellor.id
+                    this.lastChancellor &&
+                    selectedPlayer.id === this.lastChancellor.id
                 ) {
                     alert("can't be chancellor twice in a row");
                 } else {
@@ -1337,11 +947,11 @@ const vm = new Vue({
                     this.disablePlayerButtons = true;
                 }
             } else if (
-                App.gameData.gameState ===
+                this.gameState ===
                 GameState.PresidentChooseExecutiveActionTarget
             ) {
                 if (
-                    App.gameData.lastExecutiveAction ===
+                    this.lastExecutiveAction ===
                     Executive_Action.InvestigateLoyalty
                 ) {
                     let loyalty = selectedPlayer.role;
@@ -1360,8 +970,7 @@ const vm = new Vue({
                         this.disablePlayerButtons = true;
                     });
                 } else if (
-                    App.gameData.lastExecutiveAction ===
-                    Executive_Action.Execution
+                    this.lastExecutiveAction === Executive_Action.Execution
                 ) {
                     MessageBox({
                         title: "",
@@ -1390,14 +999,13 @@ const vm = new Vue({
         log: function(value: string) {
             log(value);
         },
-        disablePlayerButton(id: string | number) {},
         getPolicyClass: function(index: number) {
             if (
-                App.gameData &&
-                App.gameData.presidentPolicies &&
-                App.gameData.presidentPolicies[+index]
+                vm &&
+                this.presidentPolicies &&
+                this.presidentPolicies[+index]
             ) {
-                if (App.gameData.presidentPolicies[+index].isLiberal) {
+                if (this.presidentPolicies[+index].isLiberal) {
                     return "liberalPolicy";
                 } else {
                     return "fascistPolicy";
@@ -1419,7 +1027,7 @@ const vm = new Vue({
                     if (action != "cancel") {
                         this.discardingPolicy = true;
                         IO.socket.emit("choosePresidentPolicies", {
-                            id: App.myPlayerId,
+                            id: this.myPlayerId,
                             policies: selected
                         });
 
@@ -1442,7 +1050,7 @@ const vm = new Vue({
                     if (action != "cancel") {
                         this.discardingPolicy = true;
                         IO.socket.emit("chooseChancellorPolicy", {
-                            id: App.myPlayerId,
+                            id: this.myPlayerId,
                             policies: [toEnact]
                         });
 
@@ -1466,7 +1074,7 @@ const vm = new Vue({
             switch (action) {
                 case 0:
                     this.players.forEach((p: Player) => {
-                        if (p.id != App.myPlayerId && !p.dead) {
+                        if (p.id != this.myPlayerId && !p.dead) {
                             let vote;
                             if (value === 0) {
                                 vote = true;

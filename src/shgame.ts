@@ -134,7 +134,7 @@ function incrementChaosLevel(): boolean {
             gameData.gameOverReason = WinCondition.SixFascistPolicies;
             emit("gameOver", gameData);
             return false;
-        } else if (gameData.enactedPolicies.liberals > 5) {
+        } else if (gameData.enactedPolicies.liberals > 4) {
             gameData.gameOverReason = WinCondition.SixLiberalPolicies;
             emit("gameOver", gameData);
             return false;
@@ -219,7 +219,7 @@ function onChooseChancellorPolicy(data: any) {
     if (gameData.enactedPolicies.fascists > 5) {
         gameData.gameOverReason = WinCondition.SixFascistPolicies;
         emit("gameOver", gameData);
-    } else if (gameData.enactedPolicies.liberals > 5) {
+    } else if (gameData.enactedPolicies.liberals > 4) {
         gameData.gameOverReason = WinCondition.SixLiberalPolicies;
         emit("gameOver", gameData);
     } else {
