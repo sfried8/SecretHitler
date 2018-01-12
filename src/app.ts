@@ -1,7 +1,13 @@
 declare const io: any;
 const DEBUG = false;
 const autoJoin = false;
-import { WinCondition, Executive_Action, Role, GameState } from "./Enums";
+import {
+    WinCondition,
+    Executive_Action,
+    Role,
+    GameState,
+    Setup
+} from "./Enums";
 import * as Rand from "./Rand";
 
 import { Policy, PolicyDeck } from "./Policy";
@@ -191,10 +197,7 @@ const IO = {
         convertGameDataToClass(data);
         document.getElementById("startGameBtn").style.display = "none";
         vm.showBoard = true;
-        vm.players.map(
-            (p: Player) => (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
-        );
-        vm.whoAmI();
+
         if (App.amIThePresident()) {
             App.President.rejoinGame();
         } else if (App.amITheChancellor()) {
@@ -418,13 +421,13 @@ const App = {
         onPlayerVoted: function(data: any) {
             if (DEBUG) {
                 log(
-                    `${App.getPlayerById(data.id).name} voted ${
+                    `${vm.getPlayerById(data.id).name} voted ${
                         data.vote ? "ja" : "nein"
                     }`
                 );
             }
             vm.waitingForVotes = vm.waitingForVotes.filter(
-                (x: Player) => x !== App.getPlayerById(data.id)
+                (x: Player) => x.id != data.id
             );
         },
         onExecutiveActionTargetChosen: function() {
@@ -488,15 +491,10 @@ const App = {
 
         beginNewGame: function() {
             vm.showBoard = true;
-
-            vm.players.map(
-                (p: Player) =>
-                    (vm.roles = `${vm.roles}<br>${p.name} is ${p.role}`)
-            );
         },
         whoAmI: function() {
             if (!vm.myRole) {
-                const myPlayer = App.getPlayerById(vm.myPlayerId);
+                const myPlayer = vm.getPlayerById(vm.myPlayerId);
                 if (myPlayer.role === Role.Liberal) {
                     vm.myRole =
                         "You are Liberal! Find and stop the Secret Hitler!";
@@ -507,10 +505,7 @@ const App = {
                         .map(getName);
                     const len = otherFascistNames.length;
                     if (len === 1) {
-                        s +=
-                            " The other Fascist is " +
-                            otherFascistNames[0] +
-                            ". ";
+                        s += ` The other Fascist is ${otherFascistNames[0]}. `;
                     } else if (len > 1) {
                         s +=
                             " The other Fascists are " +
@@ -573,7 +568,6 @@ const App = {
     President: {
         onPresidentElected: function() {},
         onChancellorElected: function() {
-            // vm.currentAction = "Choose a policy to discard.";
             vm.policyChoices = [];
             for (let i = 0; i < 3; i++) {
                 const x = i;
@@ -595,15 +589,15 @@ const App = {
                     message:
                         "Next 3 Policies are " +
                         prettyPrintList(
-                            vm.policyDeck.peek(3).map(x => x.toString())
+                            vm.policyDeck
+                                .peek(3)
+                                .map((x: Policy) => x.toString())
                         ),
                     showCancelButton: false,
                     confirmButtonText: "OK"
                 }).then(() => {
                     IO.socket.emit("chooseEATarget");
                 });
-            } else {
-                vm.disablePlayerButtons = false;
             }
         },
         rejoinGame: function() {
@@ -650,15 +644,6 @@ const App = {
                 }
             }
         }
-    },
-    getPlayerById: function(id: number): Player {
-        let ret = null;
-        vm.players.forEach(function(p) {
-            if (p.id === id) {
-                ret = p;
-            }
-        });
-        return ret;
     }
     /* **************************
                   UTILITY CODE
@@ -728,9 +713,11 @@ function log(message: string, duration?: number) {
 const vm = new Vue({
     el: "#gameBody",
     data: {
-        roles: "",
         players: [],
         policyChoices: [],
+        presidentPolicies: [],
+        chancellorPolicies: [],
+        currentElection: null,
         showBoard: false,
         president: null,
         chancellor: null,
@@ -738,10 +725,13 @@ const vm = new Vue({
         chaosLevel: 0,
         yourName: "",
         whoAmIVisible: false,
+        policyDeck: null,
+        lastPolicy: null,
+        lastExecutiveActionTarget: null,
         myRole: "",
         discardingPolicy: false,
         adminOverride: false,
-        gameRules: {},
+        gameRules: {} as Setup,
         lastExecutiveAction: Executive_Action.NoAction,
         gameState: GameState.Idle,
         enactedPolicies: {},
@@ -754,6 +744,15 @@ const vm = new Vue({
         CPU2: false
     },
     computed: {
+        dead: function() {
+            const me = this.getPlayerById(this.myPlayerId);
+            return me && me.dead;
+        },
+        roles: function() {
+            return this.players
+                .map((p: Player) => `${p.name} is ${p.role}`)
+                .join("<br>");
+        },
         fascists: function() {
             return this.players.filter((p: Player) => p.role === Role.Fascist);
         },
@@ -929,8 +928,11 @@ const vm = new Vue({
                 vote: vote
             });
         },
+        getPlayerById: function(id: number) {
+            return this.players.filter((p: Player) => p.id === id)[0];
+        },
         playerButtonClick: function(id: string | number) {
-            let selectedPlayer = App.getPlayerById(+id);
+            let selectedPlayer = this.getPlayerById(+id);
             if (selectedPlayer.dead) {
                 log(`${selectedPlayer.name} is dead!`);
             }
