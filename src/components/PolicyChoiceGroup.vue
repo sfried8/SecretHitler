@@ -1,29 +1,16 @@
-import { tween, styler } from "popmotion";
-import { easeIn } from "popmotion/easing";
-import { Complete } from "popmotion/observer/types";
-export const PolicyBtn = {
-    template: `<button @click="policyChoiceClick" class="noBorder policyBtn" :class="isSelected?'selected':''">
-    <img :src="isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
-    </button>`,
-    props: ["pcIndex", "isLiberal"],
-    data: function() {
-        return { isSelected: false };
-    },
-    methods: {
-        policyChoiceClick: function() {
-            this.isSelected = !this.isSelected;
-            this.$emit("policy-choice-click", this.pcIndex);
-        }
-    }
-};
-
-export const PolicyChoiceGroup = {
-    template: `<div><transition-group name="policy-anim" @before-enter="policyAnimBeforeEnter" @enter="policyAnimEnter" @leave="discardPolicyLeave">
+<template>
+  <div><transition-group name="policy-anim" @before-enter="policyAnimBeforeEnter" @enter="policyAnimEnter" @leave="discardPolicyLeave">
                         <policy-btn @policy-choice-click="policyChoiceClick" v-for="(p,index) in policyChoices" :pcIndex="index" :isLiberal="p.isLiberal" :key="p.id">
                         </policy-btn>
 
                     </transition-group>                        <br/>
-                        <mt-button @click="submitChoices" v-show="policyChoices.length > 0" :disabled="disableSubmit">Submit</mt-button></div>`,
+                        <mt-button @click="submitChoices" v-show="policyChoices.length > 0" :disabled="disableSubmit">Submit</mt-button></div>
+</template>
+<script lang="ts">
+import { tween, styler } from "popmotion";
+import { easeIn } from "popmotion/easing";
+import { Complete } from "popmotion/observer/types";
+export default {
     props: ["policyChoices"],
     data: function() {
         return { discardingPolicy: true, lastSize: 0, x: 0, y: 0 };
@@ -90,3 +77,9 @@ export const PolicyChoiceGroup = {
         }
     }
 };
+</script>
+<style>
+.policy-anim-move {
+    transition: all 0.75s;
+}
+</style>

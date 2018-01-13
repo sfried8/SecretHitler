@@ -15,27 +15,7 @@ body {
     margin: 0;
     padding: 0;
 }
-#playerButtons {
-    width: 90%;
-    max-height: 25%;
-    grid-gap: 10px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 2fr));
-    /* grid-template-rows: repeat(3, 55px); */
-}
-.playerButton {
-    /* margin-top: 1em; */
-    /* height: 55px; */
-    /* flex-basis: 45%; */
-    background-color: #333;
-    border-radius: 20px;
-    font-family: "courier-prime", Courier, sans-serif;
-    /* font-weight: 700; */
-    font-size: 9pt !important;
-    line-height: 20px;
-    color: #fbb969;
-}
+
 .board {
     width: 90%;
     min-height: 200px;
@@ -45,31 +25,7 @@ body {
     grid-template-columns: repeat(5, 1fr);
     grid-template-rows: 2fr 2fr 1fr;
 }
-.electionTrackerSpot {
-    width: 30px;
-    height: 30px;
-    border-radius: 18px;
-    border: 3px solid #fbb969;
-}
-.electionTrackerSpot.filled {
-    background-color: #fbb969;
-}
-.electionTrackerSpot.filled.pulse {
-    background-color: #ff2919;
-}
-.policy-anim-move {
-    transition: all 0.75s;
-}
 
-.isPresident::before {
-    content: "President ";
-}
-.isChancellor::before {
-    content: "Chancellor ";
-}
-.isDead::after {
-    content: " (DEAD)";
-}
 .topright {
     width: 25%;
     height: 14%;
@@ -97,20 +53,7 @@ body {
     color: #333;
     margin: auto;
 }
-.policyBtn {
-    width: 30%;
-    background-color: transparent;
-    display: inline-block;
-    margin: 1.5%;
-}
-.policyBtn > img {
-    width: 100%;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 12px;
-}
-.policyBtn.selected {
-    border: 5px solid limegreen;
-}
+
 .fascistPolicy {
     background-image: url("../img/fascistpolicy.png");
 }
@@ -126,18 +69,7 @@ body {
 .tooltipPopup > p {
     margin-bottom: 10px;
 }
-/* .tooltipPopup::before {
-    content: "";
-    position: absolute;
-    top: -20px;
-    right: 50px;
-    width: 0;
-    height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
 
-    border-bottom: 5px solid white;
-} */
 .noBorder {
     outline: none;
     border: none;
@@ -161,19 +93,7 @@ body {
     margin: auto;
     /* background-color: rgba(255, 255, 255, 0.5); */
 }
-#ja-btn,
-#nein-btn {
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    margin: 15px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-    border-radius: 5px;
-}
-#ja-btn img,
-#nein-btn img {
-    width: 100%;
-}
+
 #bottomDiv {
     padding: 10px 0px 10px 0px;
     background-color: #333;

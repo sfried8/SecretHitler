@@ -1,20 +1,11 @@
-import { GameState } from "./Enums";
+<template>
+  <mt-button class="playerButton" :class="[dead ? 'isDead' : '', president!=null && pid == president.id ? 'isPresident' : '', chancellor!=null && pid == chancellor.id ? 'isChancellor' : '', invalidTarget ? 'animated shake':'']"
+                @click="playerButtonClick">{{name}}</mt-button>
+</template>
 
-export const PlayerBtnGroup = {
-    template: `<div id="playerButtons"><player-btn @log="log" @player-button-click="playerButtonClick" :dead="p.dead" :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId" :pid="p.id" :key="p.id" :name="p.name" v-for="p in players"></player-btn></div>`,
-    props: ["players", "president", "chancellor", "lastChancellor", "gameState", "myPlayerId"],
-    methods: {
-        playerButtonClick: function(pid: number) {
-            this.$emit("player-button-click", pid);
-        },
-        log: function(value:string) {
-            this.$emit("log",value);
-        }
-    }
-};
-export const PlayerBtn = {
-    template: `<mt-button class="playerButton" :class="[dead ? 'isDead' : '', president!=null && pid == president.id ? 'isPresident' : '', chancellor!=null && pid == chancellor.id ? 'isChancellor' : '', invalidTarget ? 'animated shake':'']"
-                @click="playerButtonClick">{{name}}</mt-button>`,
+<script lang="ts">
+import { GameState } from "../Enums";
+export default {
     props: [
         "dead",
         "pid",
@@ -58,3 +49,27 @@ export const PlayerBtn = {
         }
     }
 };
+</script>
+<style>
+.isPresident::before {
+    content: "President ";
+}
+.isChancellor::before {
+    content: "Chancellor ";
+}
+.isDead::after {
+    content: " (DEAD)";
+}
+.playerButton {
+    /* margin-top: 1em; */
+    /* height: 55px; */
+    /* flex-basis: 45%; */
+    background-color: #333;
+    border-radius: 20px;
+    font-family: "courier-prime", Courier, sans-serif;
+    /* font-weight: 700; */
+    font-size: 9pt !important;
+    line-height: 20px;
+    color: #fbb969;
+}
+</style>

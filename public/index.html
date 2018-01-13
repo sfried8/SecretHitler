@@ -13,18 +13,13 @@
 
 <body>
     <div id="gameBody" style="display: none">
-
         <div style="width:80%;margin:auto;height:10%;">{{currentAction}}</div>
 
         <div id="votePolicyContainer" v-show="showBoard && gameOver==''">
 
             <div id="voteButtons" v-show="showVoteButtons">
-                <button id="ja-btn" class="noBorder" @click="voteButtonClick(true)" :class="showVoteButtons ? 'animated pulse':''">
-                    <img src="../img/ja.png" />
-                </button>
-                <button id="nein-btn" class="noBorder" @click="voteButtonClick(false)" :class="showVoteButtons ? 'animated pulse':''">
-                    <img src="../img/nein.png" />
-                </button>
+                <vote-btn :ja="true" @vote="voteButtonClick" :show="showVoteButtons"></vote-btn>
+                <vote-btn :ja="false" @vote="voteButtonClick" :show="showVoteButtons"></vote-btn>
             </div>
             <div>
                 {{waitingForVotesString}}

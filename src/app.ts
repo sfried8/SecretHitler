@@ -14,16 +14,20 @@ import * as Rand from "./Rand";
 import { Policy, PolicyDeck } from "./Policy";
 import { Election } from "./models";
 import Vue from "vue";
-import { BoardSpaceComponent, ElectionTracker } from "./BoardSpaceComponent";
 import { MessageBox, Button, Toast, Popup } from "mint-ui";
-import { PolicyBtn, PolicyChoiceGroup } from "./PolicyBtnComponent";
-import { PlayerBtn, PlayerBtnGroup } from "./PlayerBtnComponent";
 import "mint-ui/lib/style.css";
 import { Player } from "./Player";
 import * as Cookies from "js-cookie";
 import { GameData } from "./gameData";
+import VoteButton from "./components/VoteButton.vue";
+import PlayerBtn from "./components/PlayerBtn.vue";
+import BoardSpace from "./components/BoardSpace.vue";
+import ElectionTracker from "./components/ElectionTracker.vue";
+import PolicyBtn from "./components/PolicyBtn.vue";
+import PolicyChoiceGroup from "./components/PolicyChoiceGroup.vue";
+import PlayerBtnGroup from "./components/PlayerBtnGroup.vue";
 
-Vue.component("board-space", BoardSpaceComponent);
+Vue.component("board-space", BoardSpace);
 Vue.component("policy-btngroup", PolicyChoiceGroup);
 Vue.component("policy-btn", PolicyBtn);
 Vue.component("player-btn", PlayerBtn);
@@ -31,6 +35,7 @@ Vue.component("player-btngroup", PlayerBtnGroup);
 Vue.component(Button.name, Button);
 Vue.component(Popup.name, Popup);
 Vue.component("election-tracker", ElectionTracker);
+Vue.component("vote-btn", VoteButton);
 
 function convertGameDataToClass(gameData: GameData) {
     if (gameData.electionArchive) {
