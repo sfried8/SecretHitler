@@ -29,8 +29,6 @@ body {
 #startGameBtn {
     width: 25%;
     height: 14%;
-    /* left: 37.5%; */
-    /* bottom: 15%; */
     min-width: 340px;
     min-height: 110px;
     margin: auto;
