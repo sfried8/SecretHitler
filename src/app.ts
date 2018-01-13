@@ -181,7 +181,7 @@ const IO = {
      * Let everyone know the game has ended.
      * @param data
      */
-    gameOver: function(data: any) {
+    gameOver: function() {
         GameEvents.getGameFunction("gameOver");
     },
 
@@ -513,7 +513,7 @@ window.onload = function() {
     }
 };
 
-function log(message: string, duration?: number) {
+function log(message: string) {
     Toast(message);
 }
 
@@ -1012,18 +1012,5 @@ function prettyPrintPolicies(listToPrint: Policy[]): string {
         return `${numLibs} Liberal Polic${
             numLibs === 1 ? "y" : "ies"
         } and ${numFas} Fascist Polic${numFas === 1 ? "y" : "ies"}`;
-    }
-}
-
-function staggerFunctions(funcs: any[], interval?: number, done?: any) {
-    interval = interval || 200;
-    for (let i = 0; i < funcs.length; i++) {
-        const x = i;
-        setTimeout(() => {
-            funcs[x]();
-            if (x === funcs.length - 1 && done) {
-                done();
-            }
-        }, x * interval);
     }
 }

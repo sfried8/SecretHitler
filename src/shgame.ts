@@ -25,11 +25,6 @@ function initGame(sio: any, socket: any) {
     gameSocket = socket;
     gameSocket.emit("connected", { message: "You are connected!" });
 
-    // Host Events
-    gameSocket.on("hostCreateNewGame", hostCreateNewGame);
-    gameSocket.on("hostRoomFull", hostPrepareGame);
-    gameSocket.on("hostCountdownFinished", hostStartGame);
-
     // Player Events
     gameSocket.on("rejoinGame", playerRejoinGame);
     gameSocket.on("playerJoinGame", playerJoinGame);
@@ -48,7 +43,7 @@ function initGame(sio: any, socket: any) {
 export = { initGame: initGame };
 
 function onVIPStart() {
-    let tempPlayerArray = Rand.Shuffle(gameData.players.slice());
+    const tempPlayerArray = Rand.Shuffle(gameData.players.slice());
     gameData.gameRules = Setups[gameData.players.length];
 
     tempPlayerArray.splice(0, gameData.gameRules.Fascists).map(p => {
@@ -176,7 +171,7 @@ function executiveActionTriggered() {
     if (gameData.lastPolicy.isLiberal) {
         return Executive_Action.NoAction;
     }
-    let action =
+    const action =
         gameData.gameRules.board[gameData.enactedPolicies.fascists - 1];
     if (
         action === Executive_Action.PolicyPeek &&
@@ -251,7 +246,7 @@ function onChooseEATarget(data: any) {
             electNextPresident();
             break;
         case Executive_Action.Execution:
-            let target = getPlayerById(data.target.id);
+            const target = getPlayerById(data.target.id);
             target.dead = true;
             if (target.role === Role.Hitler) {
                 gameData.gameOverReason = WinCondition.HitlerWasAssassinated;
@@ -266,34 +261,7 @@ function onChooseEATarget(data: any) {
     }
 }
 
-/**
- * The 'START' button was clicked and 'hostCreateNewGame' event occurred.
- */
-function hostCreateNewGame() {
-    // Create a unique Socket.IO Room
-}
-
-/*
- * Two players have joined. Alert the host!
- * @param gameId The game ID / room ID
- */
-function hostPrepareGame(gameId: number) {
-    let sock = this;
-    let data = {
-        mySocketId: sock.id,
-        gameId: gameId
-    };
-    //console.log("All Players Present. Preparing game...");
-    io.sockets.in(data.gameId).emit("beginNewGame", data);
-}
-
-/*
- * The Countdown has finished, and the game begins!
- * @param gameId The game ID / room ID
- */
-function hostStartGame() {}
-
-let gameData = {
+const gameData = {
     players: [],
     liberals: [],
     fascists: [],
@@ -318,7 +286,7 @@ function getPlayerById(id: number): Player {
  ***************************** */
 
 function isGameStillGoing(data: any, callback: any) {
-    let room = gameSocket.manager.rooms["/" + thisGameId];
+    const room = gameSocket.manager.rooms["/" + thisGameId];
     if (data && !data) {
         return;
     }
@@ -337,7 +305,7 @@ let thisGameId: number = 0;
  * @param data Contains data entered via player's input - playerName and gameId.
  */
 function playerJoinGame(data: any) {
-    let sock = this;
+    const sock = this;
     if (!thisGameId) {
         thisGameId = (Math.random() * 100000) | 0;
 
@@ -347,7 +315,7 @@ function playerJoinGame(data: any) {
         this.join(thisGameId.toString());
     }
     // Look up the room ID in the Socket.IO manager object.
-    let room = gameSocket.manager.rooms["/" + thisGameId];
+    const room = gameSocket.manager.rooms["/" + thisGameId];
 
     // If the room exists...
     if (room !== undefined) {
@@ -368,10 +336,10 @@ function playerJoinGame(data: any) {
     }
 }
 function playerRejoinGame(data: any) {
-    let sock = this;
+    const sock = this;
 
     // Look up the room ID in the Socket.IO manager object.
-    let room = gameSocket.manager.rooms["/" + thisGameId];
+    const room = gameSocket.manager.rooms["/" + thisGameId];
 
     // If the room exists...
     if (room !== undefined) {

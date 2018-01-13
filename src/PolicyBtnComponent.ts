@@ -1,5 +1,6 @@
 import { tween, styler } from "popmotion";
 import { easeIn } from "popmotion/easing";
+import { Complete } from "popmotion/observer/types";
 export const PolicyBtn = {
     template: `<button @click="policyChoiceClick" class="noBorder policyBtn" :class="isSelected?'selected':''">
     <img :src="isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
@@ -28,7 +29,7 @@ export const PolicyChoiceGroup = {
         return { discardingPolicy: true, lastSize: 0, x: 0, y: 0 };
     },
     watch: {
-        policyChoices: function(val, oldVal) {
+        policyChoices: function(val: any[]) {
             const newSize = val.length;
             if (newSize > this.lastSize) {
                 this.discardingPolicy = true;
@@ -49,7 +50,7 @@ export const PolicyChoiceGroup = {
             this.policyChoices[index].isSelected = !this.policyChoices[index]
                 .isSelected;
         },
-        policyAnimEnter: function(el, done) {
+        policyAnimEnter: function(el: HTMLElement, done: Complete) {
             const elStyler = styler(el);
             tween({
                 from: {
@@ -57,25 +58,25 @@ export const PolicyChoiceGroup = {
                     x: -this.x,
                     y: 250 - this.y,
                     scale: 0.5
-                },
-                to: { rotateX: 0, x: 0, y: 0, scale: 1 },
+                } as any,
+                to: { rotateX: 0, x: 0, y: 0, scale: 1 } as any,
                 duration: 750
             }).start({ update: elStyler.set, complete: done });
         },
-        policyAnimBeforeEnter: function(el: HTMLElement, done) {
-            let rect = el.getBoundingClientRect();
+        policyAnimBeforeEnter: function(el: HTMLElement) {
+            const rect = el.getBoundingClientRect();
             this.x = rect.left;
             this.y = rect.top;
         },
-        discardPolicyLeave: function(el: Element, done: any) {
+        discardPolicyLeave: function(el: Element, done: Complete) {
             el.classList.remove("selected");
             const elStyler = styler(el);
             tween({
-                from: { y: 0, opacity: 1 },
+                from: { y: 0, opacity: 1 } as any,
                 to: {
                     y: this.discardingPolicy ? 300 : -300,
                     opacity: this.discardingPolicy ? 0 : 1
-                },
+                } as any,
                 ease: easeIn,
                 duration: 750
             }).start({ update: elStyler.set, complete: done });

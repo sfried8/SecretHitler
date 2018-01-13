@@ -1,6 +1,5 @@
 import { Executive_Action } from "./Enums";
 import { tween, styler } from "popmotion";
-import { easeIn } from "popmotion/easing";
 export const BoardSpaceComponent = {
     template: `<div style="border-radius:3px;"  :style="{backgroundColor:backgroundColor}"><div @click="displayTooltip()">
     <img v-if="imgsrc!=null" :src="imgsrc" :class="policyPlayed?'animated zoomIn':''" style="width:90%;margin:auto;"/></div>    
@@ -75,7 +74,7 @@ export const ElectionTracker = {
     <div id="electionTracker" style="position:absolute" :class="chaosLevel==2?'animated pulse infinite':''" class="electionTrackerSpot filled"></div></div>`,
     data: function() {
         return {
-            electionTracker: null
+            electionTracker: null as HTMLElement
         };
     },
     mounted: function() {
@@ -89,7 +88,7 @@ export const ElectionTracker = {
             tween({
                 to: { left: newBoundingBox.left },
                 duration: 10
-            }).start({ update: elStyler.set });
+            } as any).start({ update: elStyler.set });
         }
     },
     watch: {
@@ -105,7 +104,7 @@ export const ElectionTracker = {
                 from: { left: oldBoundingBox.left },
                 to: { left: newBoundingBox.left },
                 duration: 750
-            }).start({ update: elStyler.set });
+            } as any).start({ update: elStyler.set });
         }
     }
 };
