@@ -1,6 +1,6 @@
 import { Player } from "./Player";
 import { Policy, PolicyDeck } from "./Policy";
-import { Election } from "./models";
+import { Election } from "./Election";
 import { Executive_Action, WinCondition, Setup, GameState } from "./Enums";
 export interface EnactedPolicies {
     liberals: number;

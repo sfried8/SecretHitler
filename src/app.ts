@@ -1,3 +1,8 @@
+/**
+ * app.ts
+ * This is the main class for the client side code.
+ */
+
 declare const io: any;
 const DEBUG = false;
 const autoJoin = false;
@@ -12,13 +17,15 @@ import {
 } from "./Enums";
 import * as Rand from "./Rand";
 import { Policy, PolicyDeck, prettyPrintPolicies } from "./Policy";
-import { Election } from "./models";
-import Vue from "vue";
+import { Election } from "./Election";
 import { MessageBox, Button, Toast, Popup } from "mint-ui";
 import "mint-ui/lib/style.css";
 import { Player } from "./Player";
 import * as Cookies from "js-cookie";
 import { GameData } from "./gameData";
+
+import Vue from "vue";
+
 import VoteButton from "./components/VoteButton.vue";
 import PlayerBtn from "./components/PlayerBtn.vue";
 import BoardSpace from "./components/BoardSpace.vue";

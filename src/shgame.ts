@@ -1,7 +1,7 @@
 let io: any;
 let gameSocket: any;
 
-import { Election } from "./models";
+import { Election } from "./Election";
 import {
     Executive_Action,
     WinCondition,
