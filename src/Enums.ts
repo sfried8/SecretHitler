@@ -106,3 +106,9 @@ export enum Role {
     Fascist = "Fascist",
     Hitler = "Hitler"
 }
+
+export enum Position {
+    Player = "Player",
+    President = "President",
+    Chancellor = "Chancellor"
+}

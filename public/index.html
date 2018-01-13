@@ -36,7 +36,7 @@
                 :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
                 @player-button-click="playerButtonClick"></player-btngroup>
         </div>
-        <mt-button id="startGameBtn" class="topright" v-show="showStartBtn">Start Game</mt-button>
+        <mt-button id="startGameBtn" class="topright" @click="onVIPStart" v-show="showStartBtn">Start Game</mt-button>
         <div id="bottomDiv" v-if="showBoard">
             <div class="board">
                 <board-space v-for="(ea, index) in gameRules.board" :key="'F'+index" :is-liberal="false" :executive-action="ea" :policy-played="index < enactedPolicies.fascists"></board-space>
@@ -66,22 +66,33 @@
         </div>
 
         <!-- Main Title Screen that appears when the page loads for the first time -->
-        <div id="intro-screen-template" style="display: none">
-
+        <div id="intro-screen" v-show="!gameHasStarted && !joinClicked">
             <div class="titleWrapper">
-
                 <div>
                     <img src="../img/title.png" style="width:100%;" class="animated bounceIn" />
                 </div>
-
                 <div class="buttons">
-                    <mt-button id="btnJoinGame" class="right">JOIN</mt-button>
+                    <mt-button @click="joinClicked = true" id="btnJoinGame" class="right">JOIN</mt-button>
                     <div style="clear:both"></div>
                 </div>
-
             </div>
-
         </div>
+        <!-- This scrreen appears when a player clicks "JOIN" on the Title Screen -->
+        <div id="join-game" v-show="!gameHasStarted && joinClicked">
+            <div class="joinGameWrapper">
+                <div class="info">
+                    <label for="inputPlayerName">Your Name:</label>
+                    <input id="inputPlayerName" type="text" v-model="yourName" />
+                </div>
+
+                <div class="info buttons">
+                    <button id="btnStart" @click="onPlayerStartClick" class="btn">Start</button>
+                    <div id="playerWaitingMessage"></div>
+                </div>
+            </div>
+        </div>
+
+
         <mt-popup v-model="whoAmIVisible" class="whoAmIModal" position="right" :modal="false">
             <div>{{myRole}}
                 <br/>
@@ -108,20 +119,6 @@
             <button v-if="CPU2" @click="adminOverride=!adminOverride">Admin</button>
             <button @click="historyVisible=!historyVisible">History</button>
             <button @click="playersPopupVisible=!playersPopupVisible">Players</button>
-        </div>
-        <!-- This scrreen appears when a player clicks "JOIN" on the Title Screen -->
-        <div id="join-game-template" style="display: none">
-            <div class="joinGameWrapper">
-                <div class="info">
-                    <label for="inputPlayerName">Your Name:</label>
-                    <input id="inputPlayerName" type="text" v-model="yourName" />
-                </div>
-
-                <div class="info buttons">
-                    <button id="btnStart" class="btn">Start</button>
-                    <div id="playerWaitingMessage"></div>
-                </div>
-            </div>
         </div>
     </div>
 
