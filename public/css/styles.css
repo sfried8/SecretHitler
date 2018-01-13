@@ -26,7 +26,7 @@ body {
     grid-template-rows: 2fr 2fr 1fr;
 }
 
-.topright {
+#startGameBtn {
     width: 25%;
     height: 14%;
     /* left: 37.5%; */
@@ -54,12 +54,6 @@ body {
     margin: auto;
 }
 
-.fascistPolicy {
-    background-image: url("../img/fascistpolicy.png");
-}
-.liberalPolicy {
-    background-image: url("../img/liberalpolicy.png");
-}
 .tooltipPopup {
     width: 200px;
     border-radius: 8px;
@@ -79,10 +73,6 @@ body {
 }
 .noBorder::-moz-focus-inner {
     border: 0;
-}
-#gameArea {
-    height: 100%;
-    width: 100%;
 }
 
 #voteButtons {

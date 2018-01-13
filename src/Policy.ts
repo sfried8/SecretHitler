@@ -53,3 +53,23 @@ export class Policy {
         }
     }
 }
+export function prettyPrintPolicies(listToPrint: Policy[]): string {
+    if (listToPrint.length === 1) {
+        return (
+            "1 " +
+            (listToPrint[0].isLiberal ? "Liberal" : "Fascist") +
+            " Policy"
+        );
+    } else {
+        const numLibs = listToPrint.filter(p => p.isLiberal).length;
+        if (numLibs === listToPrint.length) {
+            return numLibs + " Liberal Policies";
+        } else if (numLibs === 0) {
+            return listToPrint.length + " Fascist Policies";
+        }
+        const numFas = listToPrint.length - numLibs;
+        return `${numLibs} Liberal Polic${
+            numLibs === 1 ? "y" : "ies"
+        } and ${numFas} Fascist Polic${numFas === 1 ? "y" : "ies"}`;
+    }
+}

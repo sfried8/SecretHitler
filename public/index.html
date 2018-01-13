@@ -31,7 +31,7 @@
                 :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId"
                 @player-button-click="playerButtonClick"></player-btngroup>
         </div>
-        <mt-button id="startGameBtn" class="topright" @click="onVIPStart" v-show="showStartBtn">Start Game</mt-button>
+        <mt-button id="startGameBtn" @click="onVIPStart" v-show="showStartBtn">Start Game</mt-button>
         <div id="bottomDiv" v-if="showBoard">
             <div class="board">
                 <board-space v-for="(ea, index) in gameRules.board" :key="'F'+index" :is-liberal="false" :executive-action="ea" :policy-played="index < enactedPolicies.fascists"></board-space>

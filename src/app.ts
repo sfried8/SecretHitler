@@ -11,7 +11,7 @@ import {
     Position
 } from "./Enums";
 import * as Rand from "./Rand";
-import { Policy, PolicyDeck } from "./Policy";
+import { Policy, PolicyDeck, prettyPrintPolicies } from "./Policy";
 import { Election } from "./models";
 import Vue from "vue";
 import { MessageBox, Button, Toast, Popup } from "mint-ui";
@@ -74,7 +74,7 @@ function convertGameDataToClass(gameData: GameData) {
     vm.lastExecutiveAction = gameData.lastExecutiveAction;
     vm.lastExecutiveActionTarget = gameData.lastExecutiveActionTarget;
 }
-const getName = (x: Player) => x.name;
+const mapToNames = (list: Player[]) => list.map((p: Player) => p.name);
 
 const IO = {
     socket: <any>null,
@@ -119,48 +119,60 @@ const IO = {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onPresidentElected");
     },
+
     onChancellorNominated: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onChancellorNominated");
     },
+
     onChancellorElected: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onChancellorElected");
     },
+
     onPresidentPolicyChosen: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onPresidentPolicyChosen");
     },
+
     onVetoRequested: function() {
         GameEvents.getGameFunction("onVetoRequested");
     },
+
     onVetoWasApproved: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onVetoWasApproved");
     },
+
     onVetoWasRejected: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onVetoWasRejected");
     },
+
     onExecutiveActionTriggered: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onExecutiveActionTriggered");
     },
+
     onPlayerVoted: function(data: GameData) {
         GameEvents.Player.onPlayerVoted(data);
     },
+
     onExecutiveActionTargetChosen: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onExecutiveActionTargetChosen");
     },
+
     onVoteFinished: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onVoteFinished");
     },
+
     onPolicyPlayed: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onPolicyPlayed");
     },
+
     onPolicyPlayedByCountry: function(data: GameData) {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("onPolicyPlayedByCountry");
@@ -170,6 +182,7 @@ const IO = {
         convertGameDataToClass(data);
         GameEvents.getGameFunction("playerJoinedRoom");
     },
+
     playerRejoinedRoom: function(data: GameData) {
         convertGameDataToClass(data);
         vm.showBoard = true;
@@ -182,18 +195,10 @@ const IO = {
         GameEvents.getGameFunction("beginNewGame");
     },
 
-    /**
-     * Let everyone know the game has ended.
-     * @param data
-     */
     gameOver: function() {
         GameEvents.getGameFunction("gameOver");
     },
 
-    /**
-     * An error has occurred.
-     * @param data
-     */
     error: function(data: any) {
         alert("Error: " + data.message);
     },
@@ -204,20 +209,7 @@ const IO = {
             playerId: vm.myPlayerId,
             playerName: data.playerName
         });
-        // Set the appropriate properties for the current player.
         document.title = DEBUG ? data.playerName : "Secret Hitler";
-    },
-
-    /**
-     *  Click handler for the "Start Again" button that appears
-     *  when a game is over.
-     */
-    onPlayerRestart: function() {
-        const data = {
-            gameId: GameEvents.gameId,
-            playerName: vm.getPlayerById(vm.myPlayerId).name
-        };
-        IO.socket.emit("playerRestart", data);
     }
 };
 
@@ -229,6 +221,10 @@ const GameEvents = {
      */
     gameId: 0,
 
+    /**
+     * Executes function by name, based on current position.
+     * If function doesn't exist for position, fall back to Player
+     */
     getGameFunction: function(functionName: string) {
         const func = (GameEvents as any)[vm.myPosition()][functionName];
         if (func) {
@@ -271,13 +267,12 @@ const GameEvents = {
         onExecutiveActionTriggered: function() {},
 
         onPlayerVoted: function(data: any) {
-            if (DEBUG) {
-                log(
-                    `${vm.getPlayerById(data.id).name} voted ${
-                        data.vote ? "ja" : "nein"
-                    }`
-                );
-            }
+            log.d(
+                `${vm.getPlayerById(data.id).name} voted ${
+                    data.vote ? "ja" : "nein"
+                }`
+            );
+
             vm.waitingForVotes = vm.waitingForVotes.filter(
                 (x: Player) => x.id != data.id
             );
@@ -482,12 +477,23 @@ function clickJoinButton() {
         }, 200);
     }
 }
-window.onload = function() {
-    IO.init();
-    document.getElementById("gameBody").style.display = "";
-    if (!DEBUG) {
-        document.getElementById("DEBUG").style.display = "none";
+
+function promptToRejoin(gameInfo: any) {
+    if (
+        autoJoin ||
+        confirm(
+            "Looks like you were disconnected, but the game is still going. Rejoin?"
+        )
+    ) {
+        vm.myPlayerId = gameInfo.playerId;
+        GameEvents.gameId = gameInfo.gameId;
+        IO.socket.emit("rejoinGame", gameInfo);
+        IO.joinGame(gameInfo);
+    } else {
+        clickJoinButton();
     }
+}
+function checkForCurrentGame() {
     if (Cookies.get("existingGameInfo")) {
         const gameInfo: any = Cookies.getJSON("existingGameInfo");
         IO.socket.emit(
@@ -495,19 +501,7 @@ window.onload = function() {
             { gameId: gameInfo.gameId },
             function(response: boolean) {
                 if (response) {
-                    if (
-                        autoJoin ||
-                        confirm(
-                            "Looks like you were disconnected, but the game is still going. Rejoin?"
-                        )
-                    ) {
-                        vm.myPlayerId = gameInfo.playerId;
-                        GameEvents.gameId = gameInfo.gameId;
-                        IO.socket.emit("rejoinGame", gameInfo);
-                        IO.joinGame(gameInfo);
-                    } else {
-                        clickJoinButton();
-                    }
+                    promptToRejoin(gameInfo);
                 } else {
                     clickJoinButton();
                 }
@@ -516,11 +510,24 @@ window.onload = function() {
     } else {
         clickJoinButton();
     }
+}
+window.onload = function() {
+    IO.init();
+    document.getElementById("gameBody").style.display = "";
+    if (!DEBUG) {
+        document.getElementById("DEBUG").style.display = "none";
+    }
+    checkForCurrentGame();
 };
 
-function log(message: string) {
+const log = function(message: string) {
     Toast(message);
-}
+} as any;
+log.d = function(message: string) {
+    if (DEBUG) {
+        Toast(message);
+    }
+};
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -648,7 +655,7 @@ const vm = new Vue({
             } else {
                 return `Waiting for vote${
                     len > 1 ? "s" : ""
-                } from ${prettyPrintList(this.waitingForVotes.map(getName))}`;
+                } from ${prettyPrintList(mapToNames(this.waitingForVotes))}`;
             }
         },
         electionHistory: function() {
@@ -807,28 +814,13 @@ const vm = new Vue({
         log: function(value: string) {
             log(value);
         },
-        getPolicyClass: function(index: number) {
-            if (this.presidentPolicies && this.presidentPolicies[+index]) {
-                if (this.presidentPolicies[+index].isLiberal) {
-                    return "liberalPolicy";
-                } else {
-                    return "fascistPolicy";
-                }
-            }
-            return "";
-        },
         policyChoiceClick: function(selected: Policy[]) {
             if (vm.myPosition() === Position.President) {
-                MessageBox({
-                    title: "",
-                    message: `Give Chancellor ${
+                YesNoConfirm(
+                    `Give Chancellor ${
                         this.chancellor ? this.chancellor.name : "?"
                     } ${prettyPrintPolicies(selected)}?`,
-                    showCancelButton: true,
-                    confirmButtonText: "Yes",
-                    cancelButtonText: "No"
-                }).then((action: any) => {
-                    if (action != "cancel") {
+                    () => {
                         this.discardingPolicy = true;
                         IO.socket.emit("choosePresidentPolicies", {
                             id: this.myPlayerId,
@@ -841,29 +833,21 @@ const vm = new Vue({
                             this.policyChoices = [];
                         }, 750);
                     }
-                });
+                );
             } else {
                 const toEnact = selected[0];
-                MessageBox({
-                    title: "",
-                    message: `Enact a ${toEnact.toString()} Policy?`,
-                    showCancelButton: true,
-                    confirmButtonText: "Yes",
-                    cancelButtonText: "No"
-                }).then((action: any) => {
-                    if (action != "cancel") {
-                        this.discardingPolicy = true;
-                        IO.socket.emit("chooseChancellorPolicy", {
-                            id: this.myPlayerId,
-                            policies: [toEnact]
-                        });
+                YesNoConfirm(`Enact a ${toEnact.toString()} Policy?`, () => {
+                    this.discardingPolicy = true;
+                    IO.socket.emit("chooseChancellorPolicy", {
+                        id: this.myPlayerId,
+                        policies: [toEnact]
+                    });
 
-                        this.policyChoices = selected;
-                        setTimeout(() => {
-                            this.discardingPolicy = false;
-                            this.policyChoices = [];
-                        }, 750);
-                    }
+                    this.policyChoices = selected;
+                    setTimeout(() => {
+                        this.discardingPolicy = false;
+                        this.policyChoices = [];
+                    }, 750);
                 });
             }
         },
@@ -878,9 +862,11 @@ const vm = new Vue({
                         "You are Liberal! Find and stop the Secret Hitler!";
                 } else if (myPlayer.role === Role.Fascist) {
                     let s = "You are Fascist!";
-                    const otherFascistNames = this.fascists
-                        .filter((x: Player) => x.id !== myPlayer.id)
-                        .map(getName);
+                    const otherFascistNames = mapToNames(
+                        this.fascists.filter(
+                            (x: Player) => x.id !== myPlayer.id
+                        )
+                    );
                     const len = otherFascistNames.length;
                     if (len === 1) {
                         s += ` The other Fascist is ${otherFascistNames[0]}. `;
@@ -899,7 +885,7 @@ const vm = new Vue({
                 } else {
                     let s = "You are Secret Hitler!";
                     if (this.gameRules.hitlerKnowsFascists) {
-                        const fascistNames = this.fascists.map(getName);
+                        const fascistNames = mapToNames(this.fascists);
                         const len = fascistNames.length;
                         if (len === 1) {
                             s += " The Fascist is " + fascistNames[0] + ". ";
@@ -915,7 +901,7 @@ const vm = new Vue({
             }
             this.whoAmIVisible = true;
         },
-        CPUAction: function(action: number, value: any) {
+        CPUAction: function(action: number, value: number) {
             this.adminOverride = false;
             switch (action) {
                 case 0:
@@ -981,7 +967,20 @@ const vm = new Vue({
     }
 });
 
-function prettyPrintList(listToPrint: any[]): string {
+function YesNoConfirm(message: string, onConfirm: Function) {
+    MessageBox({
+        title: "",
+        message: message,
+        showCancelButton: true,
+        confirmButtonText: "Yes",
+        cancelButtonText: "No"
+    }).then((action: any) => {
+        if (action != "cancel") {
+            onConfirm();
+        }
+    });
+}
+function prettyPrintList(listToPrint: string[]): string {
     const len = listToPrint.length;
     if (len === 0) {
         return "";
@@ -996,26 +995,5 @@ function prettyPrintList(listToPrint: any[]): string {
         }
         s += "and " + listToPrint[len - 1];
         return s;
-    }
-}
-
-function prettyPrintPolicies(listToPrint: Policy[]): string {
-    if (listToPrint.length === 1) {
-        return (
-            "1 " +
-            (listToPrint[0].isLiberal ? "Liberal" : "Fascist") +
-            " Policy"
-        );
-    } else {
-        const numLibs = listToPrint.filter(p => p.isLiberal).length;
-        if (numLibs === listToPrint.length) {
-            return numLibs + " Liberal Policies";
-        } else if (numLibs === 0) {
-            return listToPrint.length + " Fascist Policies";
-        }
-        const numFas = listToPrint.length - numLibs;
-        return `${numLibs} Liberal Polic${
-            numLibs === 1 ? "y" : "ies"
-        } and ${numFas} Fascist Polic${numFas === 1 ? "y" : "ies"}`;
     }
 }
