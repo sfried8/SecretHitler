@@ -1,6 +1,7 @@
 <template>
-  <mt-button class="playerButton" :class="[dead ? 'isDead' : '', president!=null && pid == president.id ? 'isPresident' : '', chancellor!=null && pid == chancellor.id ? 'isChancellor' : '', invalidTarget ? 'animated shake':'']"
-                @click="playerButtonClick">{{name}}</mt-button>
+    <mt-button class="playerButton" :class="classNames" @click="playerButtonClick">
+        {{name}}
+    </mt-button>
 </template>
 
 <script lang="ts">
@@ -47,6 +48,24 @@ export default {
                 this.$emit("player-button-click", this.pid);
             }
         }
+    },
+    computed: {
+        classNames: function() {
+            const classArray = [];
+            if (this.dead) {
+                classArray.push("isDead");
+            }
+            if (this.president != null && this.pid == this.president.id) {
+                classArray.push("isPresident");
+            }
+            if (this.chancellor != null && this.pid == this.chancellor.id) {
+                classArray.push("isChancellor");
+            }
+            if (this.invalidTarget) {
+                classArray.push("animated shake");
+            }
+            return classArray;
+        }
     }
 };
 </script>
@@ -61,13 +80,9 @@ export default {
     content: " (DEAD)";
 }
 .playerButton {
-    /* margin-top: 1em; */
-    /* height: 55px; */
-    /* flex-basis: 45%; */
     background-color: #333;
     border-radius: 20px;
     font-family: "courier-prime", Courier, sans-serif;
-    /* font-weight: 700; */
     font-size: 9pt !important;
     line-height: 20px;
     color: #fbb969;

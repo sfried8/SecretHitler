@@ -1,9 +1,10 @@
 <template>
-  <div style="display:flex;justify-content:space-around;grid-column:1 / 6;">
-    <div class="electionTrackerSpot" id="electionTrackerSpot0" ></div>
-    <div class="electionTrackerSpot" id="electionTrackerSpot1" ></div>
-    <div class="electionTrackerSpot" id="electionTrackerSpot2" ></div>
-    <div id="electionTracker" style="position:absolute" :class="chaosLevel==2?'animated pulse infinite':''" class="electionTrackerSpot filled"></div></div>
+    <div class="electionTrackerContainer">
+        <div class="electionTrackerSpot" id="electionTrackerSpot0" ></div>
+        <div class="electionTrackerSpot" id="electionTrackerSpot1" ></div>
+        <div class="electionTrackerSpot" id="electionTrackerSpot2" ></div>
+        <div id="electionTracker" :class="pulseClass" class="electionTrackerToken"></div>
+    </div>
 
 </template>
 <script lang="ts">
@@ -45,20 +46,32 @@ export default {
                 duration: 750
             } as any).start({ update: elStyler.set });
         }
+    },
+    computed: {
+        pulseClass: function() {
+            return this.chaosLevel == 2 ? "animated pulse infinite" : "";
+        }
     }
 };
 </script>
 <style>
-.electionTrackerSpot {
+.electionTrackerContainer {
+    display: flex;
+    justify-content: space-around;
+    grid-column: 1 / 6;
+}
+.electionTrackerSpot,
+.electionTrackerToken {
     width: 30px;
     height: 30px;
     border-radius: 18px;
     border: 3px solid #fbb969;
 }
-.electionTrackerSpot.filled {
+.electionTrackerToken {
+    position: absolute;
     background-color: #fbb969;
 }
-.electionTrackerSpot.filled.pulse {
+.electionTrackerToken.pulse {
     background-color: #ff2919;
 }
 </style>

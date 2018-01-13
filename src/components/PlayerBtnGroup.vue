@@ -1,6 +1,12 @@
 <template>
-  <div id="playerButtons"><player-btn @log="log" @player-button-click="playerButtonClick" :dead="p.dead" :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" :game-state="gameState" :my-player-id="myPlayerId" :pid="p.id" :key="p.id" :name="p.name" v-for="p in players"></player-btn></div>
+    <div id="playerButtons">
+        <player-btn @log="log" @player-button-click="playerButtonClick" :dead="p.dead" 
+        :president="president" :chancellor="chancellor" :last-chancellor="lastChancellor" 
+        :game-state="gameState" :my-player-id="myPlayerId" :pid="p.id" :key="p.id" :name="p.name" 
+        v-for="p in players"></player-btn>
+    </div>
 </template>
+
 <script lang="ts">
 export default {
     props: [
@@ -21,6 +27,7 @@ export default {
     }
 };
 </script>
+
 <style>
 #playerButtons {
     width: 90%;

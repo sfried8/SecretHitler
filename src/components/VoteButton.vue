@@ -1,7 +1,7 @@
 <template>
-                  <button class="voteButton noBorder" @click="voteButtonClick" :class="show ? 'animated pulse':''">
-                    <img :src="ja ? '../img/ja.png' : '../img/nein.png'" />
-                </button>
+    <button class="voteButton noBorder" @click="voteButtonClick" :class="animatedClass">
+        <img :src="imgSrc" />
+    </button>
 </template>
 
 <script lang="ts">
@@ -10,6 +10,14 @@ export default {
     methods: {
         voteButtonClick: function() {
             this.$emit("vote", this.ja);
+        }
+    },
+    computed: {
+        imgSrc: function() {
+            return this.ja ? "../img/ja.png" : "../img/nein.png";
+        },
+        animatedClass: function() {
+            return this.show ? "animated pulse" : "";
         }
     }
 };

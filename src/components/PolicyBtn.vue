@@ -1,6 +1,6 @@
 <template>
-  <button @click="policyChoiceClick" class="noBorder policyBtn" :class="isSelected?'selected':''">
-    <img :src="isLiberal ? '../img/liberalpolicy.png' : '../img/fascistpolicy.png'">
+    <button @click="policyChoiceClick" class="noBorder policyBtn" :class="selectedClass">
+        <img :src="imgSrc">
     </button>
 </template>
 <script lang="ts">
@@ -13,6 +13,16 @@ export default {
         policyChoiceClick: function() {
             this.isSelected = !this.isSelected;
             this.$emit("policy-choice-click", this.pcIndex);
+        }
+    },
+    computed: {
+        selectedClass: function() {
+            return this.isSelected ? "selected" : "";
+        },
+        imgSrc: function() {
+            return this.isLiberal
+                ? "../img/liberalpolicy.png"
+                : "../img/fascistpolicy.png";
         }
     }
 };

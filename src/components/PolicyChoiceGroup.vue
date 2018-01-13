@@ -1,10 +1,15 @@
 <template>
-  <div><transition-group name="policy-anim" @before-enter="policyAnimBeforeEnter" @enter="policyAnimEnter" @leave="discardPolicyLeave">
-                        <policy-btn @policy-choice-click="policyChoiceClick" v-for="(p,index) in policyChoices" :pcIndex="index" :isLiberal="p.isLiberal" :key="p.id">
-                        </policy-btn>
+    <div>
+        <transition-group name="policy-anim" @before-enter="policyAnimBeforeEnter" @enter="policyAnimEnter" @leave="discardPolicyLeave">
+            <policy-btn @policy-choice-click="policyChoiceClick" v-for="(p,index) in policyChoices" 
+            :pcIndex="index" :isLiberal="p.isLiberal" :key="p.id"></policy-btn>
 
-                    </transition-group>                        <br/>
-                        <mt-button @click="submitChoices" v-show="policyChoices.length > 0" :disabled="disableSubmit">Submit</mt-button></div>
+        </transition-group>
+        <br/>
+        <mt-button @click="submitChoices" v-show="policyChoices.length > 0" :disabled="disableSubmit">
+            Submit
+        </mt-button>
+    </div>
 </template>
 <script lang="ts">
 import { tween, styler } from "popmotion";
